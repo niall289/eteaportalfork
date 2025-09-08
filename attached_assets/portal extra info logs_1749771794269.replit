@@ -1,0 +1,29 @@
+client:536 WebSocket connection to 'wss://484fb7a5-34c5-4c4a-bd00-887b538dd1a6-00-8cvosq7u9ru7.kirk.replit.dev/?token=q2HunvdJvGMz' failed: 
+setupWebSocket @ client:536
+client:536 Uncaught (in promise) SyntaxError: Failed to construct 'WebSocket': The URL 'wss://localhost:undefined/?token=q2HunvdJvGMz' is invalid.
+    at setupWebSocket (client:536:19)
+    at fallback (client:509:16)
+    at WebSocket.<anonymous> (client:555:7)
+chunk-RPCDYKBN.js?v=605dfac4:21551 Download the React DevTools for a better development experience: https://reactjs.org/link/react-devtools
+PatientTable.tsx:38 PatientTable - assessments: Array(0)
+PatientTable.tsx:39 PatientTable - isLoading: true
+PatientTable.tsx:40 PatientTable - pagination: undefined
+PatientTable.tsx:38 PatientTable - assessments: Array(0)
+PatientTable.tsx:39 PatientTable - isLoading: true
+PatientTable.tsx:40 PatientTable - pagination: undefined
+PatientTable.tsx:38 PatientTable - assessments: Array(5)
+PatientTable.tsx:39 PatientTable - isLoading: false
+PatientTable.tsx:40 PatientTable - pagination: undefined
+websocket.tsx:35 WebSocket connected
+PatientTable.tsx:38 PatientTable - assessments: Array(5)
+PatientTable.tsx:39 PatientTable - isLoading: false
+PatientTable.tsx:40 PatientTable - pagination: undefined
+PatientTable.tsx:38 PatientTable - assessments: Array(5)
+PatientTable.tsx:39 PatientTable - isLoading: false
+PatientTable.tsx:40 PatientTable - pagination: undefined
+PatientTable.tsx:38 PatientTable - assessments: (5) [{…}, {…}, {…}, {…}, {…}]
+PatientTable.tsx:39 PatientTable - isLoading: false
+PatientTable.tsx:40 PatientTable - pagination: undefined
+PatientTable.tsx:38 PatientTable - assessments: (5) [{…}, {…}, {…}, {…}, {…}]
+PatientTable.tsx:39 PatientTable - isLoading: false
+PatientTable.tsx:40 PatientTable - pagination: undefined

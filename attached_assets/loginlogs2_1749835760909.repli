@@ -1,0 +1,63 @@
+client:536 WebSocket connection to 'wss://2f749601-b8fb-4eb3-83d0-d02dad15e49e-00-1j6g7ddvhkpw2.worf.replit.dev/?token=umBXrYQ_JvCQ' failed: 
+setupWebSocket @ client:536
+client:536 Uncaught (in promise) SyntaxError: Failed to construct 'WebSocket': The URL 'wss://localhost:undefined/?token=umBXrYQ_JvCQ' is invalid.
+    at setupWebSocket (client:536:19)
+    at fallback (client:509:16)
+    at WebSocket.<anonymous> (client:555:7)
+chunk-RPCDYKBN.js?v=642d56af:21551 Download the React DevTools for a better development experience: https://reactjs.org/link/react-devtools
+websocket.tsx:40 WebSocket connected
+App.tsx:32 Uncaught Error: useClinicContext must be used within a ClinicProvider
+    at useClinicContext (App.tsx:32:11)
+    at Layout (Layout.tsx:19:59)
+    at renderWithHooks (chunk-RPCDYKBN.js?v=642d56af:11548:26)
+    at mountIndeterminateComponent (chunk-RPCDYKBN.js?v=642d56af:14926:21)
+    at beginWork (chunk-RPCDYKBN.js?v=642d56af:15914:22)
+    at HTMLUnknownElement.callCallback2 (chunk-RPCDYKBN.js?v=642d56af:3674:22)
+    at Object.invokeGuardedCallbackDev (chunk-RPCDYKBN.js?v=642d56af:3699:24)
+    at invokeGuardedCallback (chunk-RPCDYKBN.js?v=642d56af:3733:39)
+    at beginWork$1 (chunk-RPCDYKBN.js?v=642d56af:19765:15)
+    at performUnitOfWork (chunk-RPCDYKBN.js?v=642d56af:19198:20)
+App.tsx:32 Uncaught Error: useClinicContext must be used within a ClinicProvider
+    at useClinicContext (App.tsx:32:11)
+    at Layout (Layout.tsx:19:59)
+    at renderWithHooks (chunk-RPCDYKBN.js?v=642d56af:11548:26)
+    at mountIndeterminateComponent (chunk-RPCDYKBN.js?v=642d56af:14926:21)
+    at beginWork (chunk-RPCDYKBN.js?v=642d56af:15914:22)
+    at HTMLUnknownElement.callCallback2 (chunk-RPCDYKBN.js?v=642d56af:3674:22)
+    at Object.invokeGuardedCallbackDev (chunk-RPCDYKBN.js?v=642d56af:3699:24)
+    at invokeGuardedCallback (chunk-RPCDYKBN.js?v=642d56af:3733:39)
+    at beginWork$1 (chunk-RPCDYKBN.js?v=642d56af:19765:15)
+    at performUnitOfWork (chunk-RPCDYKBN.js?v=642d56af:19198:20)
+chunk-RPCDYKBN.js?v=642d56af:14032 The above error occurred in the <Layout> component:
+
+    at Layout (https://2f749601-b8fb-4eb3-83d0-d02dad15e49e-00-1j6g7ddvhkpw2.worf.replit.dev/src/components/Layout.tsx:28:19)
+    at ClinicProvider (https://2f749601-b8fb-4eb3-83d0-d02dad15e49e-00-1j6g7ddvhkpw2.worf.replit.dev/src/App.tsx?v=DgO16vxj8tEeZq6VwYDLO:45:27)
+    at ProtectedRoute (https://2f749601-b8fb-4eb3-83d0-d02dad15e49e-00-1j6g7ddvhkpw2.worf.replit.dev/src/App.tsx?v=DgO16vxj8tEeZq6VwYDLO:56:27)
+    at Route (https://2f749601-b8fb-4eb3-83d0-d02dad15e49e-00-1j6g7ddvhkpw2.worf.replit.dev/@fs/home/runner/workspace/node_modules/.vite/deps/wouter.js?v=642d56af:323:16)
+    at Switch (https://2f749601-b8fb-4eb3-83d0-d02dad15e49e-00-1j6g7ddvhkpw2.worf.replit.dev/@fs/home/runner/workspace/node_modules/.vite/deps/wouter.js?v=642d56af:379:17)
+    at Router (https://2f749601-b8fb-4eb3-83d0-d02dad15e49e-00-1j6g7ddvhkpw2.worf.replit.dev/@fs/home/runner/workspace/node_modules/.vite/deps/wouter.js?v=642d56af:291:17)
+    at div
+    at Provider (https://2f749601-b8fb-4eb3-83d0-d02dad15e49e-00-1j6g7ddvhkpw2.worf.replit.dev/@fs/home/runner/workspace/node_modules/.vite/deps/chunk-MV53PHM7.js?v=642d56af:48:15)
+    at TooltipProvider (https://2f749601-b8fb-4eb3-83d0-d02dad15e49e-00-1j6g7ddvhkpw2.worf.replit.dev/@fs/home/runner/workspace/node_modules/.vite/deps/@radix-ui_react-tooltip.js?v=642d56af:58:5)
+    at QueryClientProvider (https://2f749601-b8fb-4eb3-83d0-d02dad15e49e-00-1j6g7ddvhkpw2.worf.replit.dev/@fs/home/runner/workspace/node_modules/.vite/deps/@tanstack_react-query.js?v=642d56af:2805:3)
+    at ThemeProvider (https://2f749601-b8fb-4eb3-83d0-d02dad15e49e-00-1j6g7ddvhkpw2.worf.replit.dev/src/components/ThemeProvider.tsx:25:3)
+    at WebSocketProvider (https://2f749601-b8fb-4eb3-83d0-d02dad15e49e-00-1j6g7ddvhkpw2.worf.replit.dev/src/components/ui/websocket.tsx:29:37)
+    at App
+
+Consider adding an error boundary to your tree to customize error handling behavior.
+Visit https://reactjs.org/link/error-boundaries to learn more about error boundaries.
+logCapturedError @ chunk-RPCDYKBN.js?v=642d56af:14032
+chunk-RPCDYKBN.js?v=642d56af:9129 Uncaught Error: useClinicContext must be used within a ClinicProvider
+    at useClinicContext (App.tsx:32:11)
+    at Layout (Layout.tsx:19:59)
+    at renderWithHooks (chunk-RPCDYKBN.js?v=642d56af:11548:26)
+    at mountIndeterminateComponent (chunk-RPCDYKBN.js?v=642d56af:14926:21)
+    at beginWork (chunk-RPCDYKBN.js?v=642d56af:15914:22)
+    at beginWork$1 (chunk-RPCDYKBN.js?v=642d56af:19753:22)
+    at performUnitOfWork (chunk-RPCDYKBN.js?v=642d56af:19198:20)
+    at workLoopSync (chunk-RPCDYKBN.js?v=642d56af:19137:13)
+    at renderRootSync (chunk-RPCDYKBN.js?v=642d56af:19116:15)
+    at recoverFromConcurrentError (chunk-RPCDYKBN.js?v=642d56af:18736:28)
+websocket.tsx:55 WebSocket closed
+websocket.tsx:64 Attempting to reconnect... (1/5)
+websocket.tsx:40 WebSocket connected

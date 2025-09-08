@@ -1,0 +1,28 @@
+[vite] connecting...
+DOMException {}
+
+at t.value (https://2f749601-b8fb-4eb3-83d0-d02dad15e49e-00-1j6g7ddvhkpw2.worf.replit.dev/__replco/static/devtools/eruda/3.2.3/eruda.js:2:17465)
+at new t (https://2f749601-b8fb-4eb3-83d0-d02dad15e49e-00-1j6g7ddvhkpw2.worf.replit.dev/__replco/static/devtools/eruda/3.2.3/eruda.js:2:12630)
+at t.value (https://2f749601-b8fb-4eb3-83d0-d02dad15e49e-00-1j6g7ddvhkpw2.worf.replit.dev/__replco/static/devtools/eruda/3.2.3/eruda.js:2:32766)
+at https://2f749601-b8fb-4eb3-83d0-d02dad15e49e-00-1j6g7ddvhkpw2.worf.replit.dev/__replco/static/devtools/eruda/3.2.3/eruda.js:2:34400
+WebSocket connected
+useClinicContext must be used within a ClinicProvider
+useClinicContext must be used within a ClinicProvider
+The above error occurred in the <Layout> component:
+
+    at Layout (https://2f749601-b8fb-4eb3-83d0-d02dad15e49e-00-1j6g7ddvhkpw2.worf.replit.dev/src/components/Layout.tsx:28:19)
+    at ClinicProvider (https://2f749601-b8fb-4eb3-83d0-d02dad15e49e-00-1j6g7ddvhkpw2.worf.replit.dev/src/App.tsx?v=YiW8GXbgcI1K1Hp10tOVP:45:27)
+    at ProtectedRoute (https://2f749601-b8fb-4eb3-83d0-d02dad15e49e-00-1j6g7ddvhkpw2.worf.replit.dev/src/App.tsx?v=YiW8GXbgcI1K1Hp10tOVP:56:27)
+    at Route (https://2f749601-b8fb-4eb3-83d0-d02dad15e49e-00-1j6g7ddvhkpw2.worf.replit.dev/@fs/home/runner/workspace/node_modules/.vite/deps/wouter.js?v=642d56af:323:16)
+    at Switch (https://2f749601-b8fb-4eb3-83d0-d02dad15e49e-00-1j6g7ddvhkpw2.worf.replit.dev/@fs/home/runner/workspace/node_modules/.vite/deps/wouter.js?v=642d56af:379:17)
+    at Router (https://2f749601-b8fb-4eb3-83d0-d02dad15e49e-00-1j6g7ddvhkpw2.worf.replit.dev/@fs/home/runner/workspace/node_modules/.vite/deps/wouter.js?v=642d56af:291:17)
+    at div
+    at Provider (https://2f749601-b8fb-4eb3-83d0-d02dad15e49e-00-1j6g7ddvhkpw2.worf.replit.dev/@fs/home/runner/workspace/node_modules/.vite/deps/chunk-MV53PHM7.js?v=642d56af:48:15)
+    at TooltipProvider (https://2f749601-b8fb-4eb3-83d0-d02dad15e49e-00-1j6g7ddvhkpw2.worf.replit.dev/@fs/home/runner/workspace/node_modules/.vite/deps/@radix-ui_react-tooltip.js?v=642d56af:58:5)
+    at QueryClientProvider (https://2f749601-b8fb-4eb3-83d0-d02dad15e49e-00-1j6g7ddvhkpw2.worf.replit.dev/@fs/home/runner/workspace/node_modules/.vite/deps/@tanstack_react-query.js?v=642d56af:2805:3)
+    at ThemeProvider (https://2f749601-b8fb-4eb3-83d0-d02dad15e49e-00-1j6g7ddvhkpw2.worf.replit.dev/src/components/ThemeProvider.tsx:25:3)
+    at WebSocketProvider (https://2f749601-b8fb-4eb3-83d0-d02dad15e49e-00-1j6g7ddvhkpw2.worf.replit.dev/src/components/ui/websocket.tsx:29:37)
+    at App
+
+Consider adding an error boundary to your tree to customize error handling behavior.
+Visit https://reactjs.org/link/error-boundaries to learn more about error boundaries.

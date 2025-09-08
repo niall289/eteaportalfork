@@ -1,0 +1,753 @@
+chunk-RPCDYKBN.js?v=1297af6c:21551 Download the React DevTools for a better development experience: https://reactjs.org/link/react-devtools
+use-chat.ts:41 🚀 Sending data to webhook: https://footcareclinicadmin.engageiobots.com/api/webhook/consultation
+use-chat.ts:42 📦 Webhook payload: {name: 'niall', consultationId: null, conversationLog: Array(1)}
+chat:1 Access to fetch at 'https://footcareclinicadmin.engageiobots.com/api/health' from origin 'https://74a5c1c6-354f-49ed-a2f9-4221388929da-00-d532ej2acf3p.picard.replit.dev' has been blocked by CORS policy: No 'Access-Control-Allow-Origin' header is present on the requested resource.
+use-chat.ts:46 
+            
+            
+           GET https://footcareclinicadmin.engageiobots.com/api/health net::ERR_FAILED 200 (OK)
+(anonymous) @ use-chat.ts:46
+(anonymous) @ use-chat.ts:90
+(anonymous) @ use-chat.ts:201
+handleSubmit @ UserInput.tsx:61
+handleKeyPress @ UserInput.tsx:70
+callCallback2 @ chunk-RPCDYKBN.js?v=1297af6c:3674
+invokeGuardedCallbackDev @ chunk-RPCDYKBN.js?v=1297af6c:3699
+invokeGuardedCallback @ chunk-RPCDYKBN.js?v=1297af6c:3733
+invokeGuardedCallbackAndCatchFirstError @ chunk-RPCDYKBN.js?v=1297af6c:3736
+executeDispatch @ chunk-RPCDYKBN.js?v=1297af6c:7014
+processDispatchQueueItemsInOrder @ chunk-RPCDYKBN.js?v=1297af6c:7034
+processDispatchQueue @ chunk-RPCDYKBN.js?v=1297af6c:7043
+dispatchEventsForPlugins @ chunk-RPCDYKBN.js?v=1297af6c:7051
+(anonymous) @ chunk-RPCDYKBN.js?v=1297af6c:7174
+batchedUpdates$1 @ chunk-RPCDYKBN.js?v=1297af6c:18913
+batchedUpdates @ chunk-RPCDYKBN.js?v=1297af6c:3579
+dispatchEventForPluginEventSystem @ chunk-RPCDYKBN.js?v=1297af6c:7173
+dispatchEventWithEnableCapturePhaseSelectiveHydrationWithoutDiscreteEventReplay @ chunk-RPCDYKBN.js?v=1297af6c:5478
+dispatchEvent @ chunk-RPCDYKBN.js?v=1297af6c:5472
+dispatchDiscreteEvent @ chunk-RPCDYKBN.js?v=1297af6c:5449
+use-chat.ts:49 ❌ External server health check failed: Failed to fetch
+use-chat.ts:54 ⏳ Sending partial data to test external server (missing email/phone)
+use-chat.ts:60 ❌ Validation failed: ZodError: [
+  {
+    "code": "invalid_type",
+    "expected": "string",
+    "received": "undefined",
+    "path": [
+      "email"
+    ],
+    "message": "Required"
+  },
+  {
+    "code": "invalid_type",
+    "expected": "string",
+    "received": "undefined",
+    "path": [
+      "phone"
+    ],
+    "message": "Required"
+  }
+]
+    at get error (chunk-QJP6NUMG.js?v=1297af6c:627:23)
+    at use-chat.ts:60:57
+(anonymous) @ use-chat.ts:60
+await in (anonymous)
+(anonymous) @ use-chat.ts:90
+(anonymous) @ use-chat.ts:201
+handleSubmit @ UserInput.tsx:61
+handleKeyPress @ UserInput.tsx:70
+callCallback2 @ chunk-RPCDYKBN.js?v=1297af6c:3674
+invokeGuardedCallbackDev @ chunk-RPCDYKBN.js?v=1297af6c:3699
+invokeGuardedCallback @ chunk-RPCDYKBN.js?v=1297af6c:3733
+invokeGuardedCallbackAndCatchFirstError @ chunk-RPCDYKBN.js?v=1297af6c:3736
+executeDispatch @ chunk-RPCDYKBN.js?v=1297af6c:7014
+processDispatchQueueItemsInOrder @ chunk-RPCDYKBN.js?v=1297af6c:7034
+processDispatchQueue @ chunk-RPCDYKBN.js?v=1297af6c:7043
+dispatchEventsForPlugins @ chunk-RPCDYKBN.js?v=1297af6c:7051
+(anonymous) @ chunk-RPCDYKBN.js?v=1297af6c:7174
+batchedUpdates$1 @ chunk-RPCDYKBN.js?v=1297af6c:18913
+batchedUpdates @ chunk-RPCDYKBN.js?v=1297af6c:3579
+dispatchEventForPluginEventSystem @ chunk-RPCDYKBN.js?v=1297af6c:7173
+dispatchEventWithEnableCapturePhaseSelectiveHydrationWithoutDiscreteEventReplay @ chunk-RPCDYKBN.js?v=1297af6c:5478
+dispatchEvent @ chunk-RPCDYKBN.js?v=1297af6c:5472
+dispatchDiscreteEvent @ chunk-RPCDYKBN.js?v=1297af6c:5449
+use-chat.ts:41 🚀 Sending data to webhook: https://footcareclinicadmin.engageiobots.com/api/webhook/consultation
+use-chat.ts:42 📦 Webhook payload: {name: 'niall', preferred_clinic: 'donnycarney', consultationId: null, conversationLog: Array(2)}
+chat:1 Access to fetch at 'https://footcareclinicadmin.engageiobots.com/api/health' from origin 'https://74a5c1c6-354f-49ed-a2f9-4221388929da-00-d532ej2acf3p.picard.replit.dev' has been blocked by CORS policy: No 'Access-Control-Allow-Origin' header is present on the requested resource.
+use-chat.ts:46 
+            
+            
+           GET https://footcareclinicadmin.engageiobots.com/api/health net::ERR_FAILED 200 (OK)
+(anonymous) @ use-chat.ts:46
+(anonymous) @ use-chat.ts:90
+(anonymous) @ use-chat.ts:189
+onClick @ ChatOptions.tsx:20
+callCallback2 @ chunk-RPCDYKBN.js?v=1297af6c:3674
+invokeGuardedCallbackDev @ chunk-RPCDYKBN.js?v=1297af6c:3699
+invokeGuardedCallback @ chunk-RPCDYKBN.js?v=1297af6c:3733
+invokeGuardedCallbackAndCatchFirstError @ chunk-RPCDYKBN.js?v=1297af6c:3736
+executeDispatch @ chunk-RPCDYKBN.js?v=1297af6c:7014
+processDispatchQueueItemsInOrder @ chunk-RPCDYKBN.js?v=1297af6c:7034
+processDispatchQueue @ chunk-RPCDYKBN.js?v=1297af6c:7043
+dispatchEventsForPlugins @ chunk-RPCDYKBN.js?v=1297af6c:7051
+(anonymous) @ chunk-RPCDYKBN.js?v=1297af6c:7174
+batchedUpdates$1 @ chunk-RPCDYKBN.js?v=1297af6c:18913
+batchedUpdates @ chunk-RPCDYKBN.js?v=1297af6c:3579
+dispatchEventForPluginEventSystem @ chunk-RPCDYKBN.js?v=1297af6c:7173
+dispatchEventWithEnableCapturePhaseSelectiveHydrationWithoutDiscreteEventReplay @ chunk-RPCDYKBN.js?v=1297af6c:5478
+dispatchEvent @ chunk-RPCDYKBN.js?v=1297af6c:5472
+dispatchDiscreteEvent @ chunk-RPCDYKBN.js?v=1297af6c:5449
+use-chat.ts:49 ❌ External server health check failed: Failed to fetch
+use-chat.ts:54 ⏳ Sending partial data to test external server (missing email/phone)
+use-chat.ts:60 ❌ Validation failed: ZodError: [
+  {
+    "code": "invalid_type",
+    "expected": "string",
+    "received": "undefined",
+    "path": [
+      "email"
+    ],
+    "message": "Required"
+  },
+  {
+    "code": "invalid_type",
+    "expected": "string",
+    "received": "undefined",
+    "path": [
+      "phone"
+    ],
+    "message": "Required"
+  }
+]
+    at get error (chunk-QJP6NUMG.js?v=1297af6c:627:23)
+    at use-chat.ts:60:57
+(anonymous) @ use-chat.ts:60
+await in (anonymous)
+(anonymous) @ use-chat.ts:90
+(anonymous) @ use-chat.ts:189
+onClick @ ChatOptions.tsx:20
+callCallback2 @ chunk-RPCDYKBN.js?v=1297af6c:3674
+invokeGuardedCallbackDev @ chunk-RPCDYKBN.js?v=1297af6c:3699
+invokeGuardedCallback @ chunk-RPCDYKBN.js?v=1297af6c:3733
+invokeGuardedCallbackAndCatchFirstError @ chunk-RPCDYKBN.js?v=1297af6c:3736
+executeDispatch @ chunk-RPCDYKBN.js?v=1297af6c:7014
+processDispatchQueueItemsInOrder @ chunk-RPCDYKBN.js?v=1297af6c:7034
+processDispatchQueue @ chunk-RPCDYKBN.js?v=1297af6c:7043
+dispatchEventsForPlugins @ chunk-RPCDYKBN.js?v=1297af6c:7051
+(anonymous) @ chunk-RPCDYKBN.js?v=1297af6c:7174
+batchedUpdates$1 @ chunk-RPCDYKBN.js?v=1297af6c:18913
+batchedUpdates @ chunk-RPCDYKBN.js?v=1297af6c:3579
+dispatchEventForPluginEventSystem @ chunk-RPCDYKBN.js?v=1297af6c:7173
+dispatchEventWithEnableCapturePhaseSelectiveHydrationWithoutDiscreteEventReplay @ chunk-RPCDYKBN.js?v=1297af6c:5478
+dispatchEvent @ chunk-RPCDYKBN.js?v=1297af6c:5472
+dispatchDiscreteEvent @ chunk-RPCDYKBN.js?v=1297af6c:5449
+use-chat.ts:41 🚀 Sending data to webhook: https://footcareclinicadmin.engageiobots.com/api/webhook/consultation
+use-chat.ts:42 📦 Webhook payload: {name: 'niall', preferred_clinic: 'donnycarney', hasImage: 'yes', consultationId: null, conversationLog: Array(3)}
+chat:1 Access to fetch at 'https://footcareclinicadmin.engageiobots.com/api/health' from origin 'https://74a5c1c6-354f-49ed-a2f9-4221388929da-00-d532ej2acf3p.picard.replit.dev' has been blocked by CORS policy: No 'Access-Control-Allow-Origin' header is present on the requested resource.
+use-chat.ts:46 
+            
+            
+           GET https://footcareclinicadmin.engageiobots.com/api/health net::ERR_FAILED 200 (OK)
+(anonymous) @ use-chat.ts:46
+(anonymous) @ use-chat.ts:90
+(anonymous) @ use-chat.ts:189
+onClick @ ChatOptions.tsx:20
+callCallback2 @ chunk-RPCDYKBN.js?v=1297af6c:3674
+invokeGuardedCallbackDev @ chunk-RPCDYKBN.js?v=1297af6c:3699
+invokeGuardedCallback @ chunk-RPCDYKBN.js?v=1297af6c:3733
+invokeGuardedCallbackAndCatchFirstError @ chunk-RPCDYKBN.js?v=1297af6c:3736
+executeDispatch @ chunk-RPCDYKBN.js?v=1297af6c:7014
+processDispatchQueueItemsInOrder @ chunk-RPCDYKBN.js?v=1297af6c:7034
+processDispatchQueue @ chunk-RPCDYKBN.js?v=1297af6c:7043
+dispatchEventsForPlugins @ chunk-RPCDYKBN.js?v=1297af6c:7051
+(anonymous) @ chunk-RPCDYKBN.js?v=1297af6c:7174
+batchedUpdates$1 @ chunk-RPCDYKBN.js?v=1297af6c:18913
+batchedUpdates @ chunk-RPCDYKBN.js?v=1297af6c:3579
+dispatchEventForPluginEventSystem @ chunk-RPCDYKBN.js?v=1297af6c:7173
+dispatchEventWithEnableCapturePhaseSelectiveHydrationWithoutDiscreteEventReplay @ chunk-RPCDYKBN.js?v=1297af6c:5478
+dispatchEvent @ chunk-RPCDYKBN.js?v=1297af6c:5472
+dispatchDiscreteEvent @ chunk-RPCDYKBN.js?v=1297af6c:5449
+use-chat.ts:49 ❌ External server health check failed: Failed to fetch
+use-chat.ts:54 ⏳ Sending partial data to test external server (missing email/phone)
+use-chat.ts:60 ❌ Validation failed: ZodError: [
+  {
+    "code": "invalid_type",
+    "expected": "string",
+    "received": "undefined",
+    "path": [
+      "email"
+    ],
+    "message": "Required"
+  },
+  {
+    "code": "invalid_type",
+    "expected": "string",
+    "received": "undefined",
+    "path": [
+      "phone"
+    ],
+    "message": "Required"
+  }
+]
+    at get error (chunk-QJP6NUMG.js?v=1297af6c:627:23)
+    at use-chat.ts:60:57
+(anonymous) @ use-chat.ts:60
+await in (anonymous)
+(anonymous) @ use-chat.ts:90
+(anonymous) @ use-chat.ts:189
+onClick @ ChatOptions.tsx:20
+callCallback2 @ chunk-RPCDYKBN.js?v=1297af6c:3674
+invokeGuardedCallbackDev @ chunk-RPCDYKBN.js?v=1297af6c:3699
+invokeGuardedCallback @ chunk-RPCDYKBN.js?v=1297af6c:3733
+invokeGuardedCallbackAndCatchFirstError @ chunk-RPCDYKBN.js?v=1297af6c:3736
+executeDispatch @ chunk-RPCDYKBN.js?v=1297af6c:7014
+processDispatchQueueItemsInOrder @ chunk-RPCDYKBN.js?v=1297af6c:7034
+processDispatchQueue @ chunk-RPCDYKBN.js?v=1297af6c:7043
+dispatchEventsForPlugins @ chunk-RPCDYKBN.js?v=1297af6c:7051
+(anonymous) @ chunk-RPCDYKBN.js?v=1297af6c:7174
+batchedUpdates$1 @ chunk-RPCDYKBN.js?v=1297af6c:18913
+batchedUpdates @ chunk-RPCDYKBN.js?v=1297af6c:3579
+dispatchEventForPluginEventSystem @ chunk-RPCDYKBN.js?v=1297af6c:7173
+dispatchEventWithEnableCapturePhaseSelectiveHydrationWithoutDiscreteEventReplay @ chunk-RPCDYKBN.js?v=1297af6c:5478
+dispatchEvent @ chunk-RPCDYKBN.js?v=1297af6c:5472
+dispatchDiscreteEvent @ chunk-RPCDYKBN.js?v=1297af6c:5449
+use-chat.ts:228 Sending image to API: /api/analyze-foot-image
+use-chat.ts:251 Raw API response: {"condition":"Ingrown toenail with infection. The nail is growing into the skin, causing inflammation and pus formation.","severity":"moderate","recommendations":["Soak the foot in warm water with Epsom salt for 15-20 minutes, 2-3 times a day.","Apply an antibiotic ointment to the affected area after soaking.","Avoid tight-fitting shoes and opt for open-toed footwear to reduce pressure.","Do not attempt to cut the nail yourself if it is deeply embedded.","Seek professional care if there is no improvement in 2-3 days or if symptoms worsen.","To prevent recurrence, trim nails straight across and avoid cutting them too short."],"disclaimer":"This assessment is provided for informational purposes. Please consult a qualified podiatrist for treatment."}
+use-chat.ts:257 Analysis result: {condition: 'Ingrown toenail with infection. The nail is growin…the skin, causing inflammation and pus formation.', severity: 'moderate', recommendations: Array(6), disclaimer: 'This assessment is provided for informational purp…ase consult a qualified podiatrist for treatment.'}
+use-chat.ts:41 🚀 Sending data to webhook: https://footcareclinicadmin.engageiobots.com/api/webhook/consultation
+use-chat.ts:42 📦 Webhook payload: {name: 'niall', preferred_clinic: 'donnycarney', hasImage: 'yes', has_image: 'yes', image_path: 'data:image/jpeg;base64,/9j/4QAC/+EAAv/bAIQADAgICAk…nA59CqcSU8oc/JmbVcWXqPYxSZH6iizs7ZtgxZzDFZbP/2Q==', …}
+chat:1 Access to fetch at 'https://footcareclinicadmin.engageiobots.com/api/health' from origin 'https://74a5c1c6-354f-49ed-a2f9-4221388929da-00-d532ej2acf3p.picard.replit.dev' has been blocked by CORS policy: No 'Access-Control-Allow-Origin' header is present on the requested resource.
+use-chat.ts:46 
+            
+            
+           GET https://footcareclinicadmin.engageiobots.com/api/health net::ERR_FAILED 200 (OK)
+(anonymous) @ use-chat.ts:46
+(anonymous) @ use-chat.ts:90
+(anonymous) @ use-chat.ts:189
+onClick @ ChatOptions.tsx:20
+callCallback2 @ chunk-RPCDYKBN.js?v=1297af6c:3674
+invokeGuardedCallbackDev @ chunk-RPCDYKBN.js?v=1297af6c:3699
+invokeGuardedCallback @ chunk-RPCDYKBN.js?v=1297af6c:3733
+invokeGuardedCallbackAndCatchFirstError @ chunk-RPCDYKBN.js?v=1297af6c:3736
+executeDispatch @ chunk-RPCDYKBN.js?v=1297af6c:7014
+processDispatchQueueItemsInOrder @ chunk-RPCDYKBN.js?v=1297af6c:7034
+processDispatchQueue @ chunk-RPCDYKBN.js?v=1297af6c:7043
+dispatchEventsForPlugins @ chunk-RPCDYKBN.js?v=1297af6c:7051
+(anonymous) @ chunk-RPCDYKBN.js?v=1297af6c:7174
+batchedUpdates$1 @ chunk-RPCDYKBN.js?v=1297af6c:18913
+batchedUpdates @ chunk-RPCDYKBN.js?v=1297af6c:3579
+dispatchEventForPluginEventSystem @ chunk-RPCDYKBN.js?v=1297af6c:7173
+dispatchEventWithEnableCapturePhaseSelectiveHydrationWithoutDiscreteEventReplay @ chunk-RPCDYKBN.js?v=1297af6c:5478
+dispatchEvent @ chunk-RPCDYKBN.js?v=1297af6c:5472
+dispatchDiscreteEvent @ chunk-RPCDYKBN.js?v=1297af6c:5449
+use-chat.ts:49 ❌ External server health check failed: Failed to fetch
+use-chat.ts:54 ⏳ Sending partial data to test external server (missing email/phone)
+use-chat.ts:60 ❌ Validation failed: ZodError: [
+  {
+    "code": "invalid_type",
+    "expected": "string",
+    "received": "undefined",
+    "path": [
+      "email"
+    ],
+    "message": "Required"
+  },
+  {
+    "code": "invalid_type",
+    "expected": "string",
+    "received": "undefined",
+    "path": [
+      "phone"
+    ],
+    "message": "Required"
+  }
+]
+    at get error (chunk-QJP6NUMG.js?v=1297af6c:627:23)
+    at use-chat.ts:60:57
+(anonymous) @ use-chat.ts:60
+await in (anonymous)
+(anonymous) @ use-chat.ts:90
+(anonymous) @ use-chat.ts:189
+onClick @ ChatOptions.tsx:20
+callCallback2 @ chunk-RPCDYKBN.js?v=1297af6c:3674
+invokeGuardedCallbackDev @ chunk-RPCDYKBN.js?v=1297af6c:3699
+invokeGuardedCallback @ chunk-RPCDYKBN.js?v=1297af6c:3733
+invokeGuardedCallbackAndCatchFirstError @ chunk-RPCDYKBN.js?v=1297af6c:3736
+executeDispatch @ chunk-RPCDYKBN.js?v=1297af6c:7014
+processDispatchQueueItemsInOrder @ chunk-RPCDYKBN.js?v=1297af6c:7034
+processDispatchQueue @ chunk-RPCDYKBN.js?v=1297af6c:7043
+dispatchEventsForPlugins @ chunk-RPCDYKBN.js?v=1297af6c:7051
+(anonymous) @ chunk-RPCDYKBN.js?v=1297af6c:7174
+batchedUpdates$1 @ chunk-RPCDYKBN.js?v=1297af6c:18913
+batchedUpdates @ chunk-RPCDYKBN.js?v=1297af6c:3579
+dispatchEventForPluginEventSystem @ chunk-RPCDYKBN.js?v=1297af6c:7173
+dispatchEventWithEnableCapturePhaseSelectiveHydrationWithoutDiscreteEventReplay @ chunk-RPCDYKBN.js?v=1297af6c:5478
+dispatchEvent @ chunk-RPCDYKBN.js?v=1297af6c:5472
+dispatchDiscreteEvent @ chunk-RPCDYKBN.js?v=1297af6c:5449
+use-chat.ts:41 🚀 Sending data to webhook: https://footcareclinicadmin.engageiobots.com/api/webhook/consultation
+use-chat.ts:42 📦 Webhook payload: {name: 'niall', preferred_clinic: 'donnycarney', hasImage: 'yes', has_image: 'yes', image_path: 'data:image/jpeg;base64,/9j/4QAC/+EAAv/bAIQADAgICAk…nA59CqcSU8oc/JmbVcWXqPYxSZH6iizs7ZtgxZzDFZbP/2Q==', …}
+chat:1 Access to fetch at 'https://footcareclinicadmin.engageiobots.com/api/health' from origin 'https://74a5c1c6-354f-49ed-a2f9-4221388929da-00-d532ej2acf3p.picard.replit.dev' has been blocked by CORS policy: No 'Access-Control-Allow-Origin' header is present on the requested resource.
+use-chat.ts:46 
+            
+            
+           GET https://footcareclinicadmin.engageiobots.com/api/health net::ERR_FAILED 200 (OK)
+(anonymous) @ use-chat.ts:46
+(anonymous) @ use-chat.ts:90
+(anonymous) @ use-chat.ts:189
+onClick @ ChatOptions.tsx:20
+callCallback2 @ chunk-RPCDYKBN.js?v=1297af6c:3674
+invokeGuardedCallbackDev @ chunk-RPCDYKBN.js?v=1297af6c:3699
+invokeGuardedCallback @ chunk-RPCDYKBN.js?v=1297af6c:3733
+invokeGuardedCallbackAndCatchFirstError @ chunk-RPCDYKBN.js?v=1297af6c:3736
+executeDispatch @ chunk-RPCDYKBN.js?v=1297af6c:7014
+processDispatchQueueItemsInOrder @ chunk-RPCDYKBN.js?v=1297af6c:7034
+processDispatchQueue @ chunk-RPCDYKBN.js?v=1297af6c:7043
+dispatchEventsForPlugins @ chunk-RPCDYKBN.js?v=1297af6c:7051
+(anonymous) @ chunk-RPCDYKBN.js?v=1297af6c:7174
+batchedUpdates$1 @ chunk-RPCDYKBN.js?v=1297af6c:18913
+batchedUpdates @ chunk-RPCDYKBN.js?v=1297af6c:3579
+dispatchEventForPluginEventSystem @ chunk-RPCDYKBN.js?v=1297af6c:7173
+dispatchEventWithEnableCapturePhaseSelectiveHydrationWithoutDiscreteEventReplay @ chunk-RPCDYKBN.js?v=1297af6c:5478
+dispatchEvent @ chunk-RPCDYKBN.js?v=1297af6c:5472
+dispatchDiscreteEvent @ chunk-RPCDYKBN.js?v=1297af6c:5449
+use-chat.ts:49 ❌ External server health check failed: Failed to fetch
+use-chat.ts:54 ⏳ Sending partial data to test external server (missing email/phone)
+use-chat.ts:60 ❌ Validation failed: ZodError: [
+  {
+    "code": "invalid_type",
+    "expected": "string",
+    "received": "undefined",
+    "path": [
+      "email"
+    ],
+    "message": "Required"
+  },
+  {
+    "code": "invalid_type",
+    "expected": "string",
+    "received": "undefined",
+    "path": [
+      "phone"
+    ],
+    "message": "Required"
+  }
+]
+    at get error (chunk-QJP6NUMG.js?v=1297af6c:627:23)
+    at use-chat.ts:60:57
+(anonymous) @ use-chat.ts:60
+await in (anonymous)
+(anonymous) @ use-chat.ts:90
+(anonymous) @ use-chat.ts:189
+onClick @ ChatOptions.tsx:20
+callCallback2 @ chunk-RPCDYKBN.js?v=1297af6c:3674
+invokeGuardedCallbackDev @ chunk-RPCDYKBN.js?v=1297af6c:3699
+invokeGuardedCallback @ chunk-RPCDYKBN.js?v=1297af6c:3733
+invokeGuardedCallbackAndCatchFirstError @ chunk-RPCDYKBN.js?v=1297af6c:3736
+executeDispatch @ chunk-RPCDYKBN.js?v=1297af6c:7014
+processDispatchQueueItemsInOrder @ chunk-RPCDYKBN.js?v=1297af6c:7034
+processDispatchQueue @ chunk-RPCDYKBN.js?v=1297af6c:7043
+dispatchEventsForPlugins @ chunk-RPCDYKBN.js?v=1297af6c:7051
+(anonymous) @ chunk-RPCDYKBN.js?v=1297af6c:7174
+batchedUpdates$1 @ chunk-RPCDYKBN.js?v=1297af6c:18913
+batchedUpdates @ chunk-RPCDYKBN.js?v=1297af6c:3579
+dispatchEventForPluginEventSystem @ chunk-RPCDYKBN.js?v=1297af6c:7173
+dispatchEventWithEnableCapturePhaseSelectiveHydrationWithoutDiscreteEventReplay @ chunk-RPCDYKBN.js?v=1297af6c:5478
+dispatchEvent @ chunk-RPCDYKBN.js?v=1297af6c:5472
+dispatchDiscreteEvent @ chunk-RPCDYKBN.js?v=1297af6c:5449
+use-chat.ts:41 🚀 Sending data to webhook: https://footcareclinicadmin.engageiobots.com/api/webhook/consultation
+use-chat.ts:42 📦 Webhook payload: {name: 'niall', preferred_clinic: 'donnycarney', hasImage: 'yes', has_image: 'yes', image_path: 'data:image/jpeg;base64,/9j/4QAC/+EAAv/bAIQADAgICAk…nA59CqcSU8oc/JmbVcWXqPYxSZH6iizs7ZtgxZzDFZbP/2Q==', …}
+chat:1 Access to fetch at 'https://footcareclinicadmin.engageiobots.com/api/health' from origin 'https://74a5c1c6-354f-49ed-a2f9-4221388929da-00-d532ej2acf3p.picard.replit.dev' has been blocked by CORS policy: No 'Access-Control-Allow-Origin' header is present on the requested resource.
+use-chat.ts:46 
+            
+            
+           GET https://footcareclinicadmin.engageiobots.com/api/health net::ERR_FAILED 200 (OK)
+(anonymous) @ use-chat.ts:46
+(anonymous) @ use-chat.ts:90
+(anonymous) @ use-chat.ts:189
+onClick @ ChatOptions.tsx:20
+callCallback2 @ chunk-RPCDYKBN.js?v=1297af6c:3674
+invokeGuardedCallbackDev @ chunk-RPCDYKBN.js?v=1297af6c:3699
+invokeGuardedCallback @ chunk-RPCDYKBN.js?v=1297af6c:3733
+invokeGuardedCallbackAndCatchFirstError @ chunk-RPCDYKBN.js?v=1297af6c:3736
+executeDispatch @ chunk-RPCDYKBN.js?v=1297af6c:7014
+processDispatchQueueItemsInOrder @ chunk-RPCDYKBN.js?v=1297af6c:7034
+processDispatchQueue @ chunk-RPCDYKBN.js?v=1297af6c:7043
+dispatchEventsForPlugins @ chunk-RPCDYKBN.js?v=1297af6c:7051
+(anonymous) @ chunk-RPCDYKBN.js?v=1297af6c:7174
+batchedUpdates$1 @ chunk-RPCDYKBN.js?v=1297af6c:18913
+batchedUpdates @ chunk-RPCDYKBN.js?v=1297af6c:3579
+dispatchEventForPluginEventSystem @ chunk-RPCDYKBN.js?v=1297af6c:7173
+dispatchEventWithEnableCapturePhaseSelectiveHydrationWithoutDiscreteEventReplay @ chunk-RPCDYKBN.js?v=1297af6c:5478
+dispatchEvent @ chunk-RPCDYKBN.js?v=1297af6c:5472
+dispatchDiscreteEvent @ chunk-RPCDYKBN.js?v=1297af6c:5449
+use-chat.ts:49 ❌ External server health check failed: Failed to fetch
+use-chat.ts:54 ⏳ Sending partial data to test external server (missing email/phone)
+use-chat.ts:60 ❌ Validation failed: ZodError: [
+  {
+    "code": "invalid_type",
+    "expected": "string",
+    "received": "undefined",
+    "path": [
+      "email"
+    ],
+    "message": "Required"
+  },
+  {
+    "code": "invalid_type",
+    "expected": "string",
+    "received": "undefined",
+    "path": [
+      "phone"
+    ],
+    "message": "Required"
+  }
+]
+    at get error (chunk-QJP6NUMG.js?v=1297af6c:627:23)
+    at use-chat.ts:60:57
+(anonymous) @ use-chat.ts:60
+await in (anonymous)
+(anonymous) @ use-chat.ts:90
+(anonymous) @ use-chat.ts:189
+onClick @ ChatOptions.tsx:20
+callCallback2 @ chunk-RPCDYKBN.js?v=1297af6c:3674
+invokeGuardedCallbackDev @ chunk-RPCDYKBN.js?v=1297af6c:3699
+invokeGuardedCallback @ chunk-RPCDYKBN.js?v=1297af6c:3733
+invokeGuardedCallbackAndCatchFirstError @ chunk-RPCDYKBN.js?v=1297af6c:3736
+executeDispatch @ chunk-RPCDYKBN.js?v=1297af6c:7014
+processDispatchQueueItemsInOrder @ chunk-RPCDYKBN.js?v=1297af6c:7034
+processDispatchQueue @ chunk-RPCDYKBN.js?v=1297af6c:7043
+dispatchEventsForPlugins @ chunk-RPCDYKBN.js?v=1297af6c:7051
+(anonymous) @ chunk-RPCDYKBN.js?v=1297af6c:7174
+batchedUpdates$1 @ chunk-RPCDYKBN.js?v=1297af6c:18913
+batchedUpdates @ chunk-RPCDYKBN.js?v=1297af6c:3579
+dispatchEventForPluginEventSystem @ chunk-RPCDYKBN.js?v=1297af6c:7173
+dispatchEventWithEnableCapturePhaseSelectiveHydrationWithoutDiscreteEventReplay @ chunk-RPCDYKBN.js?v=1297af6c:5478
+dispatchEvent @ chunk-RPCDYKBN.js?v=1297af6c:5472
+dispatchDiscreteEvent @ chunk-RPCDYKBN.js?v=1297af6c:5449
+use-chat.ts:41 🚀 Sending data to webhook: https://footcareclinicadmin.engageiobots.com/api/webhook/consultation
+use-chat.ts:42 📦 Webhook payload: {name: 'niall', preferred_clinic: 'donnycarney', hasImage: 'yes', has_image: 'yes', image_path: 'data:image/jpeg;base64,/9j/4QAC/+EAAv/bAIQADAgICAk…nA59CqcSU8oc/JmbVcWXqPYxSZH6iizs7ZtgxZzDFZbP/2Q==', …}
+chat:1 Access to fetch at 'https://footcareclinicadmin.engageiobots.com/api/health' from origin 'https://74a5c1c6-354f-49ed-a2f9-4221388929da-00-d532ej2acf3p.picard.replit.dev' has been blocked by CORS policy: No 'Access-Control-Allow-Origin' header is present on the requested resource.
+use-chat.ts:46 
+            
+            
+           GET https://footcareclinicadmin.engageiobots.com/api/health net::ERR_FAILED 200 (OK)
+(anonymous) @ use-chat.ts:46
+(anonymous) @ use-chat.ts:90
+(anonymous) @ use-chat.ts:201
+handleSubmit @ UserInput.tsx:61
+handleTextareaKeyPress @ UserInput.tsx:78
+callCallback2 @ chunk-RPCDYKBN.js?v=1297af6c:3674
+invokeGuardedCallbackDev @ chunk-RPCDYKBN.js?v=1297af6c:3699
+invokeGuardedCallback @ chunk-RPCDYKBN.js?v=1297af6c:3733
+invokeGuardedCallbackAndCatchFirstError @ chunk-RPCDYKBN.js?v=1297af6c:3736
+executeDispatch @ chunk-RPCDYKBN.js?v=1297af6c:7014
+processDispatchQueueItemsInOrder @ chunk-RPCDYKBN.js?v=1297af6c:7034
+processDispatchQueue @ chunk-RPCDYKBN.js?v=1297af6c:7043
+dispatchEventsForPlugins @ chunk-RPCDYKBN.js?v=1297af6c:7051
+(anonymous) @ chunk-RPCDYKBN.js?v=1297af6c:7174
+batchedUpdates$1 @ chunk-RPCDYKBN.js?v=1297af6c:18913
+batchedUpdates @ chunk-RPCDYKBN.js?v=1297af6c:3579
+dispatchEventForPluginEventSystem @ chunk-RPCDYKBN.js?v=1297af6c:7173
+dispatchEventWithEnableCapturePhaseSelectiveHydrationWithoutDiscreteEventReplay @ chunk-RPCDYKBN.js?v=1297af6c:5478
+dispatchEvent @ chunk-RPCDYKBN.js?v=1297af6c:5472
+dispatchDiscreteEvent @ chunk-RPCDYKBN.js?v=1297af6c:5449
+use-chat.ts:49 ❌ External server health check failed: Failed to fetch
+use-chat.ts:54 ⏳ Sending partial data to test external server (missing email/phone)
+use-chat.ts:60 ❌ Validation failed: ZodError: [
+  {
+    "code": "invalid_type",
+    "expected": "string",
+    "received": "undefined",
+    "path": [
+      "email"
+    ],
+    "message": "Required"
+  },
+  {
+    "code": "invalid_type",
+    "expected": "string",
+    "received": "undefined",
+    "path": [
+      "phone"
+    ],
+    "message": "Required"
+  }
+]
+    at get error (chunk-QJP6NUMG.js?v=1297af6c:627:23)
+    at use-chat.ts:60:57
+(anonymous) @ use-chat.ts:60
+await in (anonymous)
+(anonymous) @ use-chat.ts:90
+(anonymous) @ use-chat.ts:201
+handleSubmit @ UserInput.tsx:61
+handleTextareaKeyPress @ UserInput.tsx:78
+callCallback2 @ chunk-RPCDYKBN.js?v=1297af6c:3674
+invokeGuardedCallbackDev @ chunk-RPCDYKBN.js?v=1297af6c:3699
+invokeGuardedCallback @ chunk-RPCDYKBN.js?v=1297af6c:3733
+invokeGuardedCallbackAndCatchFirstError @ chunk-RPCDYKBN.js?v=1297af6c:3736
+executeDispatch @ chunk-RPCDYKBN.js?v=1297af6c:7014
+processDispatchQueueItemsInOrder @ chunk-RPCDYKBN.js?v=1297af6c:7034
+processDispatchQueue @ chunk-RPCDYKBN.js?v=1297af6c:7043
+dispatchEventsForPlugins @ chunk-RPCDYKBN.js?v=1297af6c:7051
+(anonymous) @ chunk-RPCDYKBN.js?v=1297af6c:7174
+batchedUpdates$1 @ chunk-RPCDYKBN.js?v=1297af6c:18913
+batchedUpdates @ chunk-RPCDYKBN.js?v=1297af6c:3579
+dispatchEventForPluginEventSystem @ chunk-RPCDYKBN.js?v=1297af6c:7173
+dispatchEventWithEnableCapturePhaseSelectiveHydrationWithoutDiscreteEventReplay @ chunk-RPCDYKBN.js?v=1297af6c:5478
+dispatchEvent @ chunk-RPCDYKBN.js?v=1297af6c:5472
+dispatchDiscreteEvent @ chunk-RPCDYKBN.js?v=1297af6c:5449
+use-chat.ts:41 🚀 Sending data to webhook: https://footcareclinicadmin.engageiobots.com/api/webhook/consultation
+use-chat.ts:42 📦 Webhook payload: {name: 'niall', preferred_clinic: 'donnycarney', hasImage: 'yes', has_image: 'yes', image_path: 'data:image/jpeg;base64,/9j/4QAC/+EAAv/bAIQADAgICAk…nA59CqcSU8oc/JmbVcWXqPYxSZH6iizs7ZtgxZzDFZbP/2Q==', …}
+chat:1 Access to fetch at 'https://footcareclinicadmin.engageiobots.com/api/health' from origin 'https://74a5c1c6-354f-49ed-a2f9-4221388929da-00-d532ej2acf3p.picard.replit.dev' has been blocked by CORS policy: No 'Access-Control-Allow-Origin' header is present on the requested resource.
+use-chat.ts:46 
+            
+            
+           GET https://footcareclinicadmin.engageiobots.com/api/health net::ERR_FAILED 200 (OK)
+(anonymous) @ use-chat.ts:46
+(anonymous) @ use-chat.ts:90
+(anonymous) @ use-chat.ts:189
+onClick @ ChatOptions.tsx:20
+callCallback2 @ chunk-RPCDYKBN.js?v=1297af6c:3674
+invokeGuardedCallbackDev @ chunk-RPCDYKBN.js?v=1297af6c:3699
+invokeGuardedCallback @ chunk-RPCDYKBN.js?v=1297af6c:3733
+invokeGuardedCallbackAndCatchFirstError @ chunk-RPCDYKBN.js?v=1297af6c:3736
+executeDispatch @ chunk-RPCDYKBN.js?v=1297af6c:7014
+processDispatchQueueItemsInOrder @ chunk-RPCDYKBN.js?v=1297af6c:7034
+processDispatchQueue @ chunk-RPCDYKBN.js?v=1297af6c:7043
+dispatchEventsForPlugins @ chunk-RPCDYKBN.js?v=1297af6c:7051
+(anonymous) @ chunk-RPCDYKBN.js?v=1297af6c:7174
+batchedUpdates$1 @ chunk-RPCDYKBN.js?v=1297af6c:18913
+batchedUpdates @ chunk-RPCDYKBN.js?v=1297af6c:3579
+dispatchEventForPluginEventSystem @ chunk-RPCDYKBN.js?v=1297af6c:7173
+dispatchEventWithEnableCapturePhaseSelectiveHydrationWithoutDiscreteEventReplay @ chunk-RPCDYKBN.js?v=1297af6c:5478
+dispatchEvent @ chunk-RPCDYKBN.js?v=1297af6c:5472
+dispatchDiscreteEvent @ chunk-RPCDYKBN.js?v=1297af6c:5449
+use-chat.ts:49 ❌ External server health check failed: Failed to fetch
+use-chat.ts:54 ⏳ Sending partial data to test external server (missing email/phone)
+use-chat.ts:60 ❌ Validation failed: ZodError: [
+  {
+    "code": "invalid_type",
+    "expected": "string",
+    "received": "undefined",
+    "path": [
+      "email"
+    ],
+    "message": "Required"
+  },
+  {
+    "code": "invalid_type",
+    "expected": "string",
+    "received": "undefined",
+    "path": [
+      "phone"
+    ],
+    "message": "Required"
+  }
+]
+    at get error (chunk-QJP6NUMG.js?v=1297af6c:627:23)
+    at use-chat.ts:60:57
+(anonymous) @ use-chat.ts:60
+await in (anonymous)
+(anonymous) @ use-chat.ts:90
+(anonymous) @ use-chat.ts:189
+onClick @ ChatOptions.tsx:20
+callCallback2 @ chunk-RPCDYKBN.js?v=1297af6c:3674
+invokeGuardedCallbackDev @ chunk-RPCDYKBN.js?v=1297af6c:3699
+invokeGuardedCallback @ chunk-RPCDYKBN.js?v=1297af6c:3733
+invokeGuardedCallbackAndCatchFirstError @ chunk-RPCDYKBN.js?v=1297af6c:3736
+executeDispatch @ chunk-RPCDYKBN.js?v=1297af6c:7014
+processDispatchQueueItemsInOrder @ chunk-RPCDYKBN.js?v=1297af6c:7034
+processDispatchQueue @ chunk-RPCDYKBN.js?v=1297af6c:7043
+dispatchEventsForPlugins @ chunk-RPCDYKBN.js?v=1297af6c:7051
+(anonymous) @ chunk-RPCDYKBN.js?v=1297af6c:7174
+batchedUpdates$1 @ chunk-RPCDYKBN.js?v=1297af6c:18913
+batchedUpdates @ chunk-RPCDYKBN.js?v=1297af6c:3579
+dispatchEventForPluginEventSystem @ chunk-RPCDYKBN.js?v=1297af6c:7173
+dispatchEventWithEnableCapturePhaseSelectiveHydrationWithoutDiscreteEventReplay @ chunk-RPCDYKBN.js?v=1297af6c:5478
+dispatchEvent @ chunk-RPCDYKBN.js?v=1297af6c:5472
+dispatchDiscreteEvent @ chunk-RPCDYKBN.js?v=1297af6c:5449
+use-chat.ts:41 🚀 Sending data to webhook: https://footcareclinicadmin.engageiobots.com/api/webhook/consultation
+use-chat.ts:42 📦 Webhook payload: {name: 'niall', preferred_clinic: 'donnycarney', hasImage: 'yes', has_image: 'yes', image_path: 'data:image/jpeg;base64,/9j/4QAC/+EAAv/bAIQADAgICAk…nA59CqcSU8oc/JmbVcWXqPYxSZH6iizs7ZtgxZzDFZbP/2Q==', …}
+chat:1 Access to fetch at 'https://footcareclinicadmin.engageiobots.com/api/health' from origin 'https://74a5c1c6-354f-49ed-a2f9-4221388929da-00-d532ej2acf3p.picard.replit.dev' has been blocked by CORS policy: No 'Access-Control-Allow-Origin' header is present on the requested resource.
+use-chat.ts:46 
+            
+            
+           GET https://footcareclinicadmin.engageiobots.com/api/health net::ERR_FAILED 200 (OK)
+(anonymous) @ use-chat.ts:46
+(anonymous) @ use-chat.ts:90
+(anonymous) @ use-chat.ts:201
+handleSubmit @ UserInput.tsx:61
+handleKeyPress @ UserInput.tsx:70
+callCallback2 @ chunk-RPCDYKBN.js?v=1297af6c:3674
+invokeGuardedCallbackDev @ chunk-RPCDYKBN.js?v=1297af6c:3699
+invokeGuardedCallback @ chunk-RPCDYKBN.js?v=1297af6c:3733
+invokeGuardedCallbackAndCatchFirstError @ chunk-RPCDYKBN.js?v=1297af6c:3736
+executeDispatch @ chunk-RPCDYKBN.js?v=1297af6c:7014
+processDispatchQueueItemsInOrder @ chunk-RPCDYKBN.js?v=1297af6c:7034
+processDispatchQueue @ chunk-RPCDYKBN.js?v=1297af6c:7043
+dispatchEventsForPlugins @ chunk-RPCDYKBN.js?v=1297af6c:7051
+(anonymous) @ chunk-RPCDYKBN.js?v=1297af6c:7174
+batchedUpdates$1 @ chunk-RPCDYKBN.js?v=1297af6c:18913
+batchedUpdates @ chunk-RPCDYKBN.js?v=1297af6c:3579
+dispatchEventForPluginEventSystem @ chunk-RPCDYKBN.js?v=1297af6c:7173
+dispatchEventWithEnableCapturePhaseSelectiveHydrationWithoutDiscreteEventReplay @ chunk-RPCDYKBN.js?v=1297af6c:5478
+dispatchEvent @ chunk-RPCDYKBN.js?v=1297af6c:5472
+dispatchDiscreteEvent @ chunk-RPCDYKBN.js?v=1297af6c:5449
+use-chat.ts:49 ❌ External server health check failed: Failed to fetch
+use-chat.ts:54 ⏳ Sending partial data to test external server (missing email/phone)
+use-chat.ts:60 ❌ Validation failed: ZodError: [
+  {
+    "code": "invalid_type",
+    "expected": "string",
+    "received": "undefined",
+    "path": [
+      "phone"
+    ],
+    "message": "Required"
+  }
+]
+    at get error (chunk-QJP6NUMG.js?v=1297af6c:627:23)
+    at use-chat.ts:60:57
+(anonymous) @ use-chat.ts:60
+await in (anonymous)
+(anonymous) @ use-chat.ts:90
+(anonymous) @ use-chat.ts:201
+handleSubmit @ UserInput.tsx:61
+handleKeyPress @ UserInput.tsx:70
+callCallback2 @ chunk-RPCDYKBN.js?v=1297af6c:3674
+invokeGuardedCallbackDev @ chunk-RPCDYKBN.js?v=1297af6c:3699
+invokeGuardedCallback @ chunk-RPCDYKBN.js?v=1297af6c:3733
+invokeGuardedCallbackAndCatchFirstError @ chunk-RPCDYKBN.js?v=1297af6c:3736
+executeDispatch @ chunk-RPCDYKBN.js?v=1297af6c:7014
+processDispatchQueueItemsInOrder @ chunk-RPCDYKBN.js?v=1297af6c:7034
+processDispatchQueue @ chunk-RPCDYKBN.js?v=1297af6c:7043
+dispatchEventsForPlugins @ chunk-RPCDYKBN.js?v=1297af6c:7051
+(anonymous) @ chunk-RPCDYKBN.js?v=1297af6c:7174
+batchedUpdates$1 @ chunk-RPCDYKBN.js?v=1297af6c:18913
+batchedUpdates @ chunk-RPCDYKBN.js?v=1297af6c:3579
+dispatchEventForPluginEventSystem @ chunk-RPCDYKBN.js?v=1297af6c:7173
+dispatchEventWithEnableCapturePhaseSelectiveHydrationWithoutDiscreteEventReplay @ chunk-RPCDYKBN.js?v=1297af6c:5478
+dispatchEvent @ chunk-RPCDYKBN.js?v=1297af6c:5472
+dispatchDiscreteEvent @ chunk-RPCDYKBN.js?v=1297af6c:5449
+use-chat.ts:41 🚀 Sending data to webhook: https://footcareclinicadmin.engageiobots.com/api/webhook/consultation
+use-chat.ts:42 📦 Webhook payload: {name: 'niall', preferred_clinic: 'donnycarney', hasImage: 'yes', has_image: 'yes', image_path: 'data:image/jpeg;base64,/9j/4QAC/+EAAv/bAIQADAgICAk…nA59CqcSU8oc/JmbVcWXqPYxSZH6iizs7ZtgxZzDFZbP/2Q==', …}
+chat:1 Access to fetch at 'https://footcareclinicadmin.engageiobots.com/api/health' from origin 'https://74a5c1c6-354f-49ed-a2f9-4221388929da-00-d532ej2acf3p.picard.replit.dev' has been blocked by CORS policy: No 'Access-Control-Allow-Origin' header is present on the requested resource.
+use-chat.ts:46 
+            
+            
+           GET https://footcareclinicadmin.engageiobots.com/api/health net::ERR_FAILED 200 (OK)
+(anonymous) @ use-chat.ts:46
+(anonymous) @ use-chat.ts:90
+(anonymous) @ use-chat.ts:201
+handleSubmit @ UserInput.tsx:61
+handleKeyPress @ UserInput.tsx:70
+callCallback2 @ chunk-RPCDYKBN.js?v=1297af6c:3674
+invokeGuardedCallbackDev @ chunk-RPCDYKBN.js?v=1297af6c:3699
+invokeGuardedCallback @ chunk-RPCDYKBN.js?v=1297af6c:3733
+invokeGuardedCallbackAndCatchFirstError @ chunk-RPCDYKBN.js?v=1297af6c:3736
+executeDispatch @ chunk-RPCDYKBN.js?v=1297af6c:7014
+processDispatchQueueItemsInOrder @ chunk-RPCDYKBN.js?v=1297af6c:7034
+processDispatchQueue @ chunk-RPCDYKBN.js?v=1297af6c:7043
+dispatchEventsForPlugins @ chunk-RPCDYKBN.js?v=1297af6c:7051
+(anonymous) @ chunk-RPCDYKBN.js?v=1297af6c:7174
+batchedUpdates$1 @ chunk-RPCDYKBN.js?v=1297af6c:18913
+batchedUpdates @ chunk-RPCDYKBN.js?v=1297af6c:3579
+dispatchEventForPluginEventSystem @ chunk-RPCDYKBN.js?v=1297af6c:7173
+dispatchEventWithEnableCapturePhaseSelectiveHydrationWithoutDiscreteEventReplay @ chunk-RPCDYKBN.js?v=1297af6c:5478
+dispatchEvent @ chunk-RPCDYKBN.js?v=1297af6c:5472
+dispatchDiscreteEvent @ chunk-RPCDYKBN.js?v=1297af6c:5449
+use-chat.ts:49 ❌ External server health check failed: Failed to fetch
+use-chat.ts:71 ✅ Webhook success: 200 OK
+[Violation] Potential permissions policy violation: payment is not allowed in this document.
+[Violation] Potential permissions policy violation: payment is not allowed in this document.
+[Violation] Potential permissions policy violation: payment is not allowed in this document.
+[Violation] Potential permissions policy violation: payment is not allowed in this document.
+[Violation] Potential permissions policy violation: payment is not allowed in this document.
+[Violation] Potential permissions policy violation: publickey-credentials-get is not allowed in this document.
+use-chat.ts:41 🚀 Sending data to webhook: https://footcareclinicadmin.engageiobots.com/api/webhook/consultation
+use-chat.ts:42 📦 Webhook payload: {name: 'niall', preferred_clinic: 'donnycarney', hasImage: 'yes', has_image: 'yes', image_path: 'data:image/jpeg;base64,/9j/4QAC/+EAAv/bAIQADAgICAk…nA59CqcSU8oc/JmbVcWXqPYxSZH6iizs7ZtgxZzDFZbP/2Q==', …}
+chat:1 Access to fetch at 'https://footcareclinicadmin.engageiobots.com/api/health' from origin 'https://74a5c1c6-354f-49ed-a2f9-4221388929da-00-d532ej2acf3p.picard.replit.dev' has been blocked by CORS policy: No 'Access-Control-Allow-Origin' header is present on the requested resource.
+use-chat.ts:46 
+            
+            
+           GET https://footcareclinicadmin.engageiobots.com/api/health net::ERR_FAILED 200 (OK)
+(anonymous) @ use-chat.ts:46
+(anonymous) @ use-chat.ts:90
+(anonymous) @ use-chat.ts:189
+onBookingComplete @ ChatInterface.tsx:152
+(anonymous) @ CalendarEmbed.tsx:19
+setTimeout
+handleBookingComplete @ CalendarEmbed.tsx:17
+callCallback2 @ chunk-RPCDYKBN.js?v=1297af6c:3674
+invokeGuardedCallbackDev @ chunk-RPCDYKBN.js?v=1297af6c:3699
+invokeGuardedCallback @ chunk-RPCDYKBN.js?v=1297af6c:3733
+invokeGuardedCallbackAndCatchFirstError @ chunk-RPCDYKBN.js?v=1297af6c:3736
+executeDispatch @ chunk-RPCDYKBN.js?v=1297af6c:7014
+processDispatchQueueItemsInOrder @ chunk-RPCDYKBN.js?v=1297af6c:7034
+processDispatchQueue @ chunk-RPCDYKBN.js?v=1297af6c:7043
+dispatchEventsForPlugins @ chunk-RPCDYKBN.js?v=1297af6c:7051
+(anonymous) @ chunk-RPCDYKBN.js?v=1297af6c:7174
+batchedUpdates$1 @ chunk-RPCDYKBN.js?v=1297af6c:18913
+batchedUpdates @ chunk-RPCDYKBN.js?v=1297af6c:3579
+dispatchEventForPluginEventSystem @ chunk-RPCDYKBN.js?v=1297af6c:7173
+dispatchEventWithEnableCapturePhaseSelectiveHydrationWithoutDiscreteEventReplay @ chunk-RPCDYKBN.js?v=1297af6c:5478
+dispatchEvent @ chunk-RPCDYKBN.js?v=1297af6c:5472
+dispatchDiscreteEvent @ chunk-RPCDYKBN.js?v=1297af6c:5449
+use-chat.ts:49 ❌ External server health check failed: Failed to fetch
+use-chat.ts:71 ✅ Webhook success: 200 OK
+use-chat.ts:41 🚀 Sending data to webhook: https://footcareclinicadmin.engageiobots.com/api/webhook/consultation
+use-chat.ts:42 📦 Webhook payload: {name: 'niall', preferred_clinic: 'donnycarney', hasImage: 'yes', has_image: 'yes', image_path: 'data:image/jpeg;base64,/9j/4QAC/+EAAv/bAIQADAgICAk…nA59CqcSU8oc/JmbVcWXqPYxSZH6iizs7ZtgxZzDFZbP/2Q==', …}
+chat:1 Access to fetch at 'https://footcareclinicadmin.engageiobots.com/api/health' from origin 'https://74a5c1c6-354f-49ed-a2f9-4221388929da-00-d532ej2acf3p.picard.replit.dev' has been blocked by CORS policy: No 'Access-Control-Allow-Origin' header is present on the requested resource.
+use-chat.ts:46 
+            
+            
+           GET https://footcareclinicadmin.engageiobots.com/api/health net::ERR_FAILED 200 (OK)
+(anonymous) @ use-chat.ts:46
+(anonymous) @ use-chat.ts:90
+(anonymous) @ use-chat.ts:189
+onClick @ ChatOptions.tsx:20
+callCallback2 @ chunk-RPCDYKBN.js?v=1297af6c:3674
+invokeGuardedCallbackDev @ chunk-RPCDYKBN.js?v=1297af6c:3699
+invokeGuardedCallback @ chunk-RPCDYKBN.js?v=1297af6c:3733
+invokeGuardedCallbackAndCatchFirstError @ chunk-RPCDYKBN.js?v=1297af6c:3736
+executeDispatch @ chunk-RPCDYKBN.js?v=1297af6c:7014
+processDispatchQueueItemsInOrder @ chunk-RPCDYKBN.js?v=1297af6c:7034
+processDispatchQueue @ chunk-RPCDYKBN.js?v=1297af6c:7043
+dispatchEventsForPlugins @ chunk-RPCDYKBN.js?v=1297af6c:7051
+(anonymous) @ chunk-RPCDYKBN.js?v=1297af6c:7174
+batchedUpdates$1 @ chunk-RPCDYKBN.js?v=1297af6c:18913
+batchedUpdates @ chunk-RPCDYKBN.js?v=1297af6c:3579
+dispatchEventForPluginEventSystem @ chunk-RPCDYKBN.js?v=1297af6c:7173
+dispatchEventWithEnableCapturePhaseSelectiveHydrationWithoutDiscreteEventReplay @ chunk-RPCDYKBN.js?v=1297af6c:5478
+dispatchEvent @ chunk-RPCDYKBN.js?v=1297af6c:5472
+dispatchDiscreteEvent @ chunk-RPCDYKBN.js?v=1297af6c:5449
+use-chat.ts:49 ❌ External server health check failed: Failed to fetch
+use-chat.ts:71 ✅ Webhook success: 200 OK
+use-chat.ts:41 🚀 Sending data to webhook: https://footcareclinicadmin.engageiobots.com/api/webhook/consultation
+use-chat.ts:42 📦 Webhook payload: {name: 'niall', preferred_clinic: 'donnycarney', hasImage: 'yes', has_image: 'yes', image_path: 'data:image/jpeg;base64,/9j/4QAC/+EAAv/bAIQADAgICAk…nA59CqcSU8oc/JmbVcWXqPYxSZH6iizs7ZtgxZzDFZbP/2Q==', …}
+chat:1 Access to fetch at 'https://footcareclinicadmin.engageiobots.com/api/health' from origin 'https://74a5c1c6-354f-49ed-a2f9-4221388929da-00-d532ej2acf3p.picard.replit.dev' has been blocked by CORS policy: No 'Access-Control-Allow-Origin' header is present on the requested resource.
+use-chat.ts:46 
+            
+            
+           GET https://footcareclinicadmin.engageiobots.com/api/health net::ERR_FAILED 200 (OK)
+(anonymous) @ use-chat.ts:46
+(anonymous) @ use-chat.ts:90
+(anonymous) @ use-chat.ts:189
+onClick @ ChatOptions.tsx:20
+callCallback2 @ chunk-RPCDYKBN.js?v=1297af6c:3674
+invokeGuardedCallbackDev @ chunk-RPCDYKBN.js?v=1297af6c:3699
+invokeGuardedCallback @ chunk-RPCDYKBN.js?v=1297af6c:3733
+invokeGuardedCallbackAndCatchFirstError @ chunk-RPCDYKBN.js?v=1297af6c:3736
+executeDispatch @ chunk-RPCDYKBN.js?v=1297af6c:7014
+processDispatchQueueItemsInOrder @ chunk-RPCDYKBN.js?v=1297af6c:7034
+processDispatchQueue @ chunk-RPCDYKBN.js?v=1297af6c:7043
+dispatchEventsForPlugins @ chunk-RPCDYKBN.js?v=1297af6c:7051
+(anonymous) @ chunk-RPCDYKBN.js?v=1297af6c:7174
+batchedUpdates$1 @ chunk-RPCDYKBN.js?v=1297af6c:18913
+batchedUpdates @ chunk-RPCDYKBN.js?v=1297af6c:3579
+dispatchEventForPluginEventSystem @ chunk-RPCDYKBN.js?v=1297af6c:7173
+dispatchEventWithEnableCapturePhaseSelectiveHydrationWithoutDiscreteEventReplay @ chunk-RPCDYKBN.js?v=1297af6c:5478
+dispatchEvent @ chunk-RPCDYKBN.js?v=1297af6c:5472
+dispatchDiscreteEvent @ chunk-RPCDYKBN.js?v=1297af6c:5449
+use-chat.ts:49 ❌ External server health check failed: Failed to fetch
+use-chat.ts:71 ✅ Webhook success: 200 OK

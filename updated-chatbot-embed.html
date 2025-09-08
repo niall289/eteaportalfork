@@ -1,0 +1,170 @@
+<script>
+// This ensures the code only runs once per page
+if (!window.footCareWidgetLoaded) {
+  window.footCareWidgetLoaded = true;
+  
+  // First remove any existing chatbot elements
+  function cleanupExisting() {
+    var elementsToRemove = document.querySelectorAll('#fc-chat-widget-button, #fc-chat-widget-container, #fc-chat-styles');
+    for (var i = 0; i < elementsToRemove.length; i++) {
+      elementsToRemove[i].remove();
+    }
+  }
+  
+  // Function to send conversation data to admin portal
+  function sendConversationData(data) {
+    fetch('https://footcareclinicadmin.engageiobots.com/api/webhook/chatbot', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(data)
+    }).catch(function(error) {
+      console.log('Admin portal sync failed:', error);
+    });
+  }
+  
+  // Create the button and container
+  function createChatWidget() {
+    // Create button
+    var button = document.createElement('button');
+    button.id = 'fc-chat-widget-button';
+    button.style.position = 'fixed';
+    button.style.right = '25px';
+    button.style.bottom = '25px';
+    button.style.width = '60px';
+    button.style.height = '60px';
+    button.style.borderRadius = '50%';
+    button.style.backgroundColor = '#00847e';
+    button.style.color = 'white';
+    button.style.border = 'none';
+    button.style.cursor = 'pointer';
+    button.style.zIndex = '99999';
+    button.style.boxShadow = '0 4px 8px rgba(0,0,0,0.2)';
+    button.style.display = 'flex';
+    button.style.alignItems = 'center';
+    button.style.justifyContent = 'center';
+    
+    // Add chat icon using SVG
+    button.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+      <path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z"></path>
+    </svg>`;
+    
+    // Create chat container
+    var container = document.createElement('div');
+    container.id = 'fc-chat-widget-container';
+    container.style.position = 'fixed';
+    container.style.right = '25px';
+    container.style.bottom = '100px';
+    container.style.width = '350px';
+    container.style.height = '500px';
+    container.style.backgroundColor = 'white';
+    container.style.borderRadius = '10px';
+    container.style.boxShadow = '0 4px 12px rgba(0,0,0,0.15)';
+    container.style.zIndex = '99999';
+    container.style.overflow = 'hidden';
+    container.style.display = 'none';
+    
+    // Create iframe for chat content
+    var iframe = document.createElement('iframe');
+    iframe.src = 'https://footcareclinic.engageiobots.com';
+    iframe.style.width = '100%';
+    iframe.style.height = '100%';
+    iframe.style.border = 'none';
+    
+    // Set up message listener for data from iframe
+    window.addEventListener('message', function(event) {
+      // Verify origin for security
+      if (event.origin !== 'https://footcareclinic.engageiobots.com') {
+        return;
+      }
+      
+      // Handle different types of conversation data
+      if (event.data.type === 'conversation_complete') {
+        // Send complete conversation data to admin portal
+        var conversationData = {
+          patient: {
+            name: event.data.patientName,
+            email: event.data.patientEmail,
+            phone: event.data.patientPhone,
+            age: event.data.patientAge,
+            gender: event.data.patientGender
+          },
+          assessment: {
+            symptoms: event.data.symptoms || [],
+            footConditions: event.data.footConditions || [],
+            painLevel: event.data.painLevel,
+            duration: event.data.symptomDuration,
+            clinicLocation: event.data.preferredClinic,
+            urgency: event.data.urgencyLevel,
+            previousTreatment: event.data.previousTreatment
+          },
+          conversation: {
+            messages: event.data.conversationHistory || [],
+            photoUploads: event.data.photoUploads || [],
+            aiAnalysis: event.data.aiAnalysis || {},
+            startTime: event.data.conversationStart,
+            endTime: event.data.conversationEnd,
+            duration: event.data.conversationDuration
+          },
+          technical: {
+            sessionId: event.data.sessionId,
+            userAgent: navigator.userAgent,
+            timestamp: new Date().toISOString(),
+            source: 'website_embed'
+          }
+        };
+        
+        sendConversationData(conversationData);
+        console.log('Conversation data sent to admin portal');
+      } else if (event.data.type === 'photo_uploaded') {
+        // Handle real-time photo upload events
+        var photoData = {
+          type: 'photo_upload',
+          sessionId: event.data.sessionId,
+          photoUrl: event.data.photoUrl,
+          aiAnalysis: event.data.aiAnalysis,
+          timestamp: new Date().toISOString()
+        };
+        
+        sendConversationData(photoData);
+      } else if (event.data.type === 'response_given') {
+        // Handle individual responses in real-time
+        var responseData = {
+          type: 'live_response',
+          sessionId: event.data.sessionId,
+          question: event.data.question,
+          answer: event.data.answer,
+          timestamp: new Date().toISOString(),
+          stepNumber: event.data.stepNumber
+        };
+        
+        sendConversationData(responseData);
+      }
+    });
+    
+    container.appendChild(iframe);
+    document.body.appendChild(button);
+    document.body.appendChild(container);
+    
+    // Toggle chat open/closed
+    button.addEventListener('click', function() {
+      if (container.style.display === 'none') {
+        container.style.display = 'block';
+        // Notify iframe that chat was opened
+        iframe.contentWindow.postMessage({type: 'chat_opened'}, 'https://footcareclinic.engageiobots.com');
+      } else {
+        container.style.display = 'none';
+        // Notify iframe that chat was closed
+        iframe.contentWindow.postMessage({type: 'chat_closed'}, 'https://footcareclinic.engageiobots.com');
+      }
+    });
+  }
+  
+  // Run the setup with a delay to ensure the page is loaded
+  setTimeout(function() {
+    cleanupExisting();
+    createChatWidget();
+  }, 1000);
+}
+</script>

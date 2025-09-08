@@ -1,0 +1,68 @@
+You are an expert Claude 4.0 agent embedded in a medical portal project. Your task is to enhance the PatientDetailsModal.tsx component by rendering all expected consultation fields submitted by the chatbot, based on the schema defined in shared/schema.ts.
+
+🎯 Objective:
+Ensure the modal fully and clearly displays all missing consultation fields — especially image_analysis — using clean, readable formatting that aligns with the rest of the portal’s design.
+
+✅ Must Add & Display:
+The following fields are defined in the consultations schema but are not yet rendered or need improved rendering:
+
+issue_specifics → Display as “Sub-Issue”
+
+previous_treatment → Display as “Previous Treatment”
+
+has_image → Optional label, shown only if "true"
+
+image_path → Display as a thumbnail image under “Submitted Image”
+
+image_analysis → Display under “AI Image Analysis” with proper text formatting
+
+calendar_booking → Display as “Booking Slot”
+
+booking_confirmation → Display as “Booking Confirmation”
+
+final_question → Display as “Final Question”
+
+additional_help → Display as “Additional Help Requested?”
+
+All fields should be conditionally rendered — do not show empty, null, or undefined fields.
+
+🧠 Special Handling for image_analysis:
+Field is stored as a string (may contain line breaks or lists)
+
+Display it with heading “AI Image Analysis”
+
+Wrap text in <p> with whitespace-pre-line to preserve formatting
+
+Ensure the analysis is scrollable if long, but doesn’t break the modal layout
+
+✅ Style & Layout:
+Use existing structure:
+
+<div className="border-b ..."> blocks
+
+<h5> for field titles
+
+<p> for content
+
+Maintain spacing, border, and dark mode compatibility
+
+Append to the “Consultation Details” section only
+
+🚫 Do NOT:
+Modify unrelated files or components
+
+Alter styles outside PatientDetailsModal.tsx
+
+Add new schema fields or change types
+
+🛠️ Stack:
+TypeScript + React
+
+Vite + TailwindCSS
+
+Express backend + Neon PostgreSQL
+
+Consumes chatbot POST data at /api/webhook/consultation
+
+Your mission: Complete the modal’s ability to visually display all submitted consultation data, especially image_analysis, image preview, and post-consultation feedback.
+

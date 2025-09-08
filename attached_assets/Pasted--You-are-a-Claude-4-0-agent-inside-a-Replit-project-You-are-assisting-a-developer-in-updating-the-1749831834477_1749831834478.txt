@@ -1,0 +1,90 @@
+🧠 You are a Claude 4.0 agent inside a Replit project.
+You are assisting a developer in updating the UI layout of a medical admin portal built with modern vibe coding principles (React + TypeScript + Tailwind). The portal currently has 6 main sidebar items that overlap in functionality. Your task is to consolidate and simplify the portal navigation and pages, without breaking functionality or removing any core features.
+
+🎯 Objective:
+Update the portal navigation and routing to reflect the following streamlined structure:
+
+✅ Final Sidebar Layout (Replace the existing sidebar items with these):
+Dashboard
+
+Keep analytics cards and trends
+
+Show stats (patients, completions, flagged)
+
+Include filters
+
+Assessments (merges Chat Results + Patients + Consultations)
+
+List all patient assessment records
+
+Include filters, export, view full record
+
+Tabs for: Completed | In Progress | Flagged
+
+Communications
+
+Retain all current messaging + follow-up features
+
+Keep templates and scheduling
+
+Settings
+
+Keep Chatbot Settings as-is
+
+Later: can be expanded for Clinic-level settings
+
+🛠️ What to Do:
+Consolidate all data pages into a single “Assessments” page:
+
+Merge ChatResults.tsx + PatientTable.tsx + Consultations.tsx
+
+Add tab filters to toggle views (Completed, In Progress, Flagged)
+
+Ensure detail modals and exports still work
+
+Use existing backend hooks/queries — do not change schema or endpoints
+
+Update the sidebar component to match the 4 new sections
+
+Ensure routing is updated accordingly:
+
+/dashboard
+
+/assessments
+
+/communications
+
+/settings
+
+Refactor any duplicate logic (e.g. patient filtering, chat logs, status tags) into reusable components if necessary
+
+Confirm that:
+
+All old pages are safely removed
+
+The app compiles and runs without error
+
+Styling is consistent (use existing Tailwind classes)
+
+🚫 Do NOT:
+Modify backend schema, database tables, or API routes
+
+Change chatbot functionality or how data is posted
+
+Alter form validations or message templates
+
+Break patient detail modal or CSV export logic
+
+🔧 Tech Stack:
+React (with TanStack Query)
+
+TypeScript + Vite
+
+TailwindCSS
+
+Express backend (Neon PostgreSQL)
+
+Chatbot is a separate app posting to /api/webhook/consultation
+
+🧩 Reminder:
+This is a cloned experimental build — safe to modify UI and consolidate views without fear of breaking production.

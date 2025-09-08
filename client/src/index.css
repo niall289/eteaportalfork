@@ -1,0 +1,138 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+@import url('https://cdn.jsdelivr.net/npm/remixicon@3.5.0/fonts/remixicon.css');
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --background: 0 0% 100%;
+  --foreground: 210 20% 25%;
+  --muted: 210 20% 96%;
+  --muted-foreground: 210 20% 45%;
+  --popover: 0 0% 100%;
+  --popover-foreground: 210 20% 25%;
+  --card: 0 0% 100%;
+  --card-foreground: 210 20% 25%;
+  --border: 210 20% 92%;
+  --input: 210 20% 92%;
+  
+  /* Primary color - FootCare Clinic teal */
+  --primary: 186 100% 30%;
+  --primary-foreground: 0 0% 100%;
+  
+  /* Secondary color - lighter teal */
+  --secondary: 186 76% 85%;
+  --secondary-foreground: 186 100% 25%;
+  
+  /* Accent color - complementary orange */
+  --accent: 25 100% 60%;
+  --accent-foreground: 0 0% 100%;
+  
+  --destructive: 0 85% 60%;
+  --destructive-foreground: 0 0% 100%;
+  --ring: 186 100% 30%;
+  --radius: 0.5rem;
+  
+  /* Chart colors */
+  --chart-1: 186 100% 30%;
+  --chart-2: 186 76% 65%;
+  --chart-3: 25 100% 60%;
+  --chart-4: 155 70% 40%;
+  --chart-5: 210 95% 55%;
+  
+  /* Sidebar specific colors */
+  --sidebar-background: 186 30% 98%;
+  --sidebar-foreground: 210 20% 25%;
+  --sidebar-primary: 186 100% 30%;
+  --sidebar-primary-foreground: 0 0% 100%;
+  --sidebar-accent: 186 76% 93%;
+  --sidebar-accent-foreground: 186 100% 25%;
+  --sidebar-border: 20 5.9% 90%;
+  --sidebar-ring: 20 14.3% 4.1%;
+}
+
+.dark {
+  --background: 240 10% 3.9%;
+  --foreground: 0 0% 98%;
+  --muted: 240 3.7% 15.9%;
+  --muted-foreground: 240 5% 64.9%;
+  --popover: 240 10% 3.9%;
+  --popover-foreground: 0 0% 98%;
+  --card: 240 10% 3.9%;
+  --card-foreground: 0 0% 98%;
+  --border: 240 3.7% 15.9%;
+  --input: 240 3.7% 15.9%;
+  
+  /* Primary blue color from design (adjusted for dark mode) */
+  --primary: 207 72% 54%;
+  --primary-foreground: 0 0% 100%;
+  
+  /* Secondary (light blue) color from design (adjusted for dark mode) */
+  --secondary: 196 78% 74%;
+  --secondary-foreground: 240 10% 3.9%;
+  
+  /* Accent (orange) color from design (adjusted for dark mode) */
+  --accent: 12 90% 70%;
+  --accent-foreground: 0 0% 100%;
+  
+  --destructive: 0 62.8% 30.6%;
+  --destructive-foreground: 0 0% 98%;
+  --ring: 240 4.9% 83.9%;
+  
+  /* Chart colors (adjusted for dark mode) */
+  --chart-1: 207 72% 54%;
+  --chart-2: 196 78% 74%;
+  --chart-3: 12 90% 70%;
+  --chart-4: 142 69% 58%;
+  --chart-5: 43 89% 70%;
+  
+  /* Sidebar specific colors (adjusted for dark mode) */
+  --sidebar-background: 240 10% 8%;
+  --sidebar-foreground: 0 0% 98%;
+  --sidebar-primary: 207 72% 54%;
+  --sidebar-primary-foreground: 0 0% 100%;
+  --sidebar-accent: 240 3.7% 15.9%;
+  --sidebar-accent-foreground: 0 0% 98%;
+  --sidebar-border: 240 3.7% 15.9%;
+  --sidebar-ring: 240 4.9% 83.9%;
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+
+  body {
+    @apply font-sans antialiased bg-neutral-50 dark:bg-neutral-900 text-foreground;
+  }
+}
+
+/* Dashboard-specific styles */
+.risk-low {
+  @apply bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-100;
+}
+
+.risk-medium {
+  @apply bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-100;
+}
+
+.risk-high {
+  @apply bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-100;
+}
+
+.status-completed {
+  @apply bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-100;
+}
+
+.status-in_progress {
+  @apply bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-100;
+}
+
+.status-in_review {
+  @apply bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-100;
+}
+
+.status-flagged {
+  @apply bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-100;
+}

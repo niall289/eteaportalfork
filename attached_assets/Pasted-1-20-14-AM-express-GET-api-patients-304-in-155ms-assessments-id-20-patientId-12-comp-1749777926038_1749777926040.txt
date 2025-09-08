@@ -1,0 +1,124 @@
+1:20:14 AM [express] GET /api/patients 304 in 155ms :: {"assessments":[{"id":20,"patientId":12,"comp…
+1:20:14 AM [express] GET /api/dashboard/stats 304 in 156ms :: {"completedAssessments":20,"weeklyAsse…
+1:20:42 AM [express] GET /api/auth/user 304 in 0ms :: {"id":"admin","role":"admin","authenticated":t…
+1:20:42 AM [express] GET /api/auth/user 304 in 1ms :: {"id":"admin","role":"admin","authenticated":t…
+1:23:02 AM [express] GET /api/auth/user 304 in 1ms :: {"id":"admin","role":"admin","authenticated":t…
+🔍 /api/assessments/recent called with limit: 5
+1:23:02 AM [express] GET /api/auth/user 304 in 0ms :: {"id":"admin","role":"admin","authenticated":t…
+1:23:02 AM [express] GET /api/dashboard/conditions 304 in 926ms :: [{"id":1,"name":"Heel Pain","desc…
+1:23:02 AM [express] GET /api/dashboard/trends 200 in 932ms :: [{"date":"2025-06-07","assessments":0…
+1:23:03 AM [express] GET /api/dashboard/stats 200 in 933ms :: {"completedAssessments":21,"weeklyAsse…
+📊 Recent assessments found: 5
+1:23:03 AM [express] GET /api/assessments/recent 200 in 924ms :: [{"id":21,"patientId":13,"completed…
+🔍 /api/assessments/recent called with limit: 5
+1:23:03 AM [express] GET /api/dashboard/trends 304 in 157ms :: [{"date":"2025-06-07","assessments":0…
+1:23:03 AM [express] GET /api/dashboard/conditions 304 in 157ms :: [{"id":1,"name":"Heel Pain","desc…
+1:23:03 AM [express] GET /api/dashboard/stats 304 in 155ms :: {"completedAssessments":21,"weeklyAsse…
+📊 Recent assessments found: 5
+1:23:03 AM [express] GET /api/assessments/recent 304 in 158ms :: [{"id":21,"patientId":13,"completed…
+🔍 /api/patients endpoint called
+📊 Found assessments: 21
+📋 Sample assessment: {
+  id: 21,
+  patientId: 13,
+  primaryConcern: 'General consultation',
+  patientName: 'ToeMan'
+}
+1:23:03 AM [express] GET /api/patients 200 in 924ms :: {"assessments":[{"id":21,"patientId":13,"comp…
+🔍 /api/patients endpoint called
+📊 Found assessments: 21
+📋 Sample assessment: {
+  id: 21,
+  patientId: 13,
+  primaryConcern: 'General consultation',
+  patientName: 'ToeMan'
+}
+1:23:03 AM [express] GET /api/patients 304 in 156ms :: {"assessments":[{"id":21,"patientId":13,"comp…
+1:23:29 AM [express] GET /api/auth/user 304 in 0ms :: {"id":"admin","role":"admin","authenticated":t…
+📋 Fetched 21 consultations
+1:23:29 AM [express] GET /api/consultations 200 in 158ms :: [{"id":21,"name":"ToeMan","email":"bigye…
+🔍 /api/patients endpoint called
+📊 Found assessments: 21
+📋 Sample assessment: {
+  id: 21,
+  patientId: 13,
+  primaryConcern: 'General consultation',
+  patientName: 'ToeMan'
+}
+1:23:31 AM [express] GET /api/patients 200 in 156ms :: {"assessments":[{"id":21,"patientId":13,"comp…
+1:23:34 AM [express] GET /api/assessments/21 200 in 155ms :: {"responses":[]}
+📋 Fetched 21 consultations
+1:23:49 AM [express] GET /api/consultations 304 in 158ms :: [{"id":21,"name":"ToeMan","email":"bigye…
+1:23:50 AM [express] GET /api/dashboard/stats 200 in 947ms :: {"completedAssessments":21,"weeklyAsse…
+📋 Fetched 21 consultations
+1:23:52 AM [express] GET /api/consultations 304 in 156ms :: [{"id":21,"name":"ToeMan","email":"bigye…
+1:23:52 AM [express] GET /api/assessments/21 304 in 155ms :: {"responses":[]}
+1:23:59 AM [express] GET /api/auth/user 304 in 0ms :: {"id":"admin","role":"admin","authenticated":t…
+📋 Fetched 21 consultations
+1:24:04 AM [express] GET /api/consultations 304 in 156ms :: [{"id":21,"name":"ToeMan","email":"bigye…
+1:24:04 AM [express] GET /api/assessments/21 304 in 158ms :: {"responses":[]}
+1:24:12 AM [express] GET /api/auth/user 304 in 0ms :: {"id":"admin","role":"admin","authenticated":t…
+🔍 /api/assessments/recent called with limit: 5
+1:24:13 AM [express] GET /api/auth/user 304 in 1ms :: {"id":"admin","role":"admin","authenticated":t…
+1:24:13 AM [express] GET /api/dashboard/trends 304 in 159ms :: [{"date":"2025-06-07","assessments":0…
+1:24:13 AM [express] GET /api/dashboard/stats 304 in 157ms :: {"completedAssessments":21,"weeklyAsse…
+1:24:13 AM [express] GET /api/dashboard/stats 304 in 155ms :: {"completedAssessments":21,"weeklyAsse…
+1:24:13 AM [express] GET /api/dashboard/trends 304 in 155ms :: [{"date":"2025-06-07","assessments":0…
+📊 Recent assessments found: 5
+1:24:13 AM [express] GET /api/assessments/recent 304 in 924ms :: [{"id":21,"patientId":13,"completed…
+1:24:13 AM [express] GET /api/dashboard/conditions 304 in 929ms :: [{"id":1,"name":"Heel Pain","desc…
+🔍 /api/patients endpoint called
+📊 Found assessments: 21
+📋 Sample assessment: {
+  id: 21,
+  patientId: 13,
+  primaryConcern: 'General consultation',
+  patientName: 'ToeMan'
+}
+1:24:13 AM [express] GET /api/patients 304 in 927ms :: {"assessments":[{"id":21,"patientId":13,"comp…
+🔍 /api/assessments/recent called with limit: 5
+1:24:14 AM [express] GET /api/dashboard/conditions 304 in 158ms :: [{"id":1,"name":"Heel Pain","desc…
+📊 Recent assessments found: 5
+1:24:14 AM [express] GET /api/assessments/recent 304 in 156ms :: [{"id":21,"patientId":13,"completed…
+🔍 /api/patients endpoint called
+📊 Found assessments: 21
+📋 Sample assessment: {
+  id: 21,
+  patientId: 13,
+  primaryConcern: 'General consultation',
+  patientName: 'ToeMan'
+}
+1:24:14 AM [express] GET /api/patients 304 in 154ms :: {"assessments":[{"id":21,"patientId":13,"comp…
+1:24:43 AM [express] GET /api/auth/user 304 in 1ms :: {"id":"admin","role":"admin","authenticated":t…
+1:24:43 AM [express] GET /api/auth/user 304 in 1ms :: {"id":"admin","role":"admin","authenticated":t…
+1:24:43 AM [express] GET /api/dashboard/trends 304 in 157ms :: [{"date":"2025-06-07","assessments":0…
+1:24:43 AM [express] GET /api/dashboard/stats 304 in 160ms :: {"completedAssessments":21,"weeklyAsse…
+1:24:43 AM [express] GET /api/dashboard/stats 304 in 157ms :: {"completedAssessments":21,"weeklyAsse…
+1:24:43 AM [express] GET /api/dashboard/trends 304 in 157ms :: [{"date":"2025-06-07","assessments":0…
+🔍 /api/assessments/recent called with limit: 5
+📊 Recent assessments found: 5
+1:24:44 AM [express] GET /api/assessments/recent 304 in 156ms :: [{"id":21,"patientId":13,"completed…
+1:24:44 AM [express] GET /api/dashboard/conditions 304 in 155ms :: [{"id":1,"name":"Heel Pain","desc…
+🔍 /api/patients endpoint called
+📊 Found assessments: 21
+📋 Sample assessment: {
+  id: 21,
+  patientId: 13,
+  primaryConcern: 'General consultation',
+  patientName: 'ToeMan'
+}
+1:24:44 AM [express] GET /api/patients 304 in 163ms :: {"assessments":[{"id":21,"patientId":13,"comp…
+🔍 /api/assessments/recent called with limit: 5
+1:24:44 AM [express] GET /api/dashboard/conditions 304 in 156ms :: [{"id":1,"name":"Heel Pain","desc…
+📊 Recent assessments found: 5
+1:24:44 AM [express] GET /api/assessments/recent 304 in 157ms :: [{"id":21,"patientId":13,"completed…
+🔍 /api/patients endpoint called
+📊 Found assessments: 21
+📋 Sample assessment: {
+  id: 21,
+  patientId: 13,
+  primaryConcern: 'General consultation',
+  patientName: 'ToeMan'
+}
+1:24:44 AM [express] GET /api/patients 304 in 156ms :: {"assessments":[{"id":21,"patientId":13,"comp…
+^C

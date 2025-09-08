@@ -1,0 +1,77 @@
+You are a Claude 4.0 agent inside a medical portal project. The chatbot is now confirmed to be sending fully populated consultation data to the webhook at /api/webhook/consultation.
+
+The webhook responds with:
+
+json
+Copy
+Edit
+{"success": true, "message": "Consultation processed successfully", "consultationId": 18, "patientId": 10, "assessmentId": 18}
+Yet in the admin portal, consultation fields like symptom_description, issue_specifics, image_analysis, calendar_booking, etc. are still showing up as null.
+
+🎯 Objective:
+Investigate and fix the webhook data ingestion and storage process to ensure that consultation fields from the chatbot are correctly processed, validated, and stored in the database.
+
+✅ Must Investigate:
+🔹 1. Webhook Data Handling
+File: src/routes/api/webhook/consultation.ts (or wherever the webhook POST logic is implemented)
+
+Confirm that all fields from the chatbot payload (e.g. symptom_description, image_analysis, emoji_survey, etc.) are:
+
+✅ Parsed correctly from req.body
+
+✅ Mapped to the correct field names in the insert/update statement
+
+✅ Passed into the db.insert(...) or db.upsert(...) operation
+
+🔹 2. Data Validation
+Check for any Zod, Drizzle, or manual validation logic that might silently strip or drop fields
+
+Look for incorrect types, null checks, or schema mismatches that prevent insertion
+
+🔹 3. Database Insert or Update Logic
+Confirm that the final object inserted into the consultations table includes:
+
+image_path
+
+image_analysis
+
+previous_treatment
+
+conversation_log
+
+survey_response
+
+emoji_survey
+
+completed_steps, etc.
+
+🔹 4. Confirm Database Write Success
+Add a console.log("🧠 Final data stored:", insertedRecord) just after DB insertion for verification
+
+⚠️ Do NOT:
+Modify chatbot code
+
+Change schema definitions unless clearly incorrect
+
+Alter unrelated routes, UI components, or modal rendering logic
+
+🛠️ Stack:
+TypeScript + Express
+
+PostgreSQL (Neon) via Drizzle ORM
+
+Schema defined in shared/schema.ts
+
+Receives POST from chatbot at /api/webhook/consultation
+
+Your mission is to trace the data from incoming webhook → through validation → into the database, and fix any logic that’s unintentionally discarding valid consultation fields.
+
+Once complete, valid data should appear in the admin portal automatically.
+
+
+
+
+
+
+
+

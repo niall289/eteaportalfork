@@ -1,0 +1,235 @@
+client:536 WebSocket connection to 'wss://2f749601-b8fb-4eb3-83d0-d02dad15e49e-00-1j6g7ddvhkpw2.worf.replit.dev/?token=Wwns5ixozzux' failed: 
+setupWebSocket @ client:536
+client:536 Uncaught (in promise) SyntaxError: Failed to construct 'WebSocket': The URL 'wss://localhost:undefined/?token=Wwns5ixozzux' is invalid.
+    at setupWebSocket (client:536:19)
+    at fallback (client:509:16)
+    at WebSocket.<anonymous> (client:555:7)
+chunk-RPCDYKBN.js?v=642d56af:21551 Download the React DevTools for a better development experience: https://reactjs.org/link/react-devtools
+websocket.tsx:40 WebSocket connected
+App.tsx:32 Uncaught Error: useClinicContext must be used within a ClinicProvider
+    at useClinicContext (App.tsx:32:11)
+    at Layout (Layout.tsx:19:59)
+    at renderWithHooks (chunk-RPCDYKBN.js?v=642d56af:11548:26)
+    at mountIndeterminateComponent (chunk-RPCDYKBN.js?v=642d56af:14926:21)
+    at beginWork (chunk-RPCDYKBN.js?v=642d56af:15914:22)
+    at HTMLUnknownElement.callCallback2 (chunk-RPCDYKBN.js?v=642d56af:3674:22)
+    at Object.invokeGuardedCallbackDev (chunk-RPCDYKBN.js?v=642d56af:3699:24)
+    at invokeGuardedCallback (chunk-RPCDYKBN.js?v=642d56af:3733:39)
+    at beginWork$1 (chunk-RPCDYKBN.js?v=642d56af:19765:15)
+    at performUnitOfWork (chunk-RPCDYKBN.js?v=642d56af:19198:20)
+useClinicContext @ App.tsx:32
+Layout @ Layout.tsx:19
+renderWithHooks @ chunk-RPCDYKBN.js?v=642d56af:11548
+mountIndeterminateComponent @ chunk-RPCDYKBN.js?v=642d56af:14926
+beginWork @ chunk-RPCDYKBN.js?v=642d56af:15914
+callCallback2 @ chunk-RPCDYKBN.js?v=642d56af:3674
+invokeGuardedCallbackDev @ chunk-RPCDYKBN.js?v=642d56af:3699
+invokeGuardedCallback @ chunk-RPCDYKBN.js?v=642d56af:3733
+beginWork$1 @ chunk-RPCDYKBN.js?v=642d56af:19765
+performUnitOfWork @ chunk-RPCDYKBN.js?v=642d56af:19198
+workLoopSync @ chunk-RPCDYKBN.js?v=642d56af:19137
+renderRootSync @ chunk-RPCDYKBN.js?v=642d56af:19116
+performSyncWorkOnRoot @ chunk-RPCDYKBN.js?v=642d56af:18874
+flushSyncCallbacks @ chunk-RPCDYKBN.js?v=642d56af:9119
+(anonymous) @ chunk-RPCDYKBN.js?v=642d56af:18627
+setTimeout
+scheduleFn @ @tanstack_react-query.js?v=642d56af:555
+flush @ @tanstack_react-query.js?v=642d56af:569
+batch @ @tanstack_react-query.js?v=642d56af:587
+dispatch_fn @ @tanstack_react-query.js?v=642d56af:996
+setData @ @tanstack_react-query.js?v=642d56af:696
+onSuccess @ @tanstack_react-query.js?v=642d56af:897
+resolve @ @tanstack_react-query.js?v=642d56af:456
+Promise.then
+run @ @tanstack_react-query.js?v=642d56af:498
+start @ @tanstack_react-query.js?v=642d56af:536
+fetch @ @tanstack_react-query.js?v=642d56af:926
+executeFetch_fn @ @tanstack_react-query.js?v=642d56af:2211
+onSubscribe @ @tanstack_react-query.js?v=642d56af:1898
+subscribe @ @tanstack_react-query.js?v=642d56af:24
+(anonymous) @ @tanstack_react-query.js?v=642d56af:3022
+subscribeToStore @ chunk-RPCDYKBN.js?v=642d56af:11984
+commitHookEffectListMount @ chunk-RPCDYKBN.js?v=642d56af:16915
+commitPassiveMountOnFiber @ chunk-RPCDYKBN.js?v=642d56af:18156
+commitPassiveMountEffects_complete @ chunk-RPCDYKBN.js?v=642d56af:18129
+commitPassiveMountEffects_begin @ chunk-RPCDYKBN.js?v=642d56af:18119
+commitPassiveMountEffects @ chunk-RPCDYKBN.js?v=642d56af:18109
+flushPassiveEffectsImpl @ chunk-RPCDYKBN.js?v=642d56af:19490
+flushPassiveEffects @ chunk-RPCDYKBN.js?v=642d56af:19447
+commitRootImpl @ chunk-RPCDYKBN.js?v=642d56af:19416
+commitRoot @ chunk-RPCDYKBN.js?v=642d56af:19277
+performSyncWorkOnRoot @ chunk-RPCDYKBN.js?v=642d56af:18895
+flushSyncCallbacks @ chunk-RPCDYKBN.js?v=642d56af:9119
+(anonymous) @ chunk-RPCDYKBN.js?v=642d56af:18627
+App.tsx:32 Uncaught Error: useClinicContext must be used within a ClinicProvider
+    at useClinicContext (App.tsx:32:11)
+    at Layout (Layout.tsx:19:59)
+    at renderWithHooks (chunk-RPCDYKBN.js?v=642d56af:11548:26)
+    at mountIndeterminateComponent (chunk-RPCDYKBN.js?v=642d56af:14926:21)
+    at beginWork (chunk-RPCDYKBN.js?v=642d56af:15914:22)
+    at HTMLUnknownElement.callCallback2 (chunk-RPCDYKBN.js?v=642d56af:3674:22)
+    at Object.invokeGuardedCallbackDev (chunk-RPCDYKBN.js?v=642d56af:3699:24)
+    at invokeGuardedCallback (chunk-RPCDYKBN.js?v=642d56af:3733:39)
+    at beginWork$1 (chunk-RPCDYKBN.js?v=642d56af:19765:15)
+    at performUnitOfWork (chunk-RPCDYKBN.js?v=642d56af:19198:20)
+useClinicContext @ App.tsx:32
+Layout @ Layout.tsx:19
+renderWithHooks @ chunk-RPCDYKBN.js?v=642d56af:11548
+mountIndeterminateComponent @ chunk-RPCDYKBN.js?v=642d56af:14926
+beginWork @ chunk-RPCDYKBN.js?v=642d56af:15914
+callCallback2 @ chunk-RPCDYKBN.js?v=642d56af:3674
+invokeGuardedCallbackDev @ chunk-RPCDYKBN.js?v=642d56af:3699
+invokeGuardedCallback @ chunk-RPCDYKBN.js?v=642d56af:3733
+beginWork$1 @ chunk-RPCDYKBN.js?v=642d56af:19765
+performUnitOfWork @ chunk-RPCDYKBN.js?v=642d56af:19198
+workLoopSync @ chunk-RPCDYKBN.js?v=642d56af:19137
+renderRootSync @ chunk-RPCDYKBN.js?v=642d56af:19116
+recoverFromConcurrentError @ chunk-RPCDYKBN.js?v=642d56af:18736
+performSyncWorkOnRoot @ chunk-RPCDYKBN.js?v=642d56af:18879
+flushSyncCallbacks @ chunk-RPCDYKBN.js?v=642d56af:9119
+(anonymous) @ chunk-RPCDYKBN.js?v=642d56af:18627
+setTimeout
+scheduleFn @ @tanstack_react-query.js?v=642d56af:555
+flush @ @tanstack_react-query.js?v=642d56af:569
+batch @ @tanstack_react-query.js?v=642d56af:587
+dispatch_fn @ @tanstack_react-query.js?v=642d56af:996
+setData @ @tanstack_react-query.js?v=642d56af:696
+onSuccess @ @tanstack_react-query.js?v=642d56af:897
+resolve @ @tanstack_react-query.js?v=642d56af:456
+Promise.then
+run @ @tanstack_react-query.js?v=642d56af:498
+start @ @tanstack_react-query.js?v=642d56af:536
+fetch @ @tanstack_react-query.js?v=642d56af:926
+executeFetch_fn @ @tanstack_react-query.js?v=642d56af:2211
+onSubscribe @ @tanstack_react-query.js?v=642d56af:1898
+subscribe @ @tanstack_react-query.js?v=642d56af:24
+(anonymous) @ @tanstack_react-query.js?v=642d56af:3022
+subscribeToStore @ chunk-RPCDYKBN.js?v=642d56af:11984
+commitHookEffectListMount @ chunk-RPCDYKBN.js?v=642d56af:16915
+commitPassiveMountOnFiber @ chunk-RPCDYKBN.js?v=642d56af:18156
+commitPassiveMountEffects_complete @ chunk-RPCDYKBN.js?v=642d56af:18129
+commitPassiveMountEffects_begin @ chunk-RPCDYKBN.js?v=642d56af:18119
+commitPassiveMountEffects @ chunk-RPCDYKBN.js?v=642d56af:18109
+flushPassiveEffectsImpl @ chunk-RPCDYKBN.js?v=642d56af:19490
+flushPassiveEffects @ chunk-RPCDYKBN.js?v=642d56af:19447
+commitRootImpl @ chunk-RPCDYKBN.js?v=642d56af:19416
+commitRoot @ chunk-RPCDYKBN.js?v=642d56af:19277
+performSyncWorkOnRoot @ chunk-RPCDYKBN.js?v=642d56af:18895
+flushSyncCallbacks @ chunk-RPCDYKBN.js?v=642d56af:9119
+(anonymous) @ chunk-RPCDYKBN.js?v=642d56af:18627
+chunk-RPCDYKBN.js?v=642d56af:14032 The above error occurred in the <Layout> component:
+
+    at Layout (https://2f749601-b8fb-4eb3-83d0-d02dad15e49e-00-1j6g7ddvhkpw2.worf.replit.dev/src/components/Layout.tsx:28:19)
+    at ProtectedRoute (https://2f749601-b8fb-4eb3-83d0-d02dad15e49e-00-1j6g7ddvhkpw2.worf.replit.dev/src/App.tsx?v=7UrfSwnrA1kGM73oPSw4D:56:27)
+    at Route (https://2f749601-b8fb-4eb3-83d0-d02dad15e49e-00-1j6g7ddvhkpw2.worf.replit.dev/@fs/home/runner/workspace/node_modules/.vite/deps/wouter.js?v=642d56af:323:16)
+    at Switch (https://2f749601-b8fb-4eb3-83d0-d02dad15e49e-00-1j6g7ddvhkpw2.worf.replit.dev/@fs/home/runner/workspace/node_modules/.vite/deps/wouter.js?v=642d56af:379:17)
+    at Router (https://2f749601-b8fb-4eb3-83d0-d02dad15e49e-00-1j6g7ddvhkpw2.worf.replit.dev/@fs/home/runner/workspace/node_modules/.vite/deps/wouter.js?v=642d56af:291:17)
+    at div
+    at ClinicProvider (https://2f749601-b8fb-4eb3-83d0-d02dad15e49e-00-1j6g7ddvhkpw2.worf.replit.dev/src/App.tsx?v=7UrfSwnrA1kGM73oPSw4D:45:27)
+    at Provider (https://2f749601-b8fb-4eb3-83d0-d02dad15e49e-00-1j6g7ddvhkpw2.worf.replit.dev/@fs/home/runner/workspace/node_modules/.vite/deps/chunk-MV53PHM7.js?v=642d56af:48:15)
+    at TooltipProvider (https://2f749601-b8fb-4eb3-83d0-d02dad15e49e-00-1j6g7ddvhkpw2.worf.replit.dev/@fs/home/runner/workspace/node_modules/.vite/deps/@radix-ui_react-tooltip.js?v=642d56af:58:5)
+    at QueryClientProvider (https://2f749601-b8fb-4eb3-83d0-d02dad15e49e-00-1j6g7ddvhkpw2.worf.replit.dev/@fs/home/runner/workspace/node_modules/.vite/deps/@tanstack_react-query.js?v=642d56af:2805:3)
+    at ThemeProvider (https://2f749601-b8fb-4eb3-83d0-d02dad15e49e-00-1j6g7ddvhkpw2.worf.replit.dev/src/components/ThemeProvider.tsx:25:3)
+    at WebSocketProvider (https://2f749601-b8fb-4eb3-83d0-d02dad15e49e-00-1j6g7ddvhkpw2.worf.replit.dev/src/components/ui/websocket.tsx:29:37)
+    at App
+
+Consider adding an error boundary to your tree to customize error handling behavior.
+Visit https://reactjs.org/link/error-boundaries to learn more about error boundaries.
+logCapturedError @ chunk-RPCDYKBN.js?v=642d56af:14032
+update.callback @ chunk-RPCDYKBN.js?v=642d56af:14052
+callCallback @ chunk-RPCDYKBN.js?v=642d56af:11248
+commitUpdateQueue @ chunk-RPCDYKBN.js?v=642d56af:11265
+commitLayoutEffectOnFiber @ chunk-RPCDYKBN.js?v=642d56af:17093
+commitLayoutMountEffects_complete @ chunk-RPCDYKBN.js?v=642d56af:17980
+commitLayoutEffects_begin @ chunk-RPCDYKBN.js?v=642d56af:17969
+commitLayoutEffects @ chunk-RPCDYKBN.js?v=642d56af:17920
+commitRootImpl @ chunk-RPCDYKBN.js?v=642d56af:19353
+commitRoot @ chunk-RPCDYKBN.js?v=642d56af:19277
+performSyncWorkOnRoot @ chunk-RPCDYKBN.js?v=642d56af:18895
+flushSyncCallbacks @ chunk-RPCDYKBN.js?v=642d56af:9119
+(anonymous) @ chunk-RPCDYKBN.js?v=642d56af:18627
+setTimeout
+scheduleFn @ @tanstack_react-query.js?v=642d56af:555
+flush @ @tanstack_react-query.js?v=642d56af:569
+batch @ @tanstack_react-query.js?v=642d56af:587
+dispatch_fn @ @tanstack_react-query.js?v=642d56af:996
+setData @ @tanstack_react-query.js?v=642d56af:696
+onSuccess @ @tanstack_react-query.js?v=642d56af:897
+resolve @ @tanstack_react-query.js?v=642d56af:456
+Promise.then
+run @ @tanstack_react-query.js?v=642d56af:498
+start @ @tanstack_react-query.js?v=642d56af:536
+fetch @ @tanstack_react-query.js?v=642d56af:926
+executeFetch_fn @ @tanstack_react-query.js?v=642d56af:2211
+onSubscribe @ @tanstack_react-query.js?v=642d56af:1898
+subscribe @ @tanstack_react-query.js?v=642d56af:24
+(anonymous) @ @tanstack_react-query.js?v=642d56af:3022
+subscribeToStore @ chunk-RPCDYKBN.js?v=642d56af:11984
+commitHookEffectListMount @ chunk-RPCDYKBN.js?v=642d56af:16915
+commitPassiveMountOnFiber @ chunk-RPCDYKBN.js?v=642d56af:18156
+commitPassiveMountEffects_complete @ chunk-RPCDYKBN.js?v=642d56af:18129
+commitPassiveMountEffects_begin @ chunk-RPCDYKBN.js?v=642d56af:18119
+commitPassiveMountEffects @ chunk-RPCDYKBN.js?v=642d56af:18109
+flushPassiveEffectsImpl @ chunk-RPCDYKBN.js?v=642d56af:19490
+flushPassiveEffects @ chunk-RPCDYKBN.js?v=642d56af:19447
+commitRootImpl @ chunk-RPCDYKBN.js?v=642d56af:19416
+commitRoot @ chunk-RPCDYKBN.js?v=642d56af:19277
+performSyncWorkOnRoot @ chunk-RPCDYKBN.js?v=642d56af:18895
+flushSyncCallbacks @ chunk-RPCDYKBN.js?v=642d56af:9119
+(anonymous) @ chunk-RPCDYKBN.js?v=642d56af:18627
+chunk-RPCDYKBN.js?v=642d56af:9129 Uncaught Error: useClinicContext must be used within a ClinicProvider
+    at useClinicContext (App.tsx:32:11)
+    at Layout (Layout.tsx:19:59)
+    at renderWithHooks (chunk-RPCDYKBN.js?v=642d56af:11548:26)
+    at mountIndeterminateComponent (chunk-RPCDYKBN.js?v=642d56af:14926:21)
+    at beginWork (chunk-RPCDYKBN.js?v=642d56af:15914:22)
+    at beginWork$1 (chunk-RPCDYKBN.js?v=642d56af:19753:22)
+    at performUnitOfWork (chunk-RPCDYKBN.js?v=642d56af:19198:20)
+    at workLoopSync (chunk-RPCDYKBN.js?v=642d56af:19137:13)
+    at renderRootSync (chunk-RPCDYKBN.js?v=642d56af:19116:15)
+    at recoverFromConcurrentError (chunk-RPCDYKBN.js?v=642d56af:18736:28)
+useClinicContext @ App.tsx:32
+Layout @ Layout.tsx:19
+renderWithHooks @ chunk-RPCDYKBN.js?v=642d56af:11548
+mountIndeterminateComponent @ chunk-RPCDYKBN.js?v=642d56af:14926
+beginWork @ chunk-RPCDYKBN.js?v=642d56af:15914
+beginWork$1 @ chunk-RPCDYKBN.js?v=642d56af:19753
+performUnitOfWork @ chunk-RPCDYKBN.js?v=642d56af:19198
+workLoopSync @ chunk-RPCDYKBN.js?v=642d56af:19137
+renderRootSync @ chunk-RPCDYKBN.js?v=642d56af:19116
+recoverFromConcurrentError @ chunk-RPCDYKBN.js?v=642d56af:18736
+performSyncWorkOnRoot @ chunk-RPCDYKBN.js?v=642d56af:18879
+flushSyncCallbacks @ chunk-RPCDYKBN.js?v=642d56af:9119
+(anonymous) @ chunk-RPCDYKBN.js?v=642d56af:18627
+setTimeout
+scheduleFn @ @tanstack_react-query.js?v=642d56af:555
+flush @ @tanstack_react-query.js?v=642d56af:569
+batch @ @tanstack_react-query.js?v=642d56af:587
+dispatch_fn @ @tanstack_react-query.js?v=642d56af:996
+setData @ @tanstack_react-query.js?v=642d56af:696
+onSuccess @ @tanstack_react-query.js?v=642d56af:897
+resolve @ @tanstack_react-query.js?v=642d56af:456
+Promise.then
+run @ @tanstack_react-query.js?v=642d56af:498
+start @ @tanstack_react-query.js?v=642d56af:536
+fetch @ @tanstack_react-query.js?v=642d56af:926
+executeFetch_fn @ @tanstack_react-query.js?v=642d56af:2211
+onSubscribe @ @tanstack_react-query.js?v=642d56af:1898
+subscribe @ @tanstack_react-query.js?v=642d56af:24
+(anonymous) @ @tanstack_react-query.js?v=642d56af:3022
+subscribeToStore @ chunk-RPCDYKBN.js?v=642d56af:11984
+commitHookEffectListMount @ chunk-RPCDYKBN.js?v=642d56af:16915
+commitPassiveMountOnFiber @ chunk-RPCDYKBN.js?v=642d56af:18156
+commitPassiveMountEffects_complete @ chunk-RPCDYKBN.js?v=642d56af:18129
+commitPassiveMountEffects_begin @ chunk-RPCDYKBN.js?v=642d56af:18119
+commitPassiveMountEffects @ chunk-RPCDYKBN.js?v=642d56af:18109
+flushPassiveEffectsImpl @ chunk-RPCDYKBN.js?v=642d56af:19490
+flushPassiveEffects @ chunk-RPCDYKBN.js?v=642d56af:19447
+commitRootImpl @ chunk-RPCDYKBN.js?v=642d56af:19416
+commitRoot @ chunk-RPCDYKBN.js?v=642d56af:19277
+performSyncWorkOnRoot @ chunk-RPCDYKBN.js?v=642d56af:18895
+flushSyncCallbacks @ chunk-RPCDYKBN.js?v=642d56af:9119
+(anonymous) @ chunk-RPCDYKBN.js?v=642d56af:18627
+websocket.tsx:55 WebSocket closed
+websocket.tsx:64 Attempting to reconnect... (1/5)
+websocket.tsx:40 WebSocket connected

@@ -1,0 +1,82 @@
+🔧 REPLIT ASSISTANT PROMPT: MULTI-SURGERY PORTAL SUPPORT (FINAL VERSION)
+You are an elite Claude 4.0 coding agent embedded in a Replit portal project built with Vite, TypeScript, React, Neon DB, and TailwindCSS. Your job is mission-critical: upgrade the portal to support multi-surgery operations for the following business entities:
+
+FootCare Clinic
+
+The Nail Surgery Clinic
+
+The Laser Care Clinic
+
+These are referred to as clinic_group. Each group may contain individual locations stored under preferred_clinic (e.g., "Donnycarney", "Palmerstown", "Baldoyle").
+
+🎯 OBJECTIVE
+Ensure that all patient data, assessment records, analytics, communications, and chatbot settings are correctly associated with the appropriate clinic_group, and allow the portal user to filter, view, and manage data based on that group context — all within the streamlined 4-section UI:
+
+Dashboard
+
+Assessments
+
+Communications
+
+Settings
+
+✅ YOU MUST:
+Introduce clinic_group filtering across all relevant views:
+
+Assessments page (/assessments)
+
+Dashboard summaries
+
+Analytics charts (if present)
+
+Communications history
+
+Settings (chatbot config per group)
+
+Do NOT remove or alter the existing preferred_clinic field.
+
+clinic_group = which business (e.g. Nail Surgery Clinic)
+
+preferred_clinic = which location (e.g. Donnycarney)
+
+Preserve and reflect existing patient data, but structure the UI so users can filter and manage by clinic_group from dropdown selectors on all key pages.
+
+Display the active clinic_group context prominently in:
+
+Header of each page
+
+Assessment rows (in columns)
+
+Communications logs
+
+Set the default view to FootCare Clinic unless otherwise filtered.
+
+Ensure data export still works and respects applied filters.
+
+🚫 DO NOT:
+Break any existing consultation data
+
+Change the Neon DB schema yet — schema changes will be handled later when the other chatbots go live
+
+Alter chatbot or webhook logic — this is for the portal only
+
+🛠 STACK CONTEXT
+React + Vite (Frontend)
+
+TailwindCSS (Styling)
+
+Express + Neon PostgreSQL (Backend)
+
+Uses a shared schema at shared/schema.ts
+
+Chatbot and portal are currently separated and connected via webhook
+
+💡 EXAMPLE USE CASES TO ENABLE
+The user clicks "Assessments" and sees only FootCare Clinic records → switches to "The Nail Surgery Clinic" via dropdown to see theirs
+
+Communications only show messages sent to Nail Surgery Clinic patients
+
+The settings page displays editable fields for only the active chatbot group (e.g., Fiona vs. Niamh)
+
+🔄 FINAL GOAL
+Enable the user to manage all 3 clinics from a single unified portal, with clear separation of data, smooth filtering, and no UI clutter — all while preserving the structural integrity of the codebase.

@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Webhook Test</title>
+</head>
+<body>
+    <h1>Test Webhook Data Structure</h1>
+    <p>Send a POST request to test the webhook with sample chatbot data</p>
+    
+    <button onclick="testWebhook()">Send Test Webhook</button>
+    <div id="result"></div>
+
+    <script>
+    function testWebhook() {
+        // Sample data matching your chatbot structure
+        const testData = {
+            patient_name: "Test Webhook User",
+            email: "webhook.test@footcare.com",
+            phone: "123-456-7890",
+            clinic_location: "Donnycarney",
+            issue_type: "Heel Pain", 
+            pain_presence: "Yes",
+            pain_severity: "6",
+            symptom_description: "Sharp pain when walking",
+            treatment_history: "None",
+            image_file_url: null,
+            image_analysis_text: null
+        };
+
+        fetch('/api/webhook/consultation', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify(testData)
+        })
+        .then(response => response.json())
+        .then(data => {
+            document.getElementById('result').innerHTML = 
+                '<h3>Webhook Response:</h3><pre>' + JSON.stringify(data, null, 2) + '</pre>';
+        })
+        .catch(error => {
+            document.getElementById('result').innerHTML = 
+                '<h3>Error:</h3><pre>' + error + '</pre>';
+        });
+    }
+    </script>
+</body>
+</html>

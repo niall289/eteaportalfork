@@ -1,0 +1,79 @@
+Looking at the current webhook payload in use-chat.ts, I can see the issue and evaluate the proposed solution.
+
+Current Payload Analysis
+The current payload uses snake_case field names:
+
+const payload = {
+  name: conversationData.name || "",
+  email: conversationData.email || "",
+  phone: conversationData.phone || "",
+  preferred_clinic: conversationData.preferred_clinic || "",
+  issue_category: conversationData.issue_category || "",
+  issue_specifics: conversationData.issue_specifics || "",
+  symptom_description: conversationData.symptom_description || "",
+  previous_treatment: conversationData.previous_treatment || "",
+  // ... etc
+};
+Critical Analysis
+Yes, adding camelCase variants alongside the existing snake_case fields would likely solve the admin portal null value issue.
+
+Here's my reasoning:
+
+Portal Compatibility: Many backend systems auto-map camelCase to their internal field names, especially if built with JavaScript/Node.js frameworks
+Database Schema Mismatch: The portal's database likely expects camelCase field names but we're only sending snake_case
+Backward Compatibility: Sending both versions ensures compatibility with any system expecting either naming convention
+Minimal Risk: Adding fields (not replacing) won't break existing functionality
+Proposed Payload Structure
+If we added both naming conventions, the payload would look like:
+
+const payload = {
+  // Basic fields (already working)
+  name: conversationData.name || "",
+  email: conversationData.email || "",
+  phone: conversationData.phone || "",
+  
+  // Snake_case (current)
+  preferred_clinic: conversationData.preferred_clinic || "",
+  issue_category: conversationData.issue_category || "",
+  issue_specifics: conversationData.issue_specifics || "",
+  symptom_description: conversationData.symptom_description || "",
+  previous_treatment: conversationData.previous_treatment || "",
+  image_analysis: conversationData.image_analysis || "",
+  calendar_booking: conversationData.calendar_booking || "",
+  final_question: conversationData.final_question || "",
+  additional_help: conversationData.additional_help || "",
+  emoji_survey: conversationData.emoji_survey || "",
+  survey_response: conversationData.survey_response || "",
+  
+  // CamelCase variants (new)
+  preferredClinic: conversationData.preferred_clinic || "",
+  issueCategory: conversationData.issue_category || "",
+  issueSpecifics: conversationData.issue_specifics || "",
+  symptomDescription: conversationData.symptom_description || "",
+  previousTreatment: conversationData.previous_treatment || "",
+  imageAnalysis: conversationData.image_analysis || "",
+  calendarBooking: conversationData.calendar_booking || "",
+  finalQuestion: conversationData.final_question || "",
+  additionalHelp: conversationData.additional_help || "",
+  emojiSurvey: conversationData.emoji_survey || "",
+  surveyResponse: conversationData.survey_response || "",
+  
+  // Arrays and other fields remain the same
+  conversation_log: Array.isArray(conversationData.conversationLog) ? conversationData.conversationLog : [],
+  completed_steps: Array.isArray(conversationData.completed_steps) ? conversationData.completed_steps : [],
+  consultationId: consultationId
+};
+Benefits of This Approach
+Fixes Null Values: Portal likely maps camelCase fields correctly
+Zero Breaking Changes: Existing snake_case fields remain
+Future-Proof: Compatible with both naming conventions
+Simple Implementation: Just duplicate the key fields with different naming
+Evidence Supporting This Theory
+From the console logs, I can see:
+
+✅ Webhook returns 200 success with proper response
+✅ Data transmission is working (we see complete payloads being sent)
+❌ Portal shows null values despite receiving data
+This pattern typically indicates a field name mapping issue where the receiving system expects different field names than what's being sent.
+
+Recommendation: Adding camelCase variants alongside snake_case fields should resolve the null value issue in the admin portal.

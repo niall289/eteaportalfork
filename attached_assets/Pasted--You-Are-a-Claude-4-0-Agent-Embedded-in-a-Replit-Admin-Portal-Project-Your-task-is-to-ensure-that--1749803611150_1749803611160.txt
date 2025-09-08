@@ -1,0 +1,92 @@
+🧠 You Are a Claude 4.0 Agent Embedded in a Replit Admin Portal Project
+Your task is to ensure that consultation data sent from the chatbot is fully received, processed, stored, and displayed correctly across all admin portal components — with zero data loss or misalignment.
+
+🎯 Objective:
+Verify that the webhook endpoint at:
+
+bash
+Copy
+Edit
+/api/webhook/consultation
+receives a complete JSON payload from the chatbot and maps it correctly to the portal’s database (Neon PostgreSQL) and UI — fully aligned with the schema in shared/schema.ts.
+
+📥 Expected Payload Format:
+json
+Copy
+Edit
+{
+  "name": "Patient Name",
+  "email": "patient@email.com",
+  "phone": "123-456-7890",
+  "preferred_clinic": "Clinic Name",
+  "issue_category": "Heel Pain",
+  "symptom_description": "Detailed symptoms collected from user",
+  "previous_treatment": "Treatment history from user",
+  "issue_specifics": "Specific problem details from user", 
+  "image_analysis": "AI analysis result if image uploaded",
+  "calendar_booking": "Appointment details if booked",
+  "emoji_survey": "Satisfaction rating if collected",
+  "survey_response": "User feedback if collected",
+  "additional_help": "Extra help requests if any",
+  "final_question": "End questions if any",
+  "createdAt": "2025-01-13T22:10:31.576Z"
+}
+🧠 Must Ensure:
+✅ Incoming payload is fully received, parsed, and stored in the consultations table using the shared/schema.ts model.
+
+✅ Data is displayed properly in:
+
+ChatResults.tsx
+
+PatientTable.tsx
+
+PatientDetailsModal.tsx
+
+✅ All medical fields (e.g., symptom_description, image_analysis, etc.) are displayed correctly, even if some values are null.
+
+✅ CSV export, filters (e.g., “Completed”, “In Progress”, “Flagged”), and view details functionality continue to work.
+
+✅ Status badge counters (e.g., “Completed Assessments”) accurately reflect the data in the database.
+
+🧩 Field Mapping Expectations:
+Support both snake_case and camelCase variants for incoming chatbot data. These field aliases must be processed correctly:
+
+issueSpecifics → issue_specifics
+
+symptomDescription → symptom_description
+
+previousTreatment → previous_treatment
+
+imageAnalysis → image_analysis
+
+calendarBooking → calendar_booking
+
+finalQuestion → final_question
+
+additionalHelp → additional_help
+
+emojiSurvey → emoji_survey
+
+surveyResponse → survey_response
+
+🚫 Do NOT:
+Do not modify the schema or add/remove columns.
+
+Do not edit unrelated components (Sidebar, ChatbotSettings, Login, etc.).
+
+Do not overwrite existing consultation records unless specifically instructed.
+
+Do not change layout, styling, or structure of Tailwind/React components.
+
+🔐 Final Verification Instructions:
+Run a test by submitting a full payload from the chatbot and confirm that:
+
+Every field appears in the database exactly as expected.
+
+Every field renders correctly in the portal UI.
+
+Null fields do not break the display.
+
+The “View Full Details” button opens the modal and shows complete patient info.
+
+Your mission: Ensure that the portal displays complete consultation data — without gaps, mismatches, or UI bugs — using the exact structure defined in the shared schema.
