@@ -20,10 +20,7 @@ An administrative dashboard for FootCare Clinic that displays patient interactio
 
 ## Setup
 
-1. Clone this repository
-2. Install dependencies with `npm install`
-3. Set up environment variables (see below)
-4. Start the development server with `npm run dev`
+run `npm run dev` in /server and /web; browse http://localhost:5173.
 
 ## Environment Variables
 

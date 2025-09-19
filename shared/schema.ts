@@ -10,11 +10,12 @@ import {
   boolean,
   primaryKey,
   pgEnum,
-  uuid
+  uuid,
+  check
 } from "drizzle-orm/pg-core";
 import { createInsertSchema } from "drizzle-zod";
 import { z } from "zod";
-import { relations } from "drizzle-orm";
+import { relations, sql } from "drizzle-orm";
 
 // Users table
 export const users = pgTable("users", {
@@ -158,6 +159,7 @@ export const consultations = pgTable("consultations", {
   survey_response: text("survey_response"),
   conversation_log: jsonb("conversation_log"),
   completed_steps: jsonb("completed_steps"),
+  raw_json: jsonb("raw_json"),
   createdAt: timestamp("created_at").defaultNow(),
 });
 
@@ -166,12 +168,13 @@ export const images = pgTable("images", {
   id: uuid("id").primaryKey().defaultRandom(),
   consultationId: integer("consultation_id").notNull().references(() => consultations.id, { onDelete: "cascade" }),
   url: text("url").notNull(),
+  thumbnailUrl: text("thumbnail_url"),
   sourceType: text("source_type").notNull().$type<"upload" | "link">(),
   meta: jsonb("meta"),
   createdAt: timestamp("created_at").defaultNow(),
 }, (table) => ({
-  consultationIdIdx: index("images_consultation_id_idx").on(table.consultationId),
-  createdAtIdx: index("images_created_at_idx").on(table.createdAt),
+  sourceTypeCheck: check("images_source_type_check", sql`${table.sourceType} in ('upload', 'link')`),
+  compositeIdx: index("images_consultation_id_created_at_idx").on(table.consultationId, table.createdAt),
 }));
 
 // Chatbot tone enum
@@ -180,14 +183,16 @@ export const chatbotToneEnum = pgEnum('chatbot_tone', ['Friendly', 'Professional
 // Chatbot settings
 export const chatbotSettings = pgTable("chatbot_settings", {
   id: serial("id").primaryKey(),
+  clinicGroup: text("clinic_group").notNull(),
   welcomeMessage: text("welcome_message").default("Welcome to FootCare Clinic! Let''s get started."),
-
   botDisplayName: varchar("bot_display_name").default("Fiona - FootCare Assistant"),
   ctaButtonLabel: varchar("cta_button_label").default("Ask Fiona"),
   chatbotTone: chatbotToneEnum("chatbot_tone").default("Friendly"),
   createdAt: timestamp("created_at").defaultNow(),
   updatedAt: timestamp("updated_at").defaultNow(),
-});
+}, (table) => ({
+  clinicGroupIdx: index("chatbot_settings_clinic_group_idx").on(table.clinicGroup),
+}));
 
 // Insert schemas
 export const insertUserSchema = createInsertSchema(users).pick({
@@ -219,12 +224,15 @@ export const insertChatbotSettingsSchema = createInsertSchema(chatbotSettings, {
   botDisplayName: z.string().min(3).optional(),
   ctaButtonLabel: z.string().min(3).optional(),
 }).pick({
-  welcomeMessage: true, botDisplayName: true, ctaButtonLabel: true, chatbotTone: true
+  clinicGroup: true, welcomeMessage: true, botDisplayName: true, ctaButtonLabel: true, chatbotTone: true
 });
-export const insertConsultationSchema = createInsertSchema(consultations);
+export const insertConsultationSchema = createInsertSchema(consultations).extend({
+  raw_json: z.any().optional(),
+});
 export const insertImageSchema = createInsertSchema(images).pick({
   consultationId: true,
   url: true,
+  thumbnailUrl: true,
   sourceType: true,
   meta: true,
 });
@@ -255,6 +263,9 @@ export type Question = typeof questions.$inferSelect;
 export type Condition = typeof conditions.$inferSelect;
 export type Clinic = typeof clinics.$inferSelect;
 export type ChatbotSettings = typeof chatbotSettings.$inferSelect;
-export type Consultation = typeof consultations.$inferSelect;
+export type Consultation = typeof consultations.$inferSelect & {
+  firstImageUrl?: string | null;
+  firstThumbnailUrl?: string | null;
+};
 
 // Relations (optional — same as before if needed)

@@ -6,14 +6,39 @@ dotenv.config(); // loads project root .env
 dotenv.config({ path: path.resolve(import.meta.dirname, '.env') }); // also load server/.env
 
 import express, { type Request, Response, NextFunction } from 'express';
+import cookieSession from 'cookie-session';
+import cors from 'cors';
 import { setupVite, serveStatic, log } from './vite';
 import { registerSimpleAuth } from './simpleAuth';
 
 const PORT = parseInt(process.env.PORT ?? '5002', 10);
 
 const app = express();
+
+// Trust proxy for production reverse proxy
+if (process.env.NODE_ENV === "production") {
+  app.set("trust proxy", 1);
+}
+
+// CORS configuration for Vite in dev
+app.use(cors({
+  origin: ["http://localhost:5173"],
+  credentials: true,
+}));
+
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
+
+// Cookie-session configuration
+app.use(cookieSession({
+  name: "etea.sid",
+  keys: [process.env.SESSION_SECRET || "dev-fallback-key"],
+  maxAge: 7 * 24 * 60 * 60 * 1000,
+  httpOnly: true,
+  secure: process.env.NODE_ENV === "production" && process.env.FORCE_INSECURE_COOKIE !== "1",
+  sameSite: "lax",
+  path: "/",
+}) as any);
 
 // register simple auth when requested (AUTH_MODE=simple)
 registerSimpleAuth(app);
@@ -67,6 +92,21 @@ app.use((req, res, next) => {
     });
   });
 
+  // Simple health check endpoint
+  app.get('/api/healthz', (_req: Request, res: Response) => {
+    res.status(200).json({ ok: true });
+  });
+
+  // Diagnostics endpoint for session verification
+  app.get('/api/whoami', (req: Request, res: Response) => {
+    const auth = (req.session as any)?.auth;
+    if (auth) {
+      res.json({ authenticated: true, auth });
+    } else {
+      res.json({ authenticated: false });
+    }
+  });
+
   // DB connectivity probe (works if ./db exports a pool with .query)
   app.get('/api/db-ping', async (_req: Request, res: Response) => {
     try {
@@ -91,11 +131,11 @@ app.use((req, res, next) => {
     res.status(status).json({ message });
   });
 
-  // Dev: Vite; Prod: static files
-  if (app.get('env') === 'development') {
-    await setupVite(app, server);
-  } else {
+  // Dev: Client served by Vite middleware; Prod: static files
+  if (app.get('env') === 'production') {
     serveStatic(app);
+  } else {
+    await setupVite(app, server);
   }
 
   // Single entry point — bind to 0.0.0.0 on the chosen port

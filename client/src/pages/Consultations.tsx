@@ -38,6 +38,9 @@ interface Consultation {
   previousTreatment: string | null;
   hasImage: boolean | null;
   imagePath: string | null;
+  images: string[];
+  firstImageUrl?: string | null;
+  firstThumbnailUrl?: string | null;
   imageAnalysis: string | null;
   symptomDescription: string | null;
   symptomAnalysis: string | null;
@@ -79,12 +82,12 @@ export default function Consultations() {
     return matchesSearch && matchesClinic && matchesCategory;
   });
 
-  const uniqueClinics = [
-    ...new Set(consultations.map((c) => c.preferredClinic).filter(Boolean)),
-  ];
-  const uniqueCategories = [
-    ...new Set(consultations.map((c) => c.issueCategory).filter(Boolean)),
-  ];
+  const uniqueClinics = Array.from(
+    new Set(consultations.map((c) => c.preferredClinic).filter(Boolean))
+  );
+  const uniqueCategories = Array.from(
+    new Set(consultations.map((c) => c.issueCategory).filter(Boolean))
+  );
 
   const formatDate = (dateString: string) => {
     try {
@@ -219,14 +222,36 @@ export default function Consultations() {
                   </div>
                   <div className="flex items-center space-x-2">
                     {consultation.painSeverity && getPriorityBadge(consultation.painSeverity)}
-                    {consultation.hasImage && (
-                      <Badge variant="outline">📷 Image</Badge>
+                    {(consultation.firstThumbnailUrl || consultation.firstImageUrl) && (
+                      <div className="w-12 h-12 rounded-lg overflow-hidden border-2 border-gray-200 dark:border-gray-700">
+                        <a
+                          href={consultation.firstImageUrl || consultation.firstThumbnailUrl || '#'}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="block w-full h-full"
+                        >
+                          <img
+                            src={consultation.firstThumbnailUrl || consultation.firstImageUrl || ''}
+                            alt="Consultation image"
+                            className="w-full h-full object-cover"
+                            onError={(e) => {
+                              // Fallback to icon if image fails to load
+                              const target = e.target as HTMLImageElement;
+                              target.style.display = 'none';
+                              const parent = target.parentElement;
+                              if (parent) {
+                                parent.innerHTML = '<div class="w-full h-full bg-gray-100 dark:bg-gray-800 flex items-center justify-center"><span class="text-gray-400">📷</span></div>';
+                              }
+                            }}
+                          />
+                        </a>
+                      </div>
                     )}
                   </div>
                 </div>
               </CardHeader>
               <CardContent>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                   <div>
                     <h4 className="font-medium text-gray-900 dark:text-white mb-2">
                       Contact Information
@@ -263,6 +288,44 @@ export default function Consultations() {
                       )}
                       {consultation.painSeverity && (
                         <div><strong>Severity:</strong> {consultation.painSeverity}</div>
+                      )}
+                    </div>
+                  </div>
+                  <div>
+                    <h4 className="font-medium text-gray-900 dark:text-white mb-2">
+                      Images
+                    </h4>
+                    <div className="space-y-1 text-sm text-gray-600 dark:text-gray-400">
+                      {(consultation.firstThumbnailUrl || consultation.firstImageUrl) ? (
+                        <div className="relative w-12 h-12 rounded-lg overflow-hidden border-2 border-gray-200 dark:border-gray-700">
+                          <a
+                            href={consultation.firstImageUrl || consultation.firstThumbnailUrl || '#'}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="block w-full h-full"
+                          >
+                            <img
+                              src={consultation.firstThumbnailUrl || consultation.firstImageUrl || ''}
+                              alt="Consultation image"
+                              className="w-full h-full object-cover"
+                              onError={(e) => {
+                                const target = e.target as HTMLImageElement;
+                                target.style.display = 'none';
+                                const parent = target.parentElement;
+                                if (parent) {
+                                  parent.innerHTML = '<div class="w-full h-full bg-gray-100 dark:bg-gray-800 flex items-center justify-center"><span class="text-gray-400">📷</span></div>';
+                                }
+                              }}
+                            />
+                          </a>
+                          {consultation.images && consultation.images.length > 1 && (
+                            <div className="absolute top-0 right-0 bg-red-500 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center">
+                              +{consultation.images.length - 1}
+                            </div>
+                          )}
+                        </div>
+                      ) : (
+                        <span>No images</span>
                       )}
                     </div>
                   </div>

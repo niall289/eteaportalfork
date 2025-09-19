@@ -9,6 +9,10 @@ export default defineConfig({
     host: "0.0.0.0",
     port: 5173,
     hmr: { host: "0.0.0.0", port: 5173 },
+    proxy: {
+      '/api': 'http://localhost:5002',
+      '/uploads': 'http://localhost:5002'
+    }
   },
 
   plugins: [react()],

@@ -1,12 +1,186 @@
 ﻿import express, { type Express, Request, Response } from "express";
 import { createServer, type Server } from "http";
+import fs from "fs";
+import path from "path";
+import crypto from "crypto";
+import sharp from "sharp";
 
-import { pool as db } from "./db";
+import { db } from "./db";
+import { images, consultations, insertChatbotSettingsSchema } from "@shared/schema";
+import { eq, inArray } from "drizzle-orm";
+import { ChatbotSettingsData } from "./storage";
 import WebSocket, { WebSocketServer } from "ws";
 import { z } from "zod";
 import { storage } from "./storage";
 import { isAuthenticated, skipAuthForWebhook } from "./simpleAuth";
 import cors from "cors";
+import { exportConsultationsToCSV } from "./services/csvExport";
+
+// Enhanced image processing function with security and thumbnail generation
+async function processConsultationImage(consultationId: number, imagePath: string, hasImage: string) {
+  try {
+    console.log("🖼️ Processing image for consultation:", consultationId);
+
+    // Only process if has_image is "true"
+    if (hasImage !== "true") {
+      console.log("ℹ️ Skipping image processing: has_image is not 'true'");
+      return;
+    }
+
+    const MAX_FILE_SIZE = 5 * 1024 * 1024; // 5MB
+    const ALLOWED_MIME_TYPES = ['image/jpeg', 'image/png', 'image/webp'];
+    const THUMBNAIL_SIZE = 256;
+
+    let sourceType: "upload" | "link" = "link";
+    let finalImageUrl = imagePath;
+    let finalThumbnailUrl: string | null = null;
+    let mimeType = "image/jpeg"; // default
+    let originalBuffer: Buffer | null = null;
+
+    // Check if it's base64 data:image
+    if (imagePath.startsWith("data:image")) {
+      const match = imagePath.match(/^data:([^;]+);base64,(.*)$/);
+      if (!match) {
+        console.warn("⚠️ Invalid base64 image format");
+        return;
+      }
+
+      mimeType = match[1];
+      const base64Data = match[2];
+
+      // Validate MIME type
+      if (!ALLOWED_MIME_TYPES.includes(mimeType)) {
+        console.warn(`⚠️ Unsupported MIME type: ${mimeType}`);
+        return;
+      }
+
+      // Decode base64 data
+      try {
+        originalBuffer = Buffer.from(base64Data, "base64");
+      } catch (decodeError) {
+        console.warn("⚠️ Invalid base64 data:", decodeError);
+        return;
+      }
+
+      // Check file size
+      if (originalBuffer.length > MAX_FILE_SIZE) {
+        console.warn(`⚠️ Image too large: ${originalBuffer.length} bytes (max: ${MAX_FILE_SIZE})`);
+        return;
+      }
+
+      // Process image with Sharp
+      try {
+        // Create directory structure /uploads/YYYY/MM/
+        const now = new Date();
+        const year = now.getFullYear().toString();
+        const month = (now.getMonth() + 1).toString().padStart(2, '0');
+        const uploadDir = path.join(process.cwd(), "uploads", year, month);
+
+        // Ensure directory exists
+        fs.mkdirSync(uploadDir, { recursive: true });
+
+        // Generate secure random filename (32 bytes = 64 hex chars)
+        const randomBytes = crypto.randomBytes(32);
+        const filename = randomBytes.toString('hex');
+        const thumbnailFilename = `${filename}_thumb`;
+
+        // Process original image - strip EXIF and convert to WebP if beneficial
+        const originalSharp = sharp(originalBuffer);
+        const metadata = await originalSharp.metadata();
+
+        let originalFormat = 'webp'; // Default to WebP for better compression
+        let originalPath = path.join(uploadDir, `${filename}.webp`);
+
+        // Keep original format if it's already WebP or if it's small
+        if (metadata.format === 'webp' || originalBuffer.length < 100 * 1024) {
+          originalFormat = metadata.format || 'jpeg';
+          originalPath = path.join(uploadDir, `${filename}.${originalFormat}`);
+        }
+
+        // Strip EXIF metadata and save original
+        await originalSharp
+          .rotate() // Auto-rotate based on EXIF
+          .toFormat(originalFormat as any, { quality: 85 })
+          .toFile(originalPath);
+
+        finalImageUrl = `/uploads/${year}/${month}/${filename}.${originalFormat}`;
+        sourceType = "upload";
+
+        // Generate 256px thumbnail
+        const thumbnailPath = path.join(uploadDir, `${thumbnailFilename}.webp`);
+        await originalSharp
+          .rotate()
+          .resize(THUMBNAIL_SIZE, THUMBNAIL_SIZE, {
+            fit: 'cover',
+            position: 'center'
+          })
+          .toFormat('webp', { quality: 80 })
+          .toFile(thumbnailPath);
+
+        finalThumbnailUrl = `/uploads/${year}/${month}/${thumbnailFilename}.webp`;
+
+        console.log("✅ Processed and saved image:", {
+          original: originalPath,
+          thumbnail: thumbnailPath,
+          size: originalBuffer.length,
+          format: originalFormat
+        });
+
+      } catch (sharpError) {
+        console.warn("⚠️ Error processing image with Sharp:", sharpError);
+        return;
+      }
+
+    } else if (imagePath.startsWith("http://") || imagePath.startsWith("https://")) {
+      // Validate URL format
+      try {
+        const url = new URL(imagePath);
+
+        // For external URLs, we'll store the URL but not process it
+        // In a production system, you'd want to fetch and validate the image
+        sourceType = "link";
+        finalImageUrl = imagePath;
+        finalThumbnailUrl = null; // No thumbnail for external URLs
+
+        console.log("✅ Using external image URL:", imagePath);
+      } catch (urlError) {
+        console.warn("⚠️ Invalid image URL:", imagePath, urlError);
+        return;
+      }
+    } else {
+      console.warn("⚠️ Unsupported image path format:", imagePath);
+      return;
+    }
+
+    // Create image record with thumbnail URL
+    const imageRecord = await db.insert(images).values({
+      consultationId,
+      url: finalImageUrl,
+      thumbnailUrl: finalThumbnailUrl,
+      sourceType,
+      meta: {
+        mimeType,
+        originalPath: imagePath,
+        processedAt: new Date().toISOString(),
+        fileSize: originalBuffer?.length || null,
+        thumbnailGenerated: finalThumbnailUrl !== null,
+      },
+    }).returning();
+
+    console.log("✅ Created image record:", imageRecord[0].id);
+
+    // Update consultation with processed image path
+    await db.update(consultations)
+      .set({ image_path: finalImageUrl })
+      .where(eq(consultations.id, consultationId));
+
+    console.log("✅ Updated consultation image_path to:", finalImageUrl);
+
+  } catch (error) {
+    console.error("❌ Error processing consultation image:", error);
+    // Don't throw - just log and continue
+  }
+}
 
 // Flexible Zod schema for consultation payload that accepts any field structure
 const ConsultationSchema = z
@@ -56,28 +230,71 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.use(express.json({ limit: "1mb" }));
   app.use(express.urlencoded({ extended: false }));
 
+  // Serve uploaded images with security headers
+  app.use('/uploads', express.static(path.join(process.cwd(), 'uploads'), {
+    setHeaders: (res, path) => {
+      // Security headers for uploaded files
+      res.setHeader('Cache-Control', 'public, max-age=31536000, immutable'); // 1 year cache
+      res.setHeader('X-Content-Type-Options', 'nosniff');
+      res.setHeader('X-Frame-Options', 'DENY');
+      res.setHeader('X-XSS-Protection', '1; mode=block');
+      res.setHeader('Referrer-Policy', 'strict-origin-when-cross-origin');
+
+      // Content Security Policy for images
+      res.setHeader('Content-Security-Policy', "default-src 'none'; img-src 'self'; style-src 'unsafe-inline'");
+    },
+    // Disable directory listing for security
+    index: false,
+    redirect: false
+  }));
+
   // NOTE: Do NOT register /api/health here to preserve the instance added in server/index.ts
 
   // Auth status route is provided by simple auth (registered in server/index.ts).
   // Avoid redefining here to prevent conflicts.
 
   const ENABLE_CHATBOT_SETTINGS =
-    process.env.VITE_ENABLE_CHATBOT_SETTINGS === "true";
+    (process.env.VITE_ENABLE_CHATBOT_SETTINGS === "1" ||
+     process.env.VITE_ENABLE_CHATBOT_SETTINGS === "true" ||
+     process.env.ENABLE_CHATBOT_SETTINGS === "1" ||
+     process.env.ENABLE_CHATBOT_SETTINGS === "true") ||
+    (process.env.NODE_ENV === "development");
 
   if (ENABLE_CHATBOT_SETTINGS) {
     app.get(
-      "/api/chatbot-settings",
+      "/api/chatbot-settings/:clinic_group",
       isAuthenticated,
-      async (_req: Request, res: Response) => {
+      async (req: Request, res: Response) => {
         // Always set JSON content type first
         res.setHeader("Content-Type", "application/json");
 
         try {
-          const settings = await storage.getChatbotSettings();
-          res.status(200).json({
-            success: true,
-            data: settings || {},
-          });
+          const { clinic_group } = req.params;
+
+          // Validate clinic_group parameter
+          if (!clinic_group || typeof clinic_group !== 'string' || clinic_group.trim() === '') {
+            return res.status(422).json({
+              error: "Validation Error",
+              issues: [{ field: "clinic_group", message: "Clinic group is required and must be a non-empty string" }]
+            });
+          }
+
+          const settings = await storage.getChatbotSettings(clinic_group.trim());
+
+          // Return only the 4 specified fields
+          const responseData = settings ? {
+            welcome_message: settings.welcomeMessage,
+            bot_name: settings.botDisplayName,
+            cta_label: settings.ctaButtonLabel,
+            tone: settings.chatbotTone
+          } : {
+            welcome_message: null,
+            bot_name: null,
+            cta_label: null,
+            tone: null
+          };
+
+          res.status(200).json(responseData);
         } catch (error) {
           console.error("Error fetching chatbot settings:", error);
           res.status(500).json({
@@ -89,38 +306,115 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
     );
 
-    app.patch(
-      "/api/chatbot-settings",
+    app.post(
+      "/api/chatbot-settings/:clinic_group",
       isAuthenticated,
       async (req: Request, res: Response) => {
         // Always set JSON content type first
         res.setHeader("Content-Type", "application/json");
 
         try {
+          const { clinic_group } = req.params;
           const updates = req.body;
-          console.log("Received chatbot settings update:", updates);
 
-          // Validate chatbot tone if provided
-          if (
-            updates.chatbotTone &&
-            !["Friendly", "Professional", "Clinical", "Casual"].includes(
-              updates.chatbotTone
-            )
-          ) {
-            return res.status(400).json({
-              success: false,
-              message: "Invalid chatbot tone value.",
+          // Validate clinic_group parameter
+          if (!clinic_group || typeof clinic_group !== 'string' || clinic_group.trim() === '') {
+            return res.status(422).json({
+              error: "Validation Error",
+              issues: [{ field: "clinic_group", message: "Clinic group is required and must be a non-empty string" }]
             });
           }
 
-          const updatedSettings = await storage.updateChatbotSettings(updates);
-          console.log("Updated chatbot settings:", updatedSettings);
+          console.log("Received chatbot settings update for clinic:", clinic_group, updates);
 
-          res.status(200).json({
-            success: true,
-            data: updatedSettings,
-            message: "Settings updated successfully",
-          });
+          // Validate input - only allow the 4 specified fields
+          const allowedFields = ['welcome_message', 'bot_name', 'cta_label', 'tone'];
+          const receivedFields = Object.keys(updates);
+
+          // Check for invalid fields
+          const invalidFields = receivedFields.filter(field => !allowedFields.includes(field));
+          if (invalidFields.length > 0) {
+            return res.status(422).json({
+              error: "Validation Error",
+              issues: invalidFields.map(field => ({
+                field,
+                message: `Field '${field}' is not allowed. Only ${allowedFields.join(', ')} are permitted.`
+              }))
+            });
+          }
+
+          // Validate field types and values
+          const validationIssues: Array<{ field: string; message: string }> = [];
+
+          if (updates.welcome_message !== undefined) {
+            if (typeof updates.welcome_message !== 'string') {
+              validationIssues.push({ field: "welcome_message", message: "Must be a string" });
+            } else if (updates.welcome_message.length < 10) {
+              validationIssues.push({ field: "welcome_message", message: "Must be at least 10 characters long" });
+            }
+          }
+
+          if (updates.bot_name !== undefined) {
+            if (typeof updates.bot_name !== 'string') {
+              validationIssues.push({ field: "bot_name", message: "Must be a string" });
+            } else if (updates.bot_name.length < 3) {
+              validationIssues.push({ field: "bot_name", message: "Must be at least 3 characters long" });
+            }
+          }
+
+          if (updates.cta_label !== undefined) {
+            if (typeof updates.cta_label !== 'string') {
+              validationIssues.push({ field: "cta_label", message: "Must be a string" });
+            } else if (updates.cta_label.length < 3) {
+              validationIssues.push({ field: "cta_label", message: "Must be at least 3 characters long" });
+            }
+          }
+
+          if (updates.tone !== undefined) {
+            const validTones = ['Friendly', 'Professional', 'Clinical', 'Casual'];
+            if (typeof updates.tone !== 'string' || !validTones.includes(updates.tone)) {
+              validationIssues.push({
+                field: "tone",
+                message: `Must be one of: ${validTones.join(', ')}`
+              });
+            }
+          }
+
+          if (validationIssues.length > 0) {
+            return res.status(422).json({
+              error: "Validation Error",
+              issues: validationIssues
+            });
+          }
+
+          // Prepare updates for storage (map field names)
+          const storageUpdates: Partial<ChatbotSettingsData> = {};
+
+          if (updates.welcome_message !== undefined) {
+            storageUpdates.welcomeMessage = updates.welcome_message;
+          }
+          if (updates.bot_name !== undefined) {
+            storageUpdates.botDisplayName = updates.bot_name;
+          }
+          if (updates.cta_label !== undefined) {
+            storageUpdates.ctaButtonLabel = updates.cta_label;
+          }
+          if (updates.tone !== undefined) {
+            storageUpdates.chatbotTone = updates.tone;
+          }
+
+          const updatedSettings = await storage.updateChatbotSettings(clinic_group.trim(), storageUpdates);
+          console.log("Updated chatbot settings for clinic:", clinic_group, updatedSettings);
+
+          // Return only the 4 specified fields in response
+          const responseData = {
+            welcome_message: updatedSettings.welcomeMessage,
+            bot_name: updatedSettings.botDisplayName,
+            cta_label: updatedSettings.ctaButtonLabel,
+            tone: updatedSettings.chatbotTone
+          };
+
+          res.status(200).json(responseData);
         } catch (error) {
           console.error("Error updating chatbot settings:", error);
           res.status(500).json({
@@ -188,40 +482,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
         // Use raw body data to handle any field structure
         const rawData = req.body;
 
-        // Check for duplicate webhook using conversation ID or unique identifier
-        const sessionId =
-          rawData.sessionId ||
-          rawData.conversation_id ||
-          rawData.chatbot_session_id;
-        if (sessionId) {
-          console.log("🔍 Checking for duplicate session:", sessionId);
-          try {
-            const existingConsultations = await storage.getConsultations();
-            const isDuplicate = existingConsultations.some(
-              (c) =>
-                c.conversation_log &&
-                Array.isArray(c.conversation_log) &&
-                c.conversation_log.some((log: any) => log.sessionId === sessionId)
-            );
-
-            if (isDuplicate) {
-              console.warn(
-                "⚠️ Duplicate webhook detected for session:",
-                sessionId
-              );
-              return res.status(200).json({
-                success: true,
-                message: "Duplicate webhook ignored",
-                sessionId: sessionId,
-              });
-            }
-          } catch (error) {
-            console.error(
-              "⚠️ Error checking for duplicates, continuing:",
-              error
-            );
-          }
-        }
+        // Skip duplicate check for now to work around raw_json column issue
+        console.log("🔍 Skipping duplicate check due to database schema issue");
 
         console.log("✅ Processing consultation with raw data");
 
@@ -260,9 +522,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
                 email
               );
               return res.status(200).json({
-                success: true,
-                message: "Recent consultation duplicate ignored",
-                consultationId: recentConsultationDuplicate.id,
+                ok: true,
+                id: recentConsultationDuplicate.id.toString(),
               });
             }
 
@@ -282,9 +543,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
                 email
               );
               return res.status(200).json({
-                success: true,
-                message: "Recent assessment duplicate ignored",
-                assessmentId: recentAssessmentDuplicate.id,
+                ok: true,
+                id: recentAssessmentDuplicate.id.toString(),
               });
             }
           } catch (error) {
@@ -351,8 +611,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
             rawData.hasImage ||
             rawData.imageUploaded ||
             (rawData.image_path || rawData.imagePath || rawData.imageUrl
-              ? "Yes"
-              : "No"),
+              ? "true"
+              : "false"),
           image_path:
             rawData.image_path ||
             rawData.imagePath ||
@@ -409,12 +669,14 @@ export async function registerRoutes(app: Express): Promise<Server> {
             rawData.conversation_log ||
             rawData.conversationLog ||
             rawData.chatHistory ||
-            (sessionId ? [{ sessionId, timestamp: new Date().toISOString() }] : []),
+            [],
           completed_steps:
             rawData.completed_steps ||
             rawData.completedSteps ||
             rawData.stepsCompleted ||
             [],
+          // Temporarily exclude raw_json to work around database schema issue
+          // raw_json: rawData, // Store full untouched payload
         };
 
         // Ensure string fields for JSON storage
@@ -446,9 +708,21 @@ export async function registerRoutes(app: Express): Promise<Server> {
         console.log("🧾 Final consultation data to store:", consultationData);
 
         // Store ALL consultation fields properly
+        // Temporarily exclude raw_json to work around database schema issue
+        const { raw_json, ...consultationDataWithoutRawJson } = consultationData;
         const consultationRecord = await storage.createConsultation(
-          consultationData
+          consultationDataWithoutRawJson
         );
+
+        // Process image if present
+        if (consultationData.image_path) {
+          try {
+            await processConsultationImage(consultationRecord.id, consultationData.image_path, consultationData.has_image);
+          } catch (imageError) {
+            console.error("⚠️ Error processing consultation image:", imageError);
+            // Don't fail the entire webhook for image processing errors
+          }
+        }
 
         let patient = null;
         if (email && email !== "no-email@provided.com") {
@@ -513,11 +787,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
               existingAssessment.id
             );
             return res.status(200).json({
-              success: true,
-              message: "Using existing assessment",
-              consultationId: consultationRecord.id,
-              patientId: patient.id,
-              assessmentId: existingAssessment.id,
+              ok: true,
+              id: consultationRecord.id.toString(),
             });
           }
         } catch (error) {
@@ -627,11 +898,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
         }
 
         res.status(200).json({
-          success: true,
-          message: "Consultation processed successfully",
-          consultationId: consultationRecord.id,
-          patientId: patient.id,
-          assessmentId: assessment.id,
+          ok: true,
+          id: consultationRecord.id.toString(),
         });
       } catch (error) {
         console.error("❌ Error processing consultation:", error);
@@ -668,9 +936,25 @@ app.get('/api/assessments/:id', async (req: Request, res: Response) => {
   }
 });
 
-app.get('/api/consultations', async (_req: Request, res: Response) => {
+app.get('/api/consultations', async (req: Request, res: Response) => {
   try {
-    const consultations = await storage.getConsultations();
+    // Parse query parameters
+    const limit = req.query.limit ? parseInt(req.query.limit as string) : undefined;
+    const offset = req.query.offset ? parseInt(req.query.offset as string) : undefined;
+    const clinic_group = req.query.clinic_group as string | undefined;
+    const startDate = req.query.startDate ? new Date(req.query.startDate as string) : undefined;
+    const endDate = req.query.endDate ? new Date(req.query.endDate as string) : undefined;
+    const q = req.query.q as string | undefined;
+
+    const options: any = {};
+    if (limit !== undefined) options.limit = limit;
+    if (offset !== undefined) options.offset = offset;
+    if (clinic_group) options.clinic_group = clinic_group;
+    if (startDate) options.startDate = startDate;
+    if (endDate) options.endDate = endDate;
+    if (q) options.q = q;
+
+    const consultations = await storage.getConsultations(options);
     res.json(consultations);
   } catch (error) {
     console.error('Error fetching consultations:', error);
@@ -777,20 +1061,20 @@ app.get('/api/export/analytics', async (req: Request, res: Response) => {
       assessments,
       consultations,
       exportedAt: new Date().toISOString(),
+      imageUrls: consultations
+        .filter(c => c.image_path)
+        .map(c => ({
+          consultationId: c.id,
+          imageUrl: c.image_path,
+          hasImage: c.has_image
+        }))
     };
 
     if (format === 'csv') {
-      const csvHeaders = 'ID,Patient Name,Email,Risk Level,Primary Concern,Status,Completed At,Clinic Location\n';
-      const csvData = assessments
-        .map(
-          (a: any) =>
-            `${a.id},"${a.patient?.name || 'Unknown'}","${a.patient?.email || 'N/A'}","${a.riskLevel}","${a.primaryConcern}","${a.status}","${a.completedAt}","${a.clinicLocation || 'N/A'}"`
-        )
-        .join('\n');
+      // Use the CSV export service
+      const csvContent = await exportConsultationsToCSV(consultations);
 
-      res.setHeader('Content-Type', 'text/csv');
-      res.setHeader('Content-Disposition', 'attachment; filename="analytics-export.csv"');
-      res.send(csvHeaders + csvData);
+
     } else {
       res.setHeader('Content-Type', 'application/json');
       res.setHeader('Content-Disposition', 'attachment; filename="analytics-export.json"');

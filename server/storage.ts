@@ -10,39 +10,33 @@
   communications,
   followUps,
   consultations,
+  images,
+  chatbotSettings,
   type UpsertUser,
   type User,
   type InsertPatient,
   type Patient,
   type InsertAssessment,
   type Assessment,
-  type AssessmentWithPatient,
   type InsertResponse,
   type Response,
-  type ResponseWithQuestion,
   type InsertQuestion,
   type Question,
   type InsertCondition,
   type Condition,
   type InsertClinic,
   type Clinic,
-  type ClinicWithAssessmentCount,
-  type InsertCommunication,
-  type Communication,
   type InsertConsultation,
   type Consultation,
-  type CommunicationWithPatient,
-  type InsertFollowUp,
-  type FollowUp,
-  type FollowUpWithPatient,
   // ChatbotSettingsSchemaType, InsertChatbotSettingsSchemaType are not used from schema directly for ChatbotSettingsData
 } from "@shared/schema";
-import { pool as db } from "./db"; // db can be null if DATABASE_URL is not set
-import { eq, and, desc, sql, count, like, or, between, asc } from "drizzle-orm";
+import { db } from "./db"; // db can be null if DATABASE_URL is not set
+import { eq, and, desc, sql, count, like, or, between, asc, inArray } from "drizzle-orm";
 
 // Define ChatbotSettings structure
 export interface ChatbotSettingsData {
   id?: number;
+  clinicGroup?: string;
   welcomeMessage?: string;
   botDisplayName?: string;
   ctaButtonLabel?: string;
@@ -61,17 +55,17 @@ export interface IStorage {
   createPatient(patient: InsertPatient): Promise<Patient>;
   updatePatient(id: number, patient: Partial<InsertPatient>): Promise<Patient | undefined>;
   getPatientsCount(search?: string): Promise<number>;
-  getAssessments(options?: { limit?: number; offset?: number; patientId?: number; status?: string; riskLevel?: string; startDate?: Date; endDate?: Date; clinicLocation?: string; }): Promise<AssessmentWithPatient[]>;
+  getAssessments(options?: { limit?: number; offset?: number; patientId?: number; status?: string; riskLevel?: string; startDate?: Date; endDate?: Date; clinicLocation?: string; }): Promise<Assessment[]>;
   getAssessmentsCount(options?: { patientId?: number; status?: string; riskLevel?: string; startDate?: Date; endDate?: Date; clinicLocation?: string; }): Promise<number>;
   getAssessmentById(id: number): Promise<Assessment | undefined>;
   createAssessment(assessment: InsertAssessment): Promise<Assessment>;
   updateAssessment(id: number, assessment: Partial<InsertAssessment>): Promise<Assessment | undefined>;
   getAssessmentsByDateRange(startDate: Date, endDate: Date): Promise<Assessment[]>;
-  getRecentAssessments(limit?: number): Promise<AssessmentWithPatient[]>;
-  getResponsesByAssessmentId(assessmentId: number): Promise<ResponseWithQuestion[]>;
+  getRecentAssessments(limit?: number): Promise<Assessment[]>;
+  getResponsesByAssessmentId(assessmentId: number): Promise<Response[]>;
   createResponse(response: InsertResponse): Promise<Response>;
   updateResponse(id: number, response: Partial<InsertResponse>): Promise<Response | undefined>;
-  getFlaggedResponses(): Promise<ResponseWithQuestion[]>;
+  getFlaggedResponses(): Promise<Response[]>;
   getFlaggedResponsesCount(): Promise<number>;
   getQuestions(): Promise<Question[]>;
   getQuestionById(id: number): Promise<Question | undefined>;
@@ -84,18 +78,14 @@ export interface IStorage {
   getClinicById(id: number): Promise<Clinic | undefined>;
   createClinic(clinic: InsertClinic): Promise<Clinic>;
   updateClinic(id: number, clinic: Partial<InsertClinic>): Promise<Clinic | undefined>;
-  getClinicAssessmentCounts(): Promise<ClinicWithAssessmentCount[]>;
-  getCommunications(): Promise<CommunicationWithPatient[]>;
-  createCommunication(communication: InsertCommunication): Promise<Communication>;
-  getFollowUps(): Promise<FollowUpWithPatient[]>;
-  createFollowUp(followUp: InsertFollowUp): Promise<FollowUp>;
+  getClinicAssessmentCounts(): Promise<{ clinic: Clinic; count: number }[]>;
   getCompletedAssessmentsCount(): Promise<number>;
   getWeeklyAssessmentsCount(): Promise<number>;
   getAssessmentsTrend(days?: number): Promise<{ date: string; count: number }[]>;
-  getChatbotSettings(): Promise<ChatbotSettingsData | null>;
-  updateChatbotSettings(settings: Partial<ChatbotSettingsData>): Promise<ChatbotSettingsData>;
+  getChatbotSettings(clinicGroup: string): Promise<ChatbotSettingsData | null>;
+  updateChatbotSettings(clinicGroup: string, settings: Partial<ChatbotSettingsData>): Promise<ChatbotSettingsData>;
   createConsultation(consultationData: InsertConsultation): Promise<Consultation>;
-  getConsultations(): Promise<Consultation[]>;
+  getConsultations(options?: { limit?: number; offset?: number; clinic_group?: string; startDate?: Date; endDate?: Date; q?: string }): Promise<Consultation[]>;
   getConsultationById(id: number): Promise<Consultation>;
 }
 
@@ -156,7 +146,7 @@ export class DatabaseStorage implements IStorage {
     return updatedClinic;
   }
 
-  async getClinicAssessmentCounts(): Promise<ClinicWithAssessmentCount[]> {
+  async getClinicAssessmentCounts(): Promise<{ clinic: Clinic; count: number }[]> {
     if (!db) throw new Error(DB_UNAVAILABLE_WARNING + " (getClinicAssessmentCounts)");
     const result = await db
       .select({
@@ -169,8 +159,8 @@ export class DatabaseStorage implements IStorage {
       .orderBy(desc(sql`assessmentCount`));
 
     return result.map(row => ({
-      ...row.clinic,
-      assessmentCount: row.count ?? 0
+      clinic: row.clinic,
+      count: row.count ?? 0
     }));
   }
 
@@ -667,63 +657,6 @@ export class DatabaseStorage implements IStorage {
     }));
   }
 
-  // Communication operations (Original - will fail if db is null)
-  async getCommunications(): Promise<CommunicationWithPatient[]> {
-    if (!db) throw new Error(DB_UNAVAILABLE_WARNING + " (getCommunications)");
-    const result = await db
-      .select()
-      .from(communications)
-      .leftJoin(patients, eq(communications.patientId, patients.id))
-      .orderBy(desc(communications.createdAt));
-
-    return result.map(row => ({
-      ...row.communications,
-      patient: row.patients! 
-    }));
-  }
-
-  async createCommunication(communicationData: InsertCommunication): Promise<Communication> {
-    if (!db) throw new Error(DB_UNAVAILABLE_WARNING + " (createCommunication)");
-    const [communication] = await db
-      .insert(communications)
-      .values({
-        ...communicationData,
-        status: 'sent',
-        createdAt: new Date(),
-        updatedAt: new Date()
-      })
-      .returning();
-    return communication;
-  }
-
-  // Follow-up operations (Original - will fail if db is null)
-  async getFollowUps(): Promise<FollowUpWithPatient[]> {
-    if (!db) throw new Error(DB_UNAVAILABLE_WARNING + " (getFollowUps)");
-    const result = await db
-      .select()
-      .from(followUps)
-      .leftJoin(patients, eq(followUps.patientId, patients.id))
-      .orderBy(desc(followUps.scheduledFor));
-
-    return result.map(row => ({
-      ...(row.follow_ups!), 
-      patient: row.patients!
-    }));
-  }
-
-  async createFollowUp(followUpData: InsertFollowUp): Promise<FollowUp> {
-    if (!db) throw new Error(DB_UNAVAILABLE_WARNING + " (createFollowUp)");
-    const [followUp] = await db
-      .insert(followUps)
-      .values({
-        ...followUpData,
-        status: 'scheduled',
-        createdAt: new Date(),
-        updatedAt: new Date()
-      })
-      .returning();
-    return followUp;
-  }
 
   async createConsultation(consultationData: InsertConsultation): Promise<Consultation> {
     if (!db) {
@@ -766,17 +699,99 @@ export class DatabaseStorage implements IStorage {
     console.log('  - emoji_survey:', consultationData.emoji_survey);
     console.log('  - survey_response:', consultationData.survey_response);
 
+    // Temporarily exclude raw_json to work around database schema issue
+    const { raw_json, ...dataWithoutRawJson } = consultationData;
     const [consultation] = await db
       .insert(consultations)
-      .values(consultationData)
+      .values(dataWithoutRawJson)
       .returning();
     console.log('âœ… Storage: Successfully created consultation ID:', consultation.id);
     return consultation;
   }
 
-  async getConsultations(): Promise<Consultation[]> {
-    if (!db) { this.logMockWarning('getConsultations'); return []; } // Mock for safety
-    return db.select().from(consultations).orderBy(desc(consultations.createdAt));
+  async getConsultations(options?: { limit?: number; offset?: number; clinic_group?: string; startDate?: Date; endDate?: Date; q?: string }): Promise<Consultation[]> {
+    if (!db) { this.logMockWarning('getConsultations', options); return []; } // Mock for safety
+
+    // First get consultations with filters
+    let consultationsQuery = db.select().from(consultations).$dynamic();
+
+    const queryConditions: any[] = [];
+    if (options?.clinic_group) {
+      queryConditions.push(eq(consultations.preferred_clinic, options.clinic_group));
+    }
+    if (options?.startDate && options?.endDate) {
+      queryConditions.push(between(consultations.createdAt, options.startDate, options.endDate));
+    }
+    if (options?.q) {
+      const searchTerm = `%${options.q}%`;
+      queryConditions.push(or(
+        like(consultations.name, searchTerm),
+        like(consultations.email, searchTerm),
+        like(consultations.phone, searchTerm),
+        like(consultations.issue_category, searchTerm),
+        like(consultations.symptom_description, searchTerm)
+      ));
+    }
+
+    if (queryConditions.length > 0) {
+      consultationsQuery = consultationsQuery.where(and(...queryConditions));
+    }
+
+    consultationsQuery = consultationsQuery.orderBy(desc(consultations.createdAt));
+
+    if (options?.limit !== undefined) {
+      consultationsQuery = consultationsQuery.limit(options.limit);
+    }
+    if (options?.offset !== undefined) {
+      consultationsQuery = consultationsQuery.offset(options.offset);
+    }
+
+    const consultationResults = await consultationsQuery;
+
+    // Get first image and thumbnail for each consultation
+    const consultationIds = consultationResults.map(c => c.id);
+    const imagesMap = new Map<number, string>();
+    const thumbnailsMap = new Map<number, string>();
+
+    if (consultationIds.length > 0) {
+      const imagesResult = await db
+        .select({
+          consultationId: images.consultationId,
+          url: images.url,
+          thumbnailUrl: images.thumbnailUrl
+        })
+        .from(images)
+        .where(inArray(images.consultationId, consultationIds))
+        .orderBy(asc(images.createdAt));
+
+      // Group by consultationId and take first image
+      const groupedImages = new Map<number, { url: string; thumbnailUrl: string | null }[]>();
+      imagesResult.forEach(img => {
+        if (!groupedImages.has(img.consultationId)) {
+          groupedImages.set(img.consultationId, []);
+        }
+        groupedImages.get(img.consultationId)!.push({
+          url: img.url,
+          thumbnailUrl: img.thumbnailUrl
+        });
+      });
+
+      // Take first image for each consultation
+      groupedImages.forEach((images, consultationId) => {
+        if (images.length > 0) {
+          imagesMap.set(consultationId, images[0].url);
+          if (images[0].thumbnailUrl) {
+            thumbnailsMap.set(consultationId, images[0].thumbnailUrl);
+          }
+        }
+      });
+    }
+
+    return consultationResults.map(consultation => ({
+      ...consultation,
+      firstImageUrl: imagesMap.get(consultation.id) || null,
+      firstThumbnailUrl: thumbnailsMap.get(consultation.id) || null
+    }));
   }
 
   async getConsultationById(id: number): Promise<Consultation> {
@@ -786,7 +801,7 @@ export class DatabaseStorage implements IStorage {
     try {
       const consultation = await db.select().from(consultations).where(eq(consultations.id, id)).limit(1);
       if (consultation.length === 0) {
-        throw newError("Consultation not found");
+        throw new Error("Consultation not found");
       }
       return consultation[0];
     } catch (error) {
@@ -795,51 +810,124 @@ export class DatabaseStorage implements IStorage {
     }
   }
 
-  // Chatbot Settings operations (in-memory)
-  async getChatbotSettings(): Promise<ChatbotSettingsData | null> {
-    console.log("Fetching chatbot settings (in-memory):", chatbotSettingsStore);
-    return Promise.resolve(chatbotSettingsStore ? { ...chatbotSettingsStore } : null);
+  // Chatbot Settings operations (database-based with clinic groups)
+  async getChatbotSettings(clinicGroup: string): Promise<ChatbotSettingsData | null> {
+    if (!db) {
+      this.logMockWarning('getChatbotSettings', { clinicGroup });
+      return null;
+    }
+
+    try {
+      const [settings] = await db
+        .select()
+        .from(chatbotSettings)
+        .where(eq(chatbotSettings.clinicGroup, clinicGroup))
+        .limit(1);
+
+      if (!settings) {
+        return null;
+      }
+
+      return {
+        id: settings.id,
+        clinicGroup: settings.clinicGroup || undefined,
+        welcomeMessage: settings.welcomeMessage || undefined,
+        botDisplayName: settings.botDisplayName || undefined,
+        ctaButtonLabel: settings.ctaButtonLabel || undefined,
+        chatbotTone: settings.chatbotTone || undefined,
+        createdAt: settings.createdAt || undefined,
+        updatedAt: settings.updatedAt || undefined,
+      };
+    } catch (error) {
+      console.error('Error fetching chatbot settings:', error);
+      return null;
+    }
   }
 
-  async updateChatbotSettings(settingsToUpdate: Partial<ChatbotSettingsData>): Promise<ChatbotSettingsData> {
-    if (!chatbotSettingsStore) { // Should ideally not happen if initialized
-        chatbotSettingsStore = {
-            id: 1,
-            welcomeMessage: "Default Welcome",
-            botDisplayName: "Bot",
-            ctaButtonLabel: "Chat",
-            chatbotTone: "Friendly",
-            createdAt: new Date(),
-            updatedAt: new Date(),
-            ...settingsToUpdate, // Apply updates over a full default structure
-        };
-    } else {
-        chatbotSettingsStore = {
-            ...chatbotSettingsStore,
-            ...settingsToUpdate,
-            updatedAt: new Date(),
-        };
+  async updateChatbotSettings(clinicGroup: string, settingsToUpdate: Partial<ChatbotSettingsData>): Promise<ChatbotSettingsData> {
+    if (!db) {
+      this.logMockWarning('updateChatbotSettings', { clinicGroup, settingsToUpdate });
+      // Return mock updated settings
+      return {
+        id: 1,
+        clinicGroup,
+        welcomeMessage: settingsToUpdate.welcomeMessage || "Default Welcome",
+        botDisplayName: settingsToUpdate.botDisplayName || "Bot",
+        ctaButtonLabel: settingsToUpdate.ctaButtonLabel || "Chat",
+        chatbotTone: settingsToUpdate.chatbotTone || "Friendly",
+        createdAt: new Date(),
+        updatedAt: new Date(),
+      };
     }
-    console.log("Updating chatbot settings (in-memory):", settingsToUpdate);
-    console.log("New chatbot settings state (in-memory):", chatbotSettingsStore);
-    // Ensure all fields of ChatbotSettingsData are present
-    const currentSettings = chatbotSettingsStore;
-    return Promise.resolve({
-        id: currentSettings.id,
-        welcomeMessage: currentSettings.welcomeMessage,
-        botDisplayName: currentSettings.botDisplayName,
-        ctaButtonLabel: currentSettings.ctaButtonLabel,
-        chatbotTone: currentSettings.chatbotTone,
-        createdAt: currentSettings.createdAt,
-        updatedAt: currentSettings.updatedAt,
-    });
+
+    try {
+      // Check if settings exist for this clinic group
+      const existingSettings = await this.getChatbotSettings(clinicGroup);
+
+      if (!existingSettings) {
+        // Create new settings for this clinic group
+        const [newSettings] = await db
+          .insert(chatbotSettings)
+          .values({
+            clinicGroup,
+            welcomeMessage: settingsToUpdate.welcomeMessage || "Welcome to FootCare Clinic! Let's get started.",
+            botDisplayName: settingsToUpdate.botDisplayName || "Fiona - FootCare Assistant",
+            ctaButtonLabel: settingsToUpdate.ctaButtonLabel || "Ask Fiona",
+            chatbotTone: settingsToUpdate.chatbotTone || "Friendly",
+          })
+          .returning();
+
+        return {
+          id: newSettings.id,
+          clinicGroup: newSettings.clinicGroup,
+          welcomeMessage: newSettings.welcomeMessage,
+          botDisplayName: newSettings.botDisplayName,
+          ctaButtonLabel: newSettings.ctaButtonLabel,
+          chatbotTone: newSettings.chatbotTone,
+          createdAt: newSettings.createdAt,
+          updatedAt: newSettings.updatedAt,
+        };
+      } else {
+        // Update existing settings
+        const updateData: Partial<typeof chatbotSettings.$inferInsert> = {};
+        if (settingsToUpdate.welcomeMessage !== undefined) {
+          updateData.welcomeMessage = settingsToUpdate.welcomeMessage;
+        }
+        if (settingsToUpdate.botDisplayName !== undefined) {
+          updateData.botDisplayName = settingsToUpdate.botDisplayName;
+        }
+        if (settingsToUpdate.ctaButtonLabel !== undefined) {
+          updateData.ctaButtonLabel = settingsToUpdate.ctaButtonLabel;
+        }
+        if (settingsToUpdate.chatbotTone !== undefined) {
+          updateData.chatbotTone = settingsToUpdate.chatbotTone;
+        }
+
+        const [updatedSettings] = await db
+          .update(chatbotSettings)
+          .set({ ...updateData, updatedAt: new Date() })
+          .where(eq(chatbotSettings.clinicGroup, clinicGroup))
+          .returning();
+
+        return {
+          id: updatedSettings.id,
+          clinicGroup: updatedSettings.clinicGroup,
+          welcomeMessage: updatedSettings.welcomeMessage,
+          botDisplayName: updatedSettings.botDisplayName,
+          ctaButtonLabel: updatedSettings.ctaButtonLabel,
+          chatbotTone: updatedSettings.chatbotTone,
+          createdAt: updatedSettings.createdAt,
+          updatedAt: updatedSettings.updatedAt,
+        };
+      }
+    } catch (error) {
+      console.error('Error updating chatbot settings:', error);
+      throw error;
+    }
   }
 }
 
 export const storage = new DatabaseStorage();
-import { pool as db } from "./db";
-import { eq } from "drizzle-orm";
-import { patients } from "@shared/schema";
 
 export class ChatbotService {
   async findPatientByEmail(email: string) {

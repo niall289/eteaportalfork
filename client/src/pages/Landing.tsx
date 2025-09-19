@@ -7,7 +7,7 @@ import { Input } from "@/components/ui/input";
 import { useLocation } from "wouter";
 import { apiRequest } from "@/lib/queryClient";
 import { queryClient } from "@/lib/queryClient";
-import logoImage from "../assets/logo.png";
+import logoImage from "../assets/etea-logo.png";
 
 export default function Landing() {
   const { toast } = useToast();
@@ -53,7 +53,7 @@ export default function Landing() {
         queryClient.invalidateQueries({ queryKey: ["/api/auth/user"] });
         toast({
           title: "Login successful",
-          description: "Welcome to the Foot Care Clinic dashboard.",
+          description: "Welcome to the ETEA Healthcare dashboard.",
         });
         navigate("/dashboard");
       }
@@ -72,8 +72,8 @@ export default function Landing() {
   return (
     <>
       <Helmet>
-        <title>Welcome | Foot Care Clinic</title>
-        <meta name="description" content="Welcome to the Foot Care Clinic patient portal. Log in to view your patient data and chatbot interactions." />
+        <title>Welcome | ETEA Healthcare</title>
+        <meta name="description" content="Welcome to the ETEA Healthcare patient portal. Log in to view your patient data and chatbot interactions." />
       </Helmet>
       
       <div className="min-h-screen w-full flex flex-col items-center bg-neutral-50 dark:bg-neutral-900">
@@ -83,7 +83,7 @@ export default function Landing() {
             <div className="flex items-center">
               <img 
                 src={logoImage} 
-                alt="FootCare Clinic Logo" 
+                alt="ETEA Healthcare Logo"
                 className="h-10 w-auto"
               />
             </div>
@@ -94,7 +94,7 @@ export default function Landing() {
         <section className="flex-1 flex flex-col items-center justify-center w-full px-4 py-6">
           <div className="max-w-3xl mx-auto text-center">
             <h2 className="text-2xl md:text-3xl font-bold text-neutral-900 dark:text-white mb-3">
-              FootCare Clinic Chatbot Admin Portal
+              ETEA Healthcare Chatbots Admin Portal
             </h2>
             <p className="text-lg text-neutral-600 dark:text-neutral-300 mb-6">
               Access patient chatbot results, analyze data, and improve patient care with our dedicated dashboard.
@@ -171,7 +171,7 @@ export default function Landing() {
         <footer className="w-full bg-neutral-100 dark:bg-neutral-800/50 py-3">
           <div className="container mx-auto px-4 text-center">
             <p className="text-xs text-neutral-600 dark:text-neutral-400">
-              © {new Date().getFullYear()} Foot Care Clinic. Built by EngageIOBots.com
+              © {new Date().getFullYear()} ETEA Healthcare. Built by EngageIOBots.com
             </p>
           </div>
         </footer>

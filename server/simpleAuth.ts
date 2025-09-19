@@ -2,10 +2,11 @@ import { Router } from 'express';
 import type { Request, Response, NextFunction, Express } from 'express';
 import session from 'express-session';
 
-// Extend express-session with our token
+// Extend express-session with our token and auth
 declare module 'express-session' {
   interface SessionData {
     token?: string;
+    auth?: { user: string; ts: number };
   }
 }
 
@@ -89,15 +90,13 @@ export function setupAuth(app: Express) {
 
 // Authentication middleware - enabled for security
 export function isAuthenticated(req: Request, res: Response, next: NextFunction) {
-  const session = req.session as any;
-  
-  if (!session?.token || session.token !== AUTH_TOKEN) {
-    return res.status(401).json({ 
-      success: false, 
-      message: 'Authentication required' 
+  if (!(req.session && (req.session as any).auth)) {
+    return res.status(401).json({
+      success: false,
+      message: 'Authentication required'
     });
   }
-  
+
   return next();
 }
 
@@ -152,17 +151,13 @@ export function registerSimpleAuth(app: Express) {
       return res.status(401).json({ error: "Invalid token" });
     }
 
-    // Minimal session flag (persists if express-session is configured)
-    try {
-      // @ts-ignore
-      if (req.session) {
-        // @ts-ignore
-        req.session.authenticated = true;
-        // also set a token to satisfy any legacy session checks
-        // @ts-ignore
-        req.session.token = AUTH_TOKEN;
-      }
-    } catch {}
+    // Set session flag
+    if (!req.session) {
+      req.session = {} as any;
+    }
+    (req.session as any).auth = { user: "admin", ts: Date.now() };
+    // also set a token to satisfy any legacy session checks
+    (req.session as any).token = AUTH_TOKEN;
 
     // Also set a lightweight cookie so SPA guards can work even if no session store
     try {
@@ -182,7 +177,7 @@ export function registerSimpleAuth(app: Express) {
     let authenticated = false;
     try {
       // @ts-ignore
-      if (req.session && (req.session.authenticated === true || req.session.token === AUTH_TOKEN)) {
+      if (req.session && ((req.session as any).auth || req.session.authenticated === true || req.session.token === AUTH_TOKEN)) {
         authenticated = true;
       }
     } catch {}

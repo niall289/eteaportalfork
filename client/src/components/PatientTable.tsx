@@ -80,6 +80,9 @@ export default function PatientTable({
                   Patient
                 </TableHead>
                 <TableHead className="px-6 py-3 text-left text-xs font-medium text-neutral-500 dark:text-neutral-400 uppercase tracking-wider">
+                  Image
+                </TableHead>
+                <TableHead className="px-6 py-3 text-left text-xs font-medium text-neutral-500 dark:text-neutral-400 uppercase tracking-wider">
                   Date
                 </TableHead>
                 <TableHead className="px-6 py-3 text-left text-xs font-medium text-neutral-500 dark:text-neutral-400 uppercase tracking-wider">
@@ -110,6 +113,11 @@ export default function PatientTable({
                       </div>
                     </TableCell>
                     <TableCell className="px-6 py-4 whitespace-nowrap">
+                      <div className="flex items-center justify-center">
+                        <Skeleton className="h-12 w-12 rounded-lg" />
+                      </div>
+                    </TableCell>
+                    <TableCell className="px-6 py-4 whitespace-nowrap">
                       <Skeleton className="h-4 w-24" />
                       <Skeleton className="h-3 w-16 mt-1" />
                     </TableCell>
@@ -129,7 +137,7 @@ export default function PatientTable({
                 ))
               ) : !assessments || assessments.length === 0 ? (
                 <TableRow>
-                  <TableCell colSpan={6} className="px-6 py-10 text-center text-neutral-500 dark:text-neutral-400">
+                  <TableCell colSpan={7} className="px-6 py-10 text-center text-neutral-500 dark:text-neutral-400">
                     <div className="text-center">
                       <div className="text-lg mb-2">📋 No consultations yet</div>
                       <div>Waiting for chatbot submissions...</div>
@@ -152,6 +160,34 @@ export default function PatientTable({
                             {assessment.patient.email}
                           </div>
                         </div>
+                      </div>
+                    </TableCell>
+                    <TableCell className="px-6 py-4 whitespace-nowrap">
+                      <div className="flex items-center justify-center">
+                        {assessment.consultationData?.firstImageUrl || assessment.consultationData?.imagePath ? (
+                          <button
+                            onClick={() => window.open(assessment.consultationData.firstImageUrl || assessment.consultationData.imagePath, '_blank')}
+                            className="w-12 h-12 rounded-lg overflow-hidden border-2 border-neutral-200 dark:border-neutral-700 hover:border-primary-300 dark:hover:border-primary-600 transition-colors"
+                          >
+                            <img
+                              src={assessment.consultationData.firstImageUrl || assessment.consultationData.imagePath}
+                              alt="Consultation image"
+                              className="w-full h-full object-cover"
+                              onError={(e) => {
+                                const target = e.target as HTMLImageElement;
+                                target.style.display = 'none';
+                                const parent = target.parentElement;
+                                if (parent) {
+                                  parent.innerHTML = '<div class="w-full h-full bg-neutral-100 dark:bg-neutral-800 flex items-center justify-center"><span class="text-neutral-400 text-lg">📷</span></div>';
+                                }
+                              }}
+                            />
+                          </button>
+                        ) : (
+                          <div className="w-12 h-12 rounded-lg bg-neutral-100 dark:bg-neutral-800 flex items-center justify-center">
+                            <span className="text-neutral-400 text-lg">📷</span>
+                          </div>
+                        )}
                       </div>
                     </TableCell>
                     <TableCell className="px-6 py-4 whitespace-nowrap">

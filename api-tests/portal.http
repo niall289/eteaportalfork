@@ -1,0 +1,370 @@
+# ETEA Healthcare Portal - API Tests
+# Use with VS Code REST Client extension or similar HTTP client
+
+@baseUrl = http://localhost:3001
+@webhookSecret = your-webhook-secret-here
+
+### Health Check
+GET {{baseUrl}}/api/health
+
+### Database Ping
+GET {{baseUrl}}/api/db-ping
+
+### Get Dashboard Stats
+GET {{baseUrl}}/api/dashboard/stats
+
+### Get Dashboard Trends (7 days)
+GET {{baseUrl}}/api/dashboard/trends?days=7
+
+### Get Dashboard Trends (30 days)
+GET {{baseUrl}}/api/dashboard/trends?days=30
+
+### Get All Consultations
+GET {{baseUrl}}/api/consultations
+
+### Get Single Consultation
+GET {{baseUrl}}/api/consultations/1
+
+### Get All Patients
+GET {{baseUrl}}/api/patients
+
+### Get Recent Assessments
+GET {{baseUrl}}/api/assessments/recent?limit=5
+
+### Get All Assessments
+GET {{baseUrl}}/api/assessments
+
+### Get Chatbot Settings
+GET {{baseUrl}}/api/chatbot-settings
+
+### Update Chatbot Settings
+PATCH {{baseUrl}}/api/chatbot-settings
+Content-Type: application/json
+
+{
+  "welcomeMessage": "Welcome to FootCare Clinic! How can we help you today?",
+  "botDisplayName": "Fiona - FootCare Assistant",
+  "ctaButtonLabel": "Ask Fiona",
+  "chatbotTone": "Friendly"
+}
+
+### Test FootCare Webhook - Complete Payload
+POST {{baseUrl}}/api/webhooks/footcare
+Content-Type: application/json
+X-Footcare-Secret: {{webhookSecret}}
+
+{
+  "name": "John Doe",
+  "email": "john.doe@example.com",
+  "phone": "+353123456789",
+  "preferred_clinic": "FootCare Clinic Dublin",
+  "issue_category": "Nail Problem",
+  "issue_specifics": "Ingrown toenail",
+  "symptom_description": "Redness and swelling around the big toe",
+  "previous_treatment": "Over-the-counter cream",
+  "has_image": "true",
+  "image_path": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNkYPhfDwAChwGA60e6kgAAAABJRU5ErkJggg==",
+  "image_analysis": "Possible fungal infection detected",
+  "calendar_booking": "2025-09-10T14:00:00Z",
+  "booking_confirmation": "yes",
+  "final_question": "Do I need surgery?",
+  "additional_help": "Looking for nearest clinic",
+  "emoji_survey": "😊",
+  "survey_response": "Very satisfied",
+  "conversation_log": [
+    {
+      "step": "symptom_description",
+      "answer": "Redness and swelling around the big toe",
+      "timestamp": "2025-09-08T10:30:00Z"
+    }
+  ],
+  "completed_steps": [
+    "symptom_description",
+    "previous_treatment",
+    "has_image",
+    "calendar_booking"
+  ],
+  "consultationId": "test-123",
+  "createdAt": "2025-09-08T10:30:00Z"
+}
+
+### Test FootCare Webhook - Minimal Payload
+POST {{baseUrl}}/api/webhooks/footcare
+Content-Type: application/json
+X-Footcare-Secret: {{webhookSecret}}
+
+{
+  "name": "Jane Smith",
+  "email": "jane.smith@example.com",
+  "issue_category": "General Consultation",
+  "symptom_description": "Mild discomfort"
+}
+
+### Test FootCare Webhook - Invalid Secret
+POST {{baseUrl}}/api/webhooks/footcare
+Content-Type: application/json
+X-Footcare-Secret: invalid-secret
+
+{
+  "name": "Test User",
+  "email": "test@example.com"
+}
+
+### Test FootCare Webhook - Invalid Data
+POST {{baseUrl}}/api/webhooks/footcare
+Content-Type: application/json
+X-Footcare-Secret: {{webhookSecret}}
+
+{
+  "invalidField": "test"
+}
+
+### Export Analytics as JSON
+GET {{baseUrl}}/api/export/analytics?format=json
+
+### Export Analytics as CSV
+GET {{baseUrl}}/api/export/analytics?format=csv
+
+### Export All Data
+GET {{baseUrl}}/api/export/all
+
+### Test Image Upload (after webhook with image)
+GET {{baseUrl}}/uploads/test-image.png
+
+### Test Invalid Image Path
+GET {{baseUrl}}/uploads/nonexistent.png
+
+### Test Authentication (if using simple auth)
+POST {{baseUrl}}/api/auth/login
+Content-Type: application/json
+
+{
+  "username": "admin",
+  "password": "password"
+}
+
+### Test Rate Limiting (send multiple requests quickly)
+GET {{baseUrl}}/api/health
+GET {{baseUrl}}/api/health
+GET {{baseUrl}}/api/health
+GET {{baseUrl}}/api/health
+GET {{baseUrl}}/api/health
+
+### Test CORS Headers
+OPTIONS {{baseUrl}}/api/consultations
+Origin: https://your-domain.com
+
+### Test Error Handling - Invalid Endpoint
+GET {{baseUrl}}/api/invalid-endpoint
+
+### Test Error Handling - Invalid Method
+POST {{baseUrl}}/api/health
+
+### Performance Test - Multiple Health Checks
+GET {{baseUrl}}/api/health
+GET {{baseUrl}}/api/health
+GET {{baseUrl}}/api/health
+GET {{baseUrl}}/api/health
+GET {{baseUrl}}/api/health
+
+### Load Test - Dashboard Stats
+GET {{baseUrl}}/api/dashboard/stats
+GET {{baseUrl}}/api/dashboard/stats
+GET {{baseUrl}}/api/dashboard/stats
+
+### Test WebSocket Connection (requires WebSocket client)
+# WS wss://your-domain.com/ws
+# Or for local development:
+# WS ws://localhost:3001/ws
+
+### Test File Upload Size Limit
+POST {{baseUrl}}/api/webhooks/footcare
+Content-Type: application/json
+X-Footcare-Secret: {{webhookSecret}}
+
+{
+  "name": "Large Image Test",
+  "email": "large@test.com",
+  "has_image": "true",
+  "image_path": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNkYPhfDwAChwGA60e6kgAAAABJRU5ErkJggg=="
+}
+
+### Test SQL Injection Prevention
+GET {{baseUrl}}/api/consultations/1'; DROP TABLE consultations; --
+
+### Test XSS Prevention
+POST {{baseUrl}}/api/webhooks/footcare
+Content-Type: application/json
+X-Footcare-Secret: {{webhookSecret}}
+
+{
+  "name": "<script>alert('xss')</script>",
+  "email": "xss@test.com",
+  "symptom_description": "<img src=x onerror=alert('xss')>"
+}
+
+### Test Input Validation - Empty Required Fields
+POST {{baseUrl}}/api/webhooks/footcare
+Content-Type: application/json
+X-Footcare-Secret: {{webhookSecret}}
+
+{
+  "name": "",
+  "email": "",
+  "issue_category": ""
+}
+
+### Test Input Validation - Invalid Email
+POST {{baseUrl}}/api/webhooks/footcare
+Content-Type: application/json
+X-Footcare-Secret: {{webhookSecret}}
+
+{
+  "name": "Test User",
+  "email": "invalid-email",
+  "issue_category": "Test"
+}
+
+### Test Duplicate Prevention
+POST {{baseUrl}}/api/webhooks/footcare
+Content-Type: application/json
+X-Footcare-Secret: {{webhookSecret}}
+
+{
+  "name": "Duplicate Test",
+  "email": "duplicate@test.com",
+  "issue_category": "Duplicate Test",
+  "consultationId": "duplicate-123"
+}
+
+### Test Duplicate Prevention (same request again)
+POST {{baseUrl}}/api/webhooks/footcare
+Content-Type: application/json
+X-Footcare-Secret: {{webhookSecret}}
+
+{
+  "name": "Duplicate Test",
+  "email": "duplicate@test.com",
+  "issue_category": "Duplicate Test",
+  "consultationId": "duplicate-123"
+}
+
+### Test Chatbot Settings Validation - Invalid Tone
+PATCH {{baseUrl}}/api/chatbot-settings
+Content-Type: application/json
+
+{
+  "chatbotTone": "InvalidTone"
+}
+
+### Test Chatbot Settings Validation - Short Message
+PATCH {{baseUrl}}/api/chatbot-settings
+Content-Type: application/json
+
+{
+  "welcomeMessage": "Hi"
+}
+
+### Test Chatbot Settings Validation - Short Name
+PATCH {{baseUrl}}/api/chatbot-settings
+Content-Type: application/json
+
+{
+  "botDisplayName": "A"
+}
+
+### Test Chatbot Settings Validation - Short Button Label
+PATCH {{baseUrl}}/api/chatbot-settings
+Content-Type: application/json
+
+{
+  "ctaButtonLabel": "Go"
+}
+
+### Test Successful Chatbot Settings Update
+PATCH {{baseUrl}}/api/chatbot-settings
+Content-Type: application/json
+
+{
+  "welcomeMessage": "Welcome to our clinic! How can we assist you today?",
+  "botDisplayName": "Medical Assistant",
+  "ctaButtonLabel": "Start Chat",
+  "chatbotTone": "Professional"
+}
+
+### Test Partial Chatbot Settings Update
+PATCH {{baseUrl}}/api/chatbot-settings
+Content-Type: application/json
+
+{
+  "welcomeMessage": "Hello! Welcome to FootCare Clinic."
+}
+
+### Test Image URL Handling
+POST {{baseUrl}}/api/webhooks/footcare
+Content-Type: application/json
+X-Footcare-Secret: {{webhookSecret}}
+
+{
+  "name": "URL Image Test",
+  "email": "url@test.com",
+  "has_image": "true",
+  "image_path": "https://example.com/sample-image.png",
+  "image_analysis": "Sample image analysis"
+}
+
+### Test Invalid Image URL
+POST {{baseUrl}}/api/webhooks/footcare
+Content-Type: application/json
+X-Footcare-Secret: {{webhookSecret}}
+
+{
+  "name": "Invalid URL Test",
+  "email": "invalid-url@test.com",
+  "has_image": "true",
+  "image_path": "not-a-valid-url",
+  "image_analysis": "Invalid URL test"
+}
+
+### Test Large Base64 Image (simulate large upload)
+POST {{baseUrl}}/api/webhooks/footcare
+Content-Type: application/json
+X-Footcare-Secret: {{webhookSecret}}
+
+{
+  "name": "Large Image Test",
+  "email": "large-image@test.com",
+  "has_image": "true",
+  "image_path": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNkYPhfDwAChwGA60e6kgAAAABJRU5ErkJggg==",
+  "image_analysis": "Large image test"
+}
+
+### Test Consultation Search/Filter
+GET {{baseUrl}}/api/consultations?search=John
+
+### Test Assessment Details
+GET {{baseUrl}}/api/assessments/1
+
+### Test Assessment Responses
+GET {{baseUrl}}/api/assessments/1/responses
+
+### Test Conditions List
+GET {{baseUrl}}/api/dashboard/conditions?limit=10
+
+### Test Clinics List
+GET {{baseUrl}}/api/clinics
+
+### Test Communications
+GET {{baseUrl}}/api/communications
+
+### Test Follow-ups
+GET {{baseUrl}}/api/follow-ups
+
+### Test Questions List
+GET {{baseUrl}}/api/questions
+
+### Test Users (if authenticated)
+GET {{baseUrl}}/api/users
+
+### Final Health Check
+GET {{baseUrl}}/api/health
