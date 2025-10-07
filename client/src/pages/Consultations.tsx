@@ -1,4 +1,4 @@
-import { useState } from "react";
+import React, { useState, useMemo, useCallback, useEffect } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { Helmet } from "react-helmet";
 import { format } from "date-fns";
@@ -49,10 +49,19 @@ interface Consultation {
 }
 
 export default function Consultations() {
-  const [searchTerm, setSearchTerm] = useState("");
-  const [selectedClinic, setSelectedClinic] = useState("all");
-  const [selectedCategory, setSelectedCategory] = useState("all");
-  const [selectedConsultation, setSelectedConsultation] = useState<any>(null);
+   const [searchTerm, setSearchTerm] = useState("");
+   const [debouncedSearchTerm, setDebouncedSearchTerm] = useState("");
+   const [selectedClinic, setSelectedClinic] = useState("all");
+   const [selectedCategory, setSelectedCategory] = useState("all");
+   const [selectedConsultation, setSelectedConsultation] = useState<any>(null);
+
+   // Debounce search term
+   useEffect(() => {
+     const timer = setTimeout(() => {
+       setDebouncedSearchTerm(searchTerm);
+     }, 300);
+     return () => clearTimeout(timer);
+   }, [searchTerm]);
 
   const {
     data: consultations = [],
@@ -67,20 +76,22 @@ export default function Consultations() {
     enabled: true,
   });
 
-  const filteredConsultations = consultations.filter((consultation) => {
-    const matchesSearch =
-      searchTerm === "" ||
-      consultation.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      consultation.email?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      consultation.issueCategory?.toLowerCase().includes(searchTerm.toLowerCase());
+  const filteredConsultations = useMemo(() => {
+    return consultations.filter((consultation) => {
+      const matchesSearch =
+        debouncedSearchTerm === "" ||
+        consultation.name.toLowerCase().includes(debouncedSearchTerm.toLowerCase()) ||
+        consultation.email?.toLowerCase().includes(debouncedSearchTerm.toLowerCase()) ||
+        consultation.issueCategory?.toLowerCase().includes(debouncedSearchTerm.toLowerCase());
 
-    const matchesClinic =
-      selectedClinic === "all" || consultation.preferredClinic === selectedClinic;
-    const matchesCategory =
-      selectedCategory === "all" || consultation.issueCategory === selectedCategory;
+      const matchesClinic =
+        selectedClinic === "all" || consultation.preferredClinic === selectedClinic;
+      const matchesCategory =
+        selectedCategory === "all" || consultation.issueCategory === selectedCategory;
 
-    return matchesSearch && matchesClinic && matchesCategory;
-  });
+      return matchesSearch && matchesClinic && matchesCategory;
+    });
+  }, [consultations, debouncedSearchTerm, selectedClinic, selectedCategory]);
 
   const uniqueClinics = Array.from(
     new Set(consultations.map((c) => c.preferredClinic).filter(Boolean))

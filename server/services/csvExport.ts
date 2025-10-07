@@ -21,13 +21,13 @@ export async function exportConsultationsToCSV(consultations: Consultation[]): P
   });
 
   // CSV headers - keeping all existing columns and adding image_url
-  const csvHeaders = 'ID,Name,Email,Phone,Preferred Clinic,Issue Category,Issue Specifics,Symptom Description,Previous Treatment,Has Image,Image URL,image_url,Image Analysis,Calendar Booking,Booking Confirmation,Final Question,Additional Help,Emoji Survey,Survey Response,Created At\n';
+  const csvHeaders = 'ID,Name,Email,Phone,Preferred Clinic,Issue Category,Issue Specifics,Symptom Description,Previous Treatment,Has Image,Image Path,Image URL,Image Analysis,Calendar Booking,Booking Confirmation,Final Question,Additional Help,Emoji Survey,Survey Response,Created At\n';
 
   // Generate CSV data rows
   const csvData = consultations
     .map((c: Consultation) => {
       const firstImageUrl = imageMap.get(c.id) || '';
-      return `${c.id},"${c.name}","${c.email || ''}","${c.phone || ''}","${c.preferred_clinic || ''}","${c.issue_category || ''}","${c.issue_specifics || ''}","${c.symptom_description || ''}","${c.previous_treatment || ''}","${c.has_image || ''}","${c.image_path || ''}","${firstImageUrl}","${c.image_analysis || ''}","${c.calendar_booking || ''}","${c.booking_confirmation || ''}","${c.final_question || ''}","${c.additional_help || ''}","${c.emoji_survey || ''}","${c.survey_response || ''}","${c.createdAt}"`;
+      return `${c.id},"${c.name}","${c.email || ''}","${c.phone || ''}","${c.preferred_clinic || ''}","${c.issue_category || ''}","${c.issue_specifics || ''}","${c.symptom_description || ''}","${c.previous_treatment || ''}","${c.has_image || ''}","${c.image_path || ''}","${c.image_url || ''}","${c.image_analysis || ''}","${c.calendar_booking || ''}","${c.booking_confirmation || ''}","${c.final_question || ''}","${c.additional_help || ''}","${c.emoji_survey || ''}","${c.survey_response || ''}","${c.createdAt}"`;
     })
     .join('\n');
 

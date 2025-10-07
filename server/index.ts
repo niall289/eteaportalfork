@@ -5,6 +5,32 @@ import path from 'path';
 dotenv.config(); // loads project root .env
 dotenv.config({ path: path.resolve(import.meta.dirname, '.env') }); // also load server/.env
 
+console.log('Runtime env check:');
+console.log('NODE_ENV:', process.env.NODE_ENV);
+console.log('PORT:', process.env.PORT);
+console.log('DATABASE_URL present:', !!process.env.DATABASE_URL);
+console.log('AUTH_MODE present:', !!process.env.AUTH_MODE);
+console.log('AUTH_TOKEN present:', !!process.env.AUTH_TOKEN);
+console.log('FOOTCARE_WEBHOOK_SECRET present:', !!process.env.FOOTCARE_WEBHOOK_SECRET);
+console.log('CORS_ORIGIN present:', !!process.env.CORS_ORIGIN);
+console.log('UPLOADS_ROOT present:', !!process.env.UPLOADS_ROOT);
+
+// MailerSend environment validation
+const mailersendApiKey = process.env.MAILERSEND_API_KEY;
+if (mailersendApiKey) {
+  const masked = mailersendApiKey.length > 8 ? mailersendApiKey.slice(0, 4) + '...' + mailersendApiKey.slice(-4) : mailersendApiKey;
+  console.log('MAILERSEND_API_KEY present:', masked);
+} else {
+  console.warn('WARNING: MAILERSEND_API_KEY is missing');
+}
+
+const mailersendFrom = process.env.MAILERSEND_FROM;
+if (mailersendFrom) {
+  console.log('MAILERSEND_FROM present:', mailersendFrom);
+} else {
+  console.warn('WARNING: MAILERSEND_FROM is missing');
+}
+
 import express, { type Request, Response, NextFunction } from 'express';
 import cookieSession from 'cookie-session';
 import cors from 'cors';
@@ -13,6 +39,8 @@ import { registerSimpleAuth } from './simpleAuth';
 
 const PORT = parseInt(process.env.PORT ?? '5002', 10);
 
+const UPLOADS_ROOT = process.env.UPLOADS_ROOT || './uploads';
+
 const app = express();
 
 // Trust proxy for production reverse proxy
@@ -20,9 +48,10 @@ if (process.env.NODE_ENV === "production") {
   app.set("trust proxy", 1);
 }
 
-// CORS configuration for Vite in dev
+// CORS configuration
+const corsOrigin = process.env.CORS_ORIGIN || 'http://127.0.0.1:5173,http://localhost:5173';
 app.use(cors({
-  origin: ["http://localhost:5173"],
+  origin: corsOrigin.split(',').map(s => s.trim()),
   credentials: true,
 }));
 
@@ -74,8 +103,10 @@ app.use((req, res, next) => {
   next();
 });
 
+app.use('/uploads', express.static(UPLOADS_ROOT));
+
 (async () => {
-  // Register your existing routes (keeps current behavior)
+  // Register your routes with Supabase image upload functionality
   const { registerRoutes } = await import('./routes');
   const server = await registerRoutes(app);
 
@@ -83,12 +114,20 @@ app.use((req, res, next) => {
 
   // Simple liveness/readiness
   app.get('/api/health', (_req: Request, res: Response) => {
+    // Set defaults if not set
+    if (!process.env.CORS_ORIGIN) process.env.CORS_ORIGIN = 'http://127.0.0.1:5173,http://localhost:5173';
+    if (!process.env.UPLOADS_ROOT) process.env.UPLOADS_ROOT = './uploads';
+
     res.status(200).json({
       status: 'ok',
-      env: process.env.NODE_ENV || 'development',
-      port: PORT,
-      uptime: Math.round(process.uptime()),
-      timestamp: new Date().toISOString(),
+      env_presence: {
+        DATABASE_URL: !!process.env.DATABASE_URL,
+        AUTH_MODE: !!process.env.AUTH_MODE,
+        AUTH_TOKEN: !!process.env.AUTH_TOKEN,
+        FOOTCARE_WEBHOOK_SECRET: !!process.env.FOOTCARE_WEBHOOK_SECRET,
+        CORS_ORIGIN: !!process.env.CORS_ORIGIN,
+        UPLOADS_ROOT: !!process.env.UPLOADS_ROOT,
+      }
     });
   });
 
@@ -141,5 +180,6 @@ app.use((req, res, next) => {
   // Single entry point — bind to 0.0.0.0 on the chosen port
   server.listen({ host: '0.0.0.0', port: PORT }, () => {
     log(`serving on port ${PORT}`);
+    console.log(`Example curl command for self-test: curl http://localhost:${PORT}/api/health`);
   });
 })();

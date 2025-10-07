@@ -1,6 +1,6 @@
 {
-  "id": "efed3417-1e3e-4f5b-9294-5b35f543d7e1",
-  "prevId": "db761488-b0c1-4564-9156-4af13cc4092d",
+  "id": "c4786350-88ca-4b25-8d94-6db4a3c43fa6",
+  "prevId": "17bb55e7-d374-4880-8ee0-91c4ee6fa68b",
   "version": "7",
   "dialect": "postgresql",
   "tables": {
@@ -164,6 +164,12 @@
           "primaryKey": true,
           "notNull": true
         },
+        "clinic_group": {
+          "name": "clinic_group",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
         "welcome_message": {
           "name": "welcome_message",
           "type": "text",
@@ -208,10 +214,153 @@
           "default": "now()"
         }
       },
-      "indexes": {},
+      "indexes": {
+        "chatbot_settings_clinic_group_idx": {
+          "name": "chatbot_settings_clinic_group_idx",
+          "columns": [
+            {
+              "expression": "clinic_group",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        }
+      },
       "foreignKeys": {},
       "compositePrimaryKeys": {},
       "uniqueConstraints": {},
+      "policies": {},
+      "checkConstraints": {},
+      "isRLSEnabled": false
+    },
+    "public.clinic_email_settings": {
+      "name": "clinic_email_settings",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "serial",
+          "primaryKey": true,
+          "notNull": true
+        },
+        "clinic_group": {
+          "name": "clinic_group",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "email_from": {
+          "name": "email_from",
+          "type": "varchar(255)",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "email_from_name": {
+          "name": "email_from_name",
+          "type": "varchar(255)",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "smtp_host": {
+          "name": "smtp_host",
+          "type": "varchar(255)",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "smtp_port": {
+          "name": "smtp_port",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false,
+          "default": 587
+        },
+        "smtp_secure": {
+          "name": "smtp_secure",
+          "type": "boolean",
+          "primaryKey": false,
+          "notNull": false,
+          "default": false
+        },
+        "smtp_user": {
+          "name": "smtp_user",
+          "type": "varchar(255)",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "smtp_pass": {
+          "name": "smtp_pass",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "sendgrid_api_key": {
+          "name": "sendgrid_api_key",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "email_service": {
+          "name": "email_service",
+          "type": "varchar(50)",
+          "primaryKey": false,
+          "notNull": false,
+          "default": "'sendgrid'"
+        },
+        "is_active": {
+          "name": "is_active",
+          "type": "boolean",
+          "primaryKey": false,
+          "notNull": false,
+          "default": true
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "timestamp",
+          "primaryKey": false,
+          "notNull": false,
+          "default": "now()"
+        },
+        "updated_at": {
+          "name": "updated_at",
+          "type": "timestamp",
+          "primaryKey": false,
+          "notNull": false,
+          "default": "now()"
+        }
+      },
+      "indexes": {
+        "clinic_email_settings_clinic_group_idx": {
+          "name": "clinic_email_settings_clinic_group_idx",
+          "columns": [
+            {
+              "expression": "clinic_group",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        }
+      },
+      "foreignKeys": {},
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {
+        "clinic_email_settings_clinic_group_unique": {
+          "name": "clinic_email_settings_clinic_group_unique",
+          "nullsNotDistinct": false,
+          "columns": [
+            "clinic_group"
+          ]
+        }
+      },
       "policies": {},
       "checkConstraints": {},
       "isRLSEnabled": false
@@ -523,6 +672,12 @@
           "primaryKey": false,
           "notNull": false
         },
+        "image_url": {
+          "name": "image_url",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
         "calendar_booking": {
           "name": "calendar_booking",
           "type": "text",
@@ -568,6 +723,36 @@
         "completed_steps": {
           "name": "completed_steps",
           "type": "jsonb",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "raw_json": {
+          "name": "raw_json",
+          "type": "jsonb",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "symptom_analysis": {
+          "name": "symptom_analysis",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "pain_duration": {
+          "name": "pain_duration",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "pain_severity": {
+          "name": "pain_severity",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "additional_info": {
+          "name": "additional_info",
+          "type": "text",
           "primaryKey": false,
           "notNull": false
         },
@@ -724,6 +909,12 @@
           "type": "text",
           "primaryKey": false,
           "notNull": true
+        },
+        "thumbnail_url": {
+          "name": "thumbnail_url",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
         },
         "source_type": {
           "name": "source_type",
@@ -992,6 +1183,90 @@
           "tableTo": "questions",
           "columnsFrom": [
             "question_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "policies": {},
+      "checkConstraints": {},
+      "isRLSEnabled": false
+    },
+    "public.treatment_plans": {
+      "name": "treatment_plans",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "serial",
+          "primaryKey": true,
+          "notNull": true
+        },
+        "patient_id": {
+          "name": "patient_id",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "title": {
+          "name": "title",
+          "type": "varchar(255)",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "description": {
+          "name": "description",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "treatments": {
+          "name": "treatments",
+          "type": "jsonb",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "status": {
+          "name": "status",
+          "type": "varchar(50)",
+          "primaryKey": false,
+          "notNull": false,
+          "default": "'draft'"
+        },
+        "created_by": {
+          "name": "created_by",
+          "type": "varchar(100)",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "timestamp",
+          "primaryKey": false,
+          "notNull": false,
+          "default": "now()"
+        },
+        "updated_at": {
+          "name": "updated_at",
+          "type": "timestamp",
+          "primaryKey": false,
+          "notNull": false,
+          "default": "now()"
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {
+        "treatment_plans_patient_id_patients_id_fk": {
+          "name": "treatment_plans_patient_id_patients_id_fk",
+          "tableFrom": "treatment_plans",
+          "tableTo": "patients",
+          "columnsFrom": [
+            "patient_id"
           ],
           "columnsTo": [
             "id"

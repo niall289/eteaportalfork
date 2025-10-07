@@ -1,0 +1,90 @@
+2025-10-02T15:00:41: [dotenv@17.2.2] injecting env (6) from .env -- tip: ⚙️  enable debug logging with { debug: true }
+2025-10-02T15:00:41: [dotenv@17.2.2] injecting env (0) from dist\.env -- tip: 🔐 prevent building .env in docker: https://dotenvx.com/prebuild
+2025-10-02T15:00:41: [auth] simple-auth mounted. mode=simple tokenLen=12
+2025-10-02T15:00:41: 3:00:41 PM [express] serving on port 5002
+2025-10-02T15:00:43:  Postgres pool ready
+2025-10-02T15:02:17: [dotenv@17.2.2] injecting env (6) from .env -- tip: ⚙️  load multiple .env files with { path: ['.env.local', '.env'] }
+2025-10-02T15:02:17: [dotenv@17.2.2] injecting env (0) from dist\.env -- tip: ⚙️  suppress all logs with { quiet: true }
+2025-10-02T15:02:17: Runtime env check:
+2025-10-02T15:02:17: NODE_ENV: production
+2025-10-02T15:02:17: PORT: 5002
+2025-10-02T15:02:17: DATABASE_URL present: true
+2025-10-02T15:02:17: AUTH_MODE present: true
+2025-10-02T15:02:17: AUTH_TOKEN present: true
+2025-10-02T15:02:17: FOOTCARE_WEBHOOK_SECRET present: true
+2025-10-02T15:02:17: CORS_ORIGIN present: false
+2025-10-02T15:02:17: UPLOADS_ROOT present: false
+2025-10-02T15:02:17: [auth] simple-auth mounted. mode=simple tokenLen=12
+2025-10-02T15:02:17: [db:init] {
+  nodeEnv: 'production',
+  urlHost: 'ep-curly-mountain-a91glxrg-pooler.gwc.azure.neon.tech'
+}
+2025-10-02T15:02:17: Warning: connect.session() MemoryStore is not
+designed for a production environment, as it will leak
+memory, and will not scale past a single process.
+2025-10-02T15:02:17: 3:02:17 PM [express] serving on port 5002
+2025-10-02T15:02:17: [db] Connected to Postgres OK
+2025-10-02T15:02:28: 3:02:28 PM [express] GET /api/health 200 in 26ms :: {"status":"ok","env_presence":{"DATABASE_URL":tr…
+2025-10-02T23:32:42: [dotenv@17.2.2] injecting env (6) from .env -- tip: 📡 version env with Radar: https://dotenvx.com/radar
+2025-10-02T23:32:42: [dotenv@17.2.2] injecting env (0) from dist\.env -- tip: ⚙️  enable debug logging with { debug: true }
+2025-10-02T23:32:42: Runtime env check:
+2025-10-02T23:32:42: NODE_ENV: production
+2025-10-02T23:32:42: PORT: 5002
+2025-10-02T23:32:42: DATABASE_URL present: true
+2025-10-02T23:32:42: AUTH_MODE present: true
+2025-10-02T23:32:42: AUTH_TOKEN present: true
+2025-10-02T23:32:42: FOOTCARE_WEBHOOK_SECRET present: true
+2025-10-02T23:32:42: CORS_ORIGIN present: false
+2025-10-02T23:32:42: UPLOADS_ROOT present: false
+2025-10-02T23:32:42: [auth] simple-auth mounted. mode=simple tokenLen=12
+2025-10-02T23:32:42: [db:init] {
+  nodeEnv: 'production',
+  urlHost: 'ep-curly-mountain-a91glxrg-pooler.gwc.azure.neon.tech'
+}
+2025-10-02T23:32:42: Warning: connect.session() MemoryStore is not
+designed for a production environment, as it will leak
+memory, and will not scale past a single process.
+2025-10-02T23:32:42: 11:32:42 PM [express] serving on port 5002
+2025-10-02T23:32:43: [db] Connected to Postgres OK
+2025-10-03T14:43:38: [dotenv@17.2.2] injecting env (6) from .env -- tip: 🔐 prevent building .env in docker: https://dotenvx.com/prebuild
+2025-10-03T14:43:38: [dotenv@17.2.2] injecting env (0) from dist\.env -- tip: 🔐 prevent committing .env to code: https://dotenvx.com/precommit
+2025-10-03T14:43:38: Runtime env check:
+2025-10-03T14:43:38: NODE_ENV: production
+2025-10-03T14:43:38: PORT: 5002
+2025-10-03T14:43:38: DATABASE_URL present: true
+2025-10-03T14:43:38: AUTH_MODE present: true
+2025-10-03T14:43:38: AUTH_TOKEN present: true
+2025-10-03T14:43:38: FOOTCARE_WEBHOOK_SECRET present: true
+2025-10-03T14:43:38: CORS_ORIGIN present: false
+2025-10-03T14:43:38: UPLOADS_ROOT present: false
+2025-10-03T14:43:38: [auth] simple-auth mounted. mode=simple tokenLen=12
+2025-10-03T14:43:38: [db:init] {
+  nodeEnv: 'production',
+  urlHost: 'ep-curly-mountain-a91glxrg-pooler.gwc.azure.neon.tech'
+}
+2025-10-03T14:43:38: Warning: connect.session() MemoryStore is not
+designed for a production environment, as it will leak
+memory, and will not scale past a single process.
+2025-10-03T14:43:38: 2:43:38 PM [express] serving on port 5002
+2025-10-03T14:43:39: [db] Connected to Postgres OK
+2025-10-03T14:47:08: [dotenv@17.2.2] injecting env (6) from .env -- tip: 🔐 prevent building .env in docker: https://dotenvx.com/prebuild
+2025-10-03T14:47:08: [dotenv@17.2.2] injecting env (0) from dist\.env -- tip: 📡 version env with Radar: https://dotenvx.com/radar
+2025-10-03T14:47:08: Runtime env check:
+2025-10-03T14:47:08: NODE_ENV: production
+2025-10-03T14:47:08: PORT: 5002
+2025-10-03T14:47:08: DATABASE_URL present: true
+2025-10-03T14:47:08: AUTH_MODE present: true
+2025-10-03T14:47:08: AUTH_TOKEN present: true
+2025-10-03T14:47:08: FOOTCARE_WEBHOOK_SECRET present: true
+2025-10-03T14:47:08: CORS_ORIGIN present: false
+2025-10-03T14:47:08: UPLOADS_ROOT present: false
+2025-10-03T14:47:08: [auth] simple-auth mounted. mode=simple tokenLen=12
+2025-10-03T14:47:08: [db:init] {
+  nodeEnv: 'production',
+  urlHost: 'ep-curly-mountain-a91glxrg-pooler.gwc.azure.neon.tech'
+}
+2025-10-03T14:47:08: Warning: connect.session() MemoryStore is not
+designed for a production environment, as it will leak
+memory, and will not scale past a single process.
+2025-10-03T14:47:08: 2:47:08 PM [express] serving on port 5002
+2025-10-03T14:47:08: [db] Connected to Postgres OK

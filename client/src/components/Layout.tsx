@@ -27,11 +27,11 @@ function InnerLayout({ children }: LayoutProps) {
 
   return (
     <div className="flex min-h-screen overflow-hidden">
-      <AppSidebar className="w-56" />
-      <div className="flex-1 flex flex-col">
-        <div className="border-b bg-white dark:bg-gray-900 px-6 py-3">
+      <AppSidebar className="w-56 flex-shrink-0" />
+      <div className="flex-1 flex flex-col min-w-0">
+        <div className="border-b bg-white dark:bg-gray-900 px-8 py-4">
           <div className="flex items-center justify-between">
-            <div className="flex items-center gap-2">
+            <div className="flex items-center gap-3">
               <Building2 className="h-5 w-5 text-blue-600" />
               <span className="text-sm font-medium text-gray-500">
                 Active Clinic Group:
@@ -41,7 +41,7 @@ function InnerLayout({ children }: LayoutProps) {
               value={selectedClinicGroup}
               onValueChange={setSelectedClinicGroup}
             >
-              <SelectTrigger className="w-64">
+              <SelectTrigger className="w-64" data-testid="header-clinic-selector">
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
@@ -54,18 +54,14 @@ function InnerLayout({ children }: LayoutProps) {
             </Select>
           </div>
         </div>
-        <main className="flex-1 p-4 overflow-auto">{children}</main>
+        <main className="flex-1 p-8 overflow-auto">{children}</main>
       </div>
     </div>
   );
 }
 
 function Layout({ children }: LayoutProps) {
-  return (
-    <ClinicProvider>
-      <InnerLayout>{children}</InnerLayout>
-    </ClinicProvider>
-  );
+  return <InnerLayout>{children}</InnerLayout>;
 }
 
 export default Layout;

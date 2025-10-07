@@ -43,7 +43,7 @@ function Sidebar({ className, user, onClose }: SidebarProps) {
   ];
 
   return (
-    <aside className={cn("w-56 bg-white dark:bg-neutral-900 shadow-xl border-r border-neutral-200 dark:border-neutral-700", className)}>
+    <aside className={cn("w-56 bg-white dark:bg-neutral-900 shadow-xl border-r border-neutral-200 dark:border-neutral-700 flex-shrink-0", className)}>
       <div className="flex flex-col h-full overflow-y-auto">
         <div className="flex items-center justify-center h-24 px-4 border-b-2 border-[hsl(186,100%,30%)] bg-gradient-to-r from-[hsl(186,76%,97%)] to-white dark:from-neutral-800 dark:to-neutral-700">
           <div className="flex items-center">
@@ -74,6 +74,7 @@ function Sidebar({ className, user, onClose }: SidebarProps) {
                   key={item.name}
                   href={item.href}
                   onClick={onClose}
+                  data-testid={`sidebar-nav-${item.name.toLowerCase().replace(/\s+/g, '-')}`}
                   className={cn(
                     "flex items-center px-4 py-3 text-sm font-medium rounded-xl transition-all duration-200 group border",
                     isActive
@@ -110,6 +111,7 @@ function Sidebar({ className, user, onClose }: SidebarProps) {
             <Button
               variant="outline"
               size="sm"
+              data-testid="sidebar-theme-toggle"
               className="justify-start text-[hsl(186,100%,30%)] border-[hsl(186,100%,30%)] hover:bg-[hsl(186,100%,30%)] hover:text-white transition-all duration-200"
               onClick={() => setTheme(theme === "light" ? "dark" : "light")}
             >
@@ -142,6 +144,7 @@ function Sidebar({ className, user, onClose }: SidebarProps) {
                 </p>
                 <button
                   onClick={handleLogout}
+                  data-testid="sidebar-sign-out"
                   className="text-xs text-[hsl(186,100%,30%)] hover:text-[hsl(186,100%,25%)] dark:hover:text-[hsl(186,76%,85%)] font-medium flex items-center group"
                 >
                   <span>Sign out</span>

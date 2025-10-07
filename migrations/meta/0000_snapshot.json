@@ -1,6 +1,6 @@
 {
-  "id": "db761488-b0c1-4564-9156-4af13cc4092d",
-  "prevId": "00000000-0000-0000-0000-000000000000",
+  "id": "8f0f0544-884c-49ec-90d2-38e980b39750",
+  "prevId": "17bb55e7-d374-4880-8ee0-91c4ee6fa68b",
   "version": "7",
   "dialect": "postgresql",
   "tables": {
@@ -164,6 +164,12 @@
           "primaryKey": true,
           "notNull": true
         },
+        "clinic_group": {
+          "name": "clinic_group",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
         "welcome_message": {
           "name": "welcome_message",
           "type": "text",
@@ -208,7 +214,23 @@
           "default": "now()"
         }
       },
-      "indexes": {},
+      "indexes": {
+        "chatbot_settings_clinic_group_idx": {
+          "name": "chatbot_settings_clinic_group_idx",
+          "columns": [
+            {
+              "expression": "clinic_group",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        }
+      },
       "foreignKeys": {},
       "compositePrimaryKeys": {},
       "uniqueConstraints": {},
@@ -523,6 +545,12 @@
           "primaryKey": false,
           "notNull": false
         },
+        "image_url": {
+          "name": "image_url",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
         "calendar_booking": {
           "name": "calendar_booking",
           "type": "text",
@@ -568,6 +596,36 @@
         "completed_steps": {
           "name": "completed_steps",
           "type": "jsonb",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "raw_json": {
+          "name": "raw_json",
+          "type": "jsonb",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "symptom_analysis": {
+          "name": "symptom_analysis",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "pain_duration": {
+          "name": "pain_duration",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "pain_severity": {
+          "name": "pain_severity",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "additional_info": {
+          "name": "additional_info",
+          "type": "text",
           "primaryKey": false,
           "notNull": false
         },
@@ -725,6 +783,12 @@
           "primaryKey": false,
           "notNull": true
         },
+        "thumbnail_url": {
+          "name": "thumbnail_url",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
         "source_type": {
           "name": "source_type",
           "type": "text",
@@ -746,24 +810,15 @@
         }
       },
       "indexes": {
-        "images_consultation_id_idx": {
-          "name": "images_consultation_id_idx",
+        "images_consultation_id_created_at_idx": {
+          "name": "images_consultation_id_created_at_idx",
           "columns": [
             {
               "expression": "consultation_id",
               "isExpression": false,
               "asc": true,
               "nulls": "last"
-            }
-          ],
-          "isUnique": false,
-          "concurrently": false,
-          "method": "btree",
-          "with": {}
-        },
-        "images_created_at_idx": {
-          "name": "images_created_at_idx",
-          "columns": [
+            },
             {
               "expression": "created_at",
               "isExpression": false,
@@ -795,7 +850,12 @@
       "compositePrimaryKeys": {},
       "uniqueConstraints": {},
       "policies": {},
-      "checkConstraints": {},
+      "checkConstraints": {
+        "images_source_type_check": {
+          "name": "images_source_type_check",
+          "value": "\"images\".\"source_type\" in ('upload', 'link')"
+        }
+      },
       "isRLSEnabled": false
     },
     "public.patients": {
@@ -996,6 +1056,90 @@
           "tableTo": "questions",
           "columnsFrom": [
             "question_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "policies": {},
+      "checkConstraints": {},
+      "isRLSEnabled": false
+    },
+    "public.treatment_plans": {
+      "name": "treatment_plans",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "serial",
+          "primaryKey": true,
+          "notNull": true
+        },
+        "patient_id": {
+          "name": "patient_id",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "title": {
+          "name": "title",
+          "type": "varchar(255)",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "description": {
+          "name": "description",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "treatments": {
+          "name": "treatments",
+          "type": "jsonb",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "status": {
+          "name": "status",
+          "type": "varchar(50)",
+          "primaryKey": false,
+          "notNull": false,
+          "default": "'draft'"
+        },
+        "created_by": {
+          "name": "created_by",
+          "type": "varchar(100)",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "timestamp",
+          "primaryKey": false,
+          "notNull": false,
+          "default": "now()"
+        },
+        "updated_at": {
+          "name": "updated_at",
+          "type": "timestamp",
+          "primaryKey": false,
+          "notNull": false,
+          "default": "now()"
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {
+        "treatment_plans_patient_id_patients_id_fk": {
+          "name": "treatment_plans_patient_id_patients_id_fk",
+          "tableFrom": "treatment_plans",
+          "tableTo": "patients",
+          "columnsFrom": [
+            "patient_id"
           ],
           "columnsTo": [
             "id"

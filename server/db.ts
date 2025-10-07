@@ -19,6 +19,8 @@ if (!rawUrl) {
 }
 const connectionString = stripChannelBinding(rawUrl);
 
+console.log("[db:init]", { nodeEnv: process.env.NODE_ENV, urlHost: new URL(process.env.DATABASE_URL!).host });
+
 export const pool = new Pool({
   connectionString,
   ssl: { rejectUnauthorized: false }, // Neon requires SSL; pooler uses standard TLS
@@ -34,9 +36,9 @@ pool.on("error", (err) => {
 (async () => {
   try {
     await pool.query("SELECT 1");
-    console.log(" Postgres pool ready");
+    console.log("[db] Connected to Postgres OK");
   } catch (e) {
-    console.error(" Postgres init failed", e);
+    console.error("[db]", e);
   }
 })();
 

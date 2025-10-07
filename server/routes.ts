@@ -4,9 +4,13 @@ import fs from "fs";
 import path from "path";
 import crypto from "crypto";
 import sharp from "sharp";
+import multer from "multer";
+import nodemailer from "nodemailer";
+import axios from "axios";
 
 import { db } from "./db";
-import { images, consultations, insertChatbotSettingsSchema } from "@shared/schema";
+import { supabaseAdmin, uploadConsultationImage as supabaseUploadConsultationImage } from "./supabase";
+import { images, consultations, insertChatbotSettingsSchema, treatmentPlans, insertTreatmentPlanSchema, clinicEmailSettings, insertClinicEmailSettingsSchema, patients } from "@shared/schema";
 import { eq, inArray } from "drizzle-orm";
 import { ChatbotSettingsData } from "./storage";
 import WebSocket, { WebSocketServer } from "ws";
@@ -15,170 +19,60 @@ import { storage } from "./storage";
 import { isAuthenticated, skipAuthForWebhook } from "./simpleAuth";
 import cors from "cors";
 import { exportConsultationsToCSV } from "./services/csvExport";
+import { sendEmail as mailSendEmail } from "./services/mail";
 
-// Enhanced image processing function with security and thumbnail generation
-async function processConsultationImage(consultationId: number, imagePath: string, hasImage: string) {
+// Upload image to Supabase Storage and create database records
+// Return type for the Supabase upload function
+type SupabaseUploadResult = {
+  success: boolean;
+  data?: {
+    path?: string;
+    publicUrl: string;
+  };
+  error?: any;
+};
+
+async function uploadConsultationImage(consultationId: number, file: Express.Multer.File, clinic: string) {
   try {
-    console.log("🖼️ Processing image for consultation:", consultationId);
+    console.log("🖼️ Uploading image for consultation:", consultationId);
 
-    // Only process if has_image is "true"
-    if (hasImage !== "true") {
-      console.log("ℹ️ Skipping image processing: has_image is not 'true'");
-      return;
+    // Use the Supabase client to upload the image
+    const result = await supabaseUploadConsultationImage(consultationId, file, clinic) as SupabaseUploadResult;
+    
+    if (!result.success || !result.data?.publicUrl) {
+      console.error("❌ Failed to upload image to Supabase:", result.error);
+      return null;
     }
-
-    const MAX_FILE_SIZE = 5 * 1024 * 1024; // 5MB
-    const ALLOWED_MIME_TYPES = ['image/jpeg', 'image/png', 'image/webp'];
-    const THUMBNAIL_SIZE = 256;
-
-    let sourceType: "upload" | "link" = "link";
-    let finalImageUrl = imagePath;
-    let finalThumbnailUrl: string | null = null;
-    let mimeType = "image/jpeg"; // default
-    let originalBuffer: Buffer | null = null;
-
-    // Check if it's base64 data:image
-    if (imagePath.startsWith("data:image")) {
-      const match = imagePath.match(/^data:([^;]+);base64,(.*)$/);
-      if (!match) {
-        console.warn("⚠️ Invalid base64 image format");
-        return;
-      }
-
-      mimeType = match[1];
-      const base64Data = match[2];
-
-      // Validate MIME type
-      if (!ALLOWED_MIME_TYPES.includes(mimeType)) {
-        console.warn(`⚠️ Unsupported MIME type: ${mimeType}`);
-        return;
-      }
-
-      // Decode base64 data
-      try {
-        originalBuffer = Buffer.from(base64Data, "base64");
-      } catch (decodeError) {
-        console.warn("⚠️ Invalid base64 data:", decodeError);
-        return;
-      }
-
-      // Check file size
-      if (originalBuffer.length > MAX_FILE_SIZE) {
-        console.warn(`⚠️ Image too large: ${originalBuffer.length} bytes (max: ${MAX_FILE_SIZE})`);
-        return;
-      }
-
-      // Process image with Sharp
-      try {
-        // Create directory structure /uploads/YYYY/MM/
-        const now = new Date();
-        const year = now.getFullYear().toString();
-        const month = (now.getMonth() + 1).toString().padStart(2, '0');
-        const uploadDir = path.join(process.cwd(), "uploads", year, month);
-
-        // Ensure directory exists
-        fs.mkdirSync(uploadDir, { recursive: true });
-
-        // Generate secure random filename (32 bytes = 64 hex chars)
-        const randomBytes = crypto.randomBytes(32);
-        const filename = randomBytes.toString('hex');
-        const thumbnailFilename = `${filename}_thumb`;
-
-        // Process original image - strip EXIF and convert to WebP if beneficial
-        const originalSharp = sharp(originalBuffer);
-        const metadata = await originalSharp.metadata();
-
-        let originalFormat = 'webp'; // Default to WebP for better compression
-        let originalPath = path.join(uploadDir, `${filename}.webp`);
-
-        // Keep original format if it's already WebP or if it's small
-        if (metadata.format === 'webp' || originalBuffer.length < 100 * 1024) {
-          originalFormat = metadata.format || 'jpeg';
-          originalPath = path.join(uploadDir, `${filename}.${originalFormat}`);
-        }
-
-        // Strip EXIF metadata and save original
-        await originalSharp
-          .rotate() // Auto-rotate based on EXIF
-          .toFormat(originalFormat as any, { quality: 85 })
-          .toFile(originalPath);
-
-        finalImageUrl = `/uploads/${year}/${month}/${filename}.${originalFormat}`;
-        sourceType = "upload";
-
-        // Generate 256px thumbnail
-        const thumbnailPath = path.join(uploadDir, `${thumbnailFilename}.webp`);
-        await originalSharp
-          .rotate()
-          .resize(THUMBNAIL_SIZE, THUMBNAIL_SIZE, {
-            fit: 'cover',
-            position: 'center'
-          })
-          .toFormat('webp', { quality: 80 })
-          .toFile(thumbnailPath);
-
-        finalThumbnailUrl = `/uploads/${year}/${month}/${thumbnailFilename}.webp`;
-
-        console.log("✅ Processed and saved image:", {
-          original: originalPath,
-          thumbnail: thumbnailPath,
-          size: originalBuffer.length,
-          format: originalFormat
-        });
-
-      } catch (sharpError) {
-        console.warn("⚠️ Error processing image with Sharp:", sharpError);
-        return;
-      }
-
-    } else if (imagePath.startsWith("http://") || imagePath.startsWith("https://")) {
-      // Validate URL format
-      try {
-        const url = new URL(imagePath);
-
-        // For external URLs, we'll store the URL but not process it
-        // In a production system, you'd want to fetch and validate the image
-        sourceType = "link";
-        finalImageUrl = imagePath;
-        finalThumbnailUrl = null; // No thumbnail for external URLs
-
-        console.log("✅ Using external image URL:", imagePath);
-      } catch (urlError) {
-        console.warn("⚠️ Invalid image URL:", imagePath, urlError);
-        return;
-      }
-    } else {
-      console.warn("⚠️ Unsupported image path format:", imagePath);
-      return;
-    }
-
-    // Create image record with thumbnail URL
+    
+    const publicUrl = result.data.publicUrl;
+    
+    // Create image record
     const imageRecord = await db.insert(images).values({
       consultationId,
-      url: finalImageUrl,
-      thumbnailUrl: finalThumbnailUrl,
-      sourceType,
+      url: publicUrl,
+      sourceType: "upload",
       meta: {
-        mimeType,
-        originalPath: imagePath,
+        mimeType: file.mimetype,
+        originalPath: file.originalname,
         processedAt: new Date().toISOString(),
-        fileSize: originalBuffer?.length || null,
-        thumbnailGenerated: finalThumbnailUrl !== null,
+        fileSize: file.buffer.length,
       },
     }).returning();
 
     console.log("✅ Created image record:", imageRecord[0].id);
 
-    // Update consultation with processed image path
+    // Update consultation with image URL
     await db.update(consultations)
-      .set({ image_path: finalImageUrl })
+      .set({ image_url: publicUrl })
       .where(eq(consultations.id, consultationId));
 
-    console.log("✅ Updated consultation image_path to:", finalImageUrl);
+    console.log("✅ Updated consultation image_url to:", publicUrl);
+
+    return publicUrl;
 
   } catch (error) {
-    console.error("❌ Error processing consultation image:", error);
-    // Don't throw - just log and continue
+    console.error("❌ Error uploading consultation image:", error);
+    return null;
   }
 }
 
@@ -214,6 +108,7 @@ const ConsultationSchema = z
   .passthrough(); // Allow additional fields from chatbot
 
 export async function registerRoutes(app: Express): Promise<Server> {
+  console.log('Registering routes...');
   const httpServer = createServer(app);
 
   // Add CORS support for chatbot webhook
@@ -229,6 +124,19 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Body parsers (safe even if already registered earlier)
   app.use(express.json({ limit: "1mb" }));
   app.use(express.urlencoded({ extended: false }));
+
+  // Multer setup for file uploads
+  const upload = multer({
+    storage: multer.memoryStorage(), // Store in memory for processing
+    limits: { fileSize: 5 * 1024 * 1024 }, // 5MB limit
+    fileFilter: (req, file, cb) => {
+      if (file.mimetype.startsWith('image/')) {
+        cb(null, true);
+      } else {
+        cb(new Error('Only image files are allowed'));
+      }
+    }
+  });
 
   // Serve uploaded images with security headers
   app.use('/uploads', express.static(path.join(process.cwd(), 'uploads'), {
@@ -427,6 +335,66 @@ export async function registerRoutes(app: Express): Promise<Server> {
     );
   }
 
+  // Clinic Email Settings endpoints
+  app.get("/api/clinic-email-settings", isAuthenticated, async (req: Request, res: Response) => {
+    try {
+      const settings = await db.select().from(clinicEmailSettings);
+      res.json(settings);
+    } catch (error) {
+      console.error("Error fetching clinic email settings:", error);
+      res.status(500).json({ message: "Failed to fetch clinic email settings" });
+    }
+  });
+
+  app.get("/api/clinic-email-settings/:clinic_group", isAuthenticated, async (req: Request, res: Response) => {
+    try {
+      const { clinic_group } = req.params;
+      const settings = await db.select().from(clinicEmailSettings).where(eq(clinicEmailSettings.clinicGroup, clinic_group)).limit(1);
+
+      if (!settings.length) {
+        return res.status(404).json({ message: "Clinic email settings not found" });
+      }
+
+      res.json(settings[0]);
+    } catch (error) {
+      console.error("Error fetching clinic email settings:", error);
+      res.status(500).json({ message: "Failed to fetch clinic email settings" });
+    }
+  });
+
+  app.post("/api/clinic-email-settings", isAuthenticated, async (req: Request, res: Response) => {
+    try {
+      const validatedData = insertClinicEmailSettingsSchema.parse(req.body);
+      const newSettings = await db.insert(clinicEmailSettings).values(validatedData).returning();
+      res.status(201).json(newSettings[0]);
+    } catch (error) {
+      console.error("Error creating clinic email settings:", error);
+      res.status(500).json({ message: "Failed to create clinic email settings" });
+    }
+  });
+
+  app.put("/api/clinic-email-settings/:clinic_group", isAuthenticated, async (req: Request, res: Response) => {
+    try {
+      const { clinic_group } = req.params;
+      const updateData = { ...req.body, updatedAt: new Date() };
+
+      const updatedSettings = await db
+        .update(clinicEmailSettings)
+        .set(updateData)
+        .where(eq(clinicEmailSettings.clinicGroup, clinic_group))
+        .returning();
+
+      if (!updatedSettings.length) {
+        return res.status(404).json({ message: "Clinic email settings not found" });
+      }
+
+      res.json(updatedSettings[0]);
+    } catch (error) {
+      console.error("Error updating clinic email settings:", error);
+      res.status(500).json({ message: "Failed to update clinic email settings" });
+    }
+  });
+
   app.get("/api/dashboard/stats", async (_req: Request, res: Response) => {
     try {
       const stats = await Promise.all([
@@ -449,24 +417,52 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   app.post(
-    "/api/webhooks/footcare",
+    "/api/webhooks/:clinic",
     skipAuthForWebhook,
+    upload.single('image'),
     async (req: Request, res: Response) => {
       try {
-        // Authorization header check
-        const secret = req.header("X-Footcare-Secret");
-        if (!secret || secret !== process.env.FOOTCARE_WEBHOOK_SECRET) {
+        const { clinic } = req.params;
+        console.log(`\n🔔 WEBHOOK PROCESSING START for ${clinic.toUpperCase()} - ${new Date().toISOString()}`);
+        console.log("🔍 Request headers:", JSON.stringify(req.headers, null, 2));
+
+        // Validate clinic slug
+        const validClinics = ['footcare', 'nailsurgery', 'lasercare'];
+        if (!validClinics.includes(clinic)) {
+          console.error(`❌ Invalid clinic: ${clinic}`);
+          return res.status(400).json({ error: "Invalid clinic" });
+        }
+
+        // Auth via per-clinic secret
+        // Validate clinic-specific secret
+        const secretHeader = `X-${clinic.charAt(0).toUpperCase() + clinic.slice(1)}-Secret`;
+        const secret = req.get(secretHeader);
+        console.log(`🔑 Checking auth header: ${secretHeader}`);
+        
+        // Define the clinic secrets based on requirements
+        const CLINIC_SECRETS: Record<string, string> = {
+          'footcare': 'footcare_secret_2025',
+          'nailsurgery': 'nailsurgery_secret_2025',
+          'lasercare': 'lasercare_secret_2025'
+        };
+        
+        // Get the expected secret for this clinic
+        const envSecretKey = `${clinic.toUpperCase()}_WEBHOOK_SECRET`;
+        const expectedSecret = CLINIC_SECRETS[clinic] || process.env[envSecretKey];
+        console.log(`🔐 Using secret from: ${CLINIC_SECRETS[clinic] ? 'hardcoded values' : `env var ${envSecretKey}`}`);
+
+        if (!secret || secret !== expectedSecret) {
           console.warn(
-            `Unauthorized webhook attempt with secret: ${
-              secret ? "[REDACTED]" : "missing"
-            }`
+            `❌ Unauthorized webhook attempt for ${clinic} with secret: ${
+              secret ? `${secret.substring(0, 5)}...` : "missing"
+            }, expected: ${expectedSecret ? `${expectedSecret.substring(0, 5)}...` : "undefined"}`
           );
           return res.status(401).json({ error: "Unauthorized" });
         }
+        console.log(`✅ Authentication successful for ${clinic}`);
 
-        console.log("🔔 WEBHOOK RECEIVED!");
-        console.log("📥 Full webhook payload:", JSON.stringify(req.body, null, 2));
-        console.log("📊 Data size:", JSON.stringify(req.body).length, "characters");
+        console.log("📥 Form fields:", JSON.stringify(req.body, null, 2));
+        console.log("📥 File:", req.file ? `${req.file.originalname} (${req.file.size} bytes)` : "No file");
 
         const result = ConsultationSchema.safeParse(req.body);
         if (!result.success) {
@@ -478,16 +474,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
             .status(400)
             .json({ ok: false, errors: result.error.errors });
         }
+        console.log("✅ Schema validation passed");
 
-        // Use raw body data to handle any field structure
         const rawData = req.body;
 
-        // Skip duplicate check for now to work around raw_json column issue
-        console.log("🔍 Skipping duplicate check due to database schema issue");
-
-        console.log("✅ Processing consultation with raw data");
-
-        // Extract email and phone with multiple possible field names
+        // Extract email and phone
         const email =
           rawData.email ||
           rawData.patient_email ||
@@ -499,63 +490,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
           rawData.userPhone ||
           null;
 
-        console.log("📧 Extracted email:", email);
-        console.log("📞 Extracted phone:", phone);
-
-        // Enhanced duplicate check - both consultations AND assessments
-        if (email && email !== "no-email@provided.com") {
-          try {
-            // Check recent consultations (within 60 seconds)
-            const recentConsultations = await storage.getConsultations();
-            const sixtySecondsAgo = new Date(Date.now() - 60000);
-            const recentConsultationDuplicate = recentConsultations.find(
-              (c) =>
-                c.email === email &&
-                c.createdAt !== null &&
-                new Date(c.createdAt) > sixtySecondsAgo &&
-                c.name === (rawData.name || rawData.patient_name)
-            );
-
-            if (recentConsultationDuplicate) {
-              console.log(
-                "⚠️ Recent consultation duplicate detected within 60 seconds for email:",
-                email
-              );
-              return res.status(200).json({
-                ok: true,
-                id: recentConsultationDuplicate.id.toString(),
-              });
-            }
-
-            // Check recent assessments to prevent multiple assessments for same patient
-            const recentAssessments = await storage.getAssessments({});
-            const recentAssessmentDuplicate = recentAssessments.find(
-              (a) =>
-                a.patient?.email === email &&
-                a.createdAt !== null &&
-                new Date(a.createdAt) > sixtySecondsAgo &&
-                a.patient?.name === (rawData.name || rawData.patient_name)
-            );
-
-            if (recentAssessmentDuplicate) {
-              console.log(
-                "⚠️ Recent assessment duplicate detected within 60 seconds for email:",
-                email
-              );
-              return res.status(200).json({
-                ok: true,
-                id: recentAssessmentDuplicate.id.toString(),
-              });
-            }
-          } catch (error) {
-            console.log(
-              "⚠️ Error checking for recent duplicates, continuing:",
-              error
-            );
-          }
-        }
-
-        // Comprehensive field mapping for all consultation data
+        // Insert base row with has_image as boolean
         const consultationData: any = {
           name:
             rawData.name ||
@@ -564,20 +499,14 @@ export async function registerRoutes(app: Express): Promise<Server> {
             "Unknown Patient",
           email: email || "no-email@provided.com",
           phone: phone || "no-phone-provided",
-          preferred_clinic:
-            rawData.preferredClinic ||
-            rawData.preferred_clinic ||
-            rawData.clinic_location ||
-            rawData.clinicLocation ||
-            null,
+          preferred_clinic: clinic,
+          clinic: clinic, // Also set the required 'clinic' field that's needed for database constraint
           issue_category:
             rawData.issueCategory ||
             rawData.issue_category ||
             rawData.issue_type ||
             rawData.primaryConcern ||
             "General consultation",
-
-          // Core medical fields - HIGH PRIORITY
           issue_specifics:
             rawData.issue_specifics ||
             rawData.issueSpecifics ||
@@ -604,23 +533,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
             rawData.aiAnalysis ||
             rawData.ai_analysis ||
             null,
-
-          // Image handling
-          has_image:
-            rawData.has_image ||
-            rawData.hasImage ||
-            rawData.imageUploaded ||
-            (rawData.image_path || rawData.imagePath || rawData.imageUrl
-              ? "true"
-              : "false"),
-          image_path:
-            rawData.image_path ||
-            rawData.imagePath ||
-            rawData.imageUrl ||
-            rawData.image_url ||
-            null,
-
-          // Booking and scheduling - MEDIUM PRIORITY
+          has_image: !!req.file, // Boolean
           calendar_booking:
             rawData.calendar_booking ||
             rawData.calendarBooking ||
@@ -634,8 +547,6 @@ export async function registerRoutes(app: Express): Promise<Server> {
             rawData.appointmentConfirmation ||
             rawData.appointment_confirmation ||
             null,
-
-          // Survey and feedback - MEDIUM PRIORITY
           emoji_survey:
             rawData.emoji_survey ||
             rawData.emojiSurvey ||
@@ -648,8 +559,6 @@ export async function registerRoutes(app: Express): Promise<Server> {
             rawData.feedback ||
             rawData.user_feedback ||
             null,
-
-          // Additional support - LOW PRIORITY
           final_question:
             rawData.final_question ||
             rawData.finalQuestion ||
@@ -662,8 +571,6 @@ export async function registerRoutes(app: Express): Promise<Server> {
             rawData.needsHelp ||
             rawData.needs_help ||
             null,
-
-          // System fields
           created_at: rawData.createdAt ? new Date(rawData.createdAt) : new Date(),
           conversation_log:
             rawData.conversation_log ||
@@ -675,8 +582,6 @@ export async function registerRoutes(app: Express): Promise<Server> {
             rawData.completedSteps ||
             rawData.stepsCompleted ||
             [],
-          // Temporarily exclude raw_json to work around database schema issue
-          // raw_json: rawData, // Store full untouched payload
         };
 
         // Ensure string fields for JSON storage
@@ -707,203 +612,145 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
         console.log("🧾 Final consultation data to store:", consultationData);
 
-        // Store ALL consultation fields properly
-        // Temporarily exclude raw_json to work around database schema issue
-        const { raw_json, ...consultationDataWithoutRawJson } = consultationData;
-        const consultationRecord = await storage.createConsultation(
-          consultationDataWithoutRawJson
-        );
+        // Insert consultation
+        console.log("💾 Calling storage.createConsultation...");
+        let consultationRecord;
+        let imageUrl = null;
+        let patientRecord = null;
+        let assessmentRecord = null;
 
-        // Process image if present
-        if (consultationData.image_path) {
-          try {
-            await processConsultationImage(consultationRecord.id, consultationData.image_path, consultationData.has_image);
-          } catch (imageError) {
-            console.error("⚠️ Error processing consultation image:", imageError);
-            // Don't fail the entire webhook for image processing errors
-          }
-        }
-
-        let patient = null;
-        if (email && email !== "no-email@provided.com") {
-          try {
-            patient = await storage.getPatientByEmail(email);
-            console.log("👤 Found existing patient:", patient?.name ?? "unknown");
-          } catch (e) {
-            console.log("⚠️ Patient not found, will create new");
-          }
-        }
-
-        if (!patient) {
-          const patientName =
-            rawData.name || rawData.patient_name || "Unknown Patient";
-          console.log("⚠️ Creating new patient with data:", {
-            name: patientName,
-            email,
-            phone,
-          });
-          patient = await storage.createPatient({
-            name: patientName,
-            email: email || "no-email@provided.com",
-            phone: phone || "no-phone-provided",
-          });
-          console.log(
-            "✅ Created new patient:",
-            patient?.name ?? "unknown",
-            "with ID:",
-            patient?.id ?? "unknown",
-            "email:",
-            email
-          );
-        } else {
-          console.log(
-            "👤 Found existing patient:",
-            patient?.name ?? "unknown",
-            "with ID:",
-            patient?.id ?? "unknown"
-          );
-        }
-
-        const primaryConcern =
-          rawData.issueCategory ||
-          rawData.issue_category ||
-          rawData.issue_type ||
-          rawData.primaryConcern ||
-          rawData.symptom_description ||
-          rawData.symptomDescription ||
-          "General consultation";
-
-        // Final check: ensure no assessment already exists for this patient in the last 60 seconds
         try {
-          const existingAssessments = await storage.getAssessments({});
-          const sixtySecondsAgo = new Date(Date.now() - 60000);
-          const existingAssessment = existingAssessments.find(
-            (a) => a.patientId === patient.id && new Date(a.createdAt) > sixtySecondsAgo
-          );
+          // Create consultation
+          consultationRecord = await storage.createConsultation(consultationData);
+          console.log("✅ Inserted consultation ID:", consultationRecord.id, "in database");
+          
+          // Log database record details
+          console.log("📊 Created consultation record fields:");
+          console.log(`  - ID: ${consultationRecord.id}`);
+          console.log(`  - Name: ${consultationRecord.name}`);
+          console.log(`  - Email: ${consultationRecord.email}`);
+          console.log(`  - Clinic: ${consultationRecord.preferred_clinic}`);
+          console.log(`  - Created: ${consultationRecord.createdAt}`);
 
-          if (existingAssessment) {
-            console.log(
-              "⚠️ Assessment already exists for patient within 60 seconds, using existing:",
-              existingAssessment.id
-            );
-            return res.status(200).json({
-              ok: true,
-              id: consultationRecord.id.toString(),
-            });
+          // Upload to Supabase if file present
+          if (req.file) {
+            console.log("📤 Uploading image to Supabase storage...");
+            console.log(`📋 Image details: ${req.file.originalname}, ${req.file.mimetype}, ${req.file.buffer.length} bytes`);
+            console.log(`📋 Using consultation ID: ${consultationRecord.id} and clinic: ${clinic}`);
+            try {
+              imageUrl = await uploadConsultationImage(consultationRecord.id, req.file, clinic);
+              console.log("📤 Image upload result:", imageUrl ? `Success: ${imageUrl}` : "Failed");
+            } catch (imageError: any) {
+              console.error("❌ Image upload error:", imageError);
+              console.error("❌ Error stack:", imageError.stack || 'No stack trace available');
+            }
+          } else {
+            console.log("ℹ️ No image file present in the request");
           }
-        } catch (error) {
-          console.log("⚠️ Error checking existing assessments:", error);
-        }
 
-        const assessment = await storage.createAssessment({
-          patientId: patient.id,
-          primaryConcern: primaryConcern,
-          riskLevel: "medium",
-          status: "completed",
-          completedAt: new Date(),
-          clinicLocation:
-            rawData.preferredClinic || rawData.preferred_clinic || null,
-        });
-
-        if (rawData.issueCategory) {
-          const conditions = await storage.getConditions();
-          const exists = conditions.find(
-            (c) => c.name.toLowerCase() === rawData.issueCategory!.toLowerCase()
-          );
-          if (!exists) {
-            await storage.createCondition({
-              name: rawData.issueCategory!,
-              description:
-                rawData.nailSpecifics ||
-                rawData.painSpecifics ||
-                rawData.skinSpecifics ||
-                rawData.structuralSpecifics ||
-                "",
-            });
+          // Create patient and assessment (simplified - keeping core logic)
+          console.log(`🔍 Looking up patient by email: ${email}`);
+          if (email && email !== "no-email@provided.com") {
+            try {
+              patientRecord = await storage.getPatientByEmail(email);
+              if (patientRecord) {
+                console.log(`✅ Found existing patient: ${patientRecord.id} (${patientRecord.name})`);
+              } else {
+                console.log("ℹ️ No existing patient found with this email");
+              }
+            } catch (e) {
+              console.error("❌ Error looking up patient:", e);
+            }
           }
+
+          if (!patientRecord) {
+            const patientName = rawData.name || rawData.patient_name || "Unknown Patient";
+            console.log(`👤 Creating new patient: ${patientName}`);
+            try {
+              patientRecord = await storage.createPatient({
+                name: patientName,
+                email: email || "no-email@provided.com",
+                phone: phone || "no-phone-provided",
+              });
+              console.log(`✅ Created new patient with ID: ${patientRecord.id}`);
+            } catch (patientError) {
+              console.error("❌ Patient creation error:", patientError);
+              // Continue with a fallback patient object if creation fails
+              patientRecord = {
+                id: -1,
+                name: patientName,
+                email: email || "no-email@provided.com",
+                phone: phone || "no-phone-provided",
+                createdAt: new Date()
+              };
+              console.log("⚠️ Using fallback patient object");
+            }
+          }
+
+          const primaryConcern =
+            rawData.issueCategory ||
+            rawData.issue_category ||
+            rawData.issue_type ||
+            rawData.primaryConcern ||
+            rawData.symptom_description ||
+            rawData.symptomDescription ||
+            "General consultation";
+
+          console.log(`📝 Creating assessment for patient ${patientRecord.id} with concern: ${primaryConcern}`);
+          try {
+            assessmentRecord = await storage.createAssessment({
+              patientId: patientRecord.id,
+              primaryConcern: primaryConcern,
+              riskLevel: "medium",
+              status: "completed",
+              completedAt: new Date(),
+              clinicLocation: clinic,
+            });
+            console.log(`✅ Created assessment with ID: ${assessmentRecord.id}`);
+          } catch (assessmentError) {
+            console.error("❌ Assessment creation error:", assessmentError);
+          }
+        } catch (consultationError) {
+          console.error("❌ CRITICAL - Consultation creation failed:", consultationError);
+          throw consultationError;
         }
 
-        console.log("✅ Created consultation ID:", consultationRecord.id);
-        console.log(
-          "👤 Patient created/found - ID:",
-          patient.id,
-          "Name:",
-          patient.name
-        );
-        console.log(
-          "📋 Assessment created - ID:",
-          assessment.id,
-          "Risk:",
-          assessment.riskLevel
-        );
-
-        // Verify what was actually stored in the database
-        try {
-          const storedConsultation = await storage.getConsultationById(
-            consultationRecord.id
-          );
-          console.log("✅ Verified stored consultation data:", {
-            id: storedConsultation.id,
-            name: storedConsultation.name,
-            issue_category: storedConsultation.issue_category,
-            issue_specifics: storedConsultation.issue_specifics,
-            symptom_description: storedConsultation.symptom_description,
-            previous_treatment: storedConsultation.previous_treatment,
-            has_image: storedConsultation.has_image,
-            image_path: storedConsultation.image_path,
-            image_analysis: storedConsultation.image_analysis ? "Present" : "Null",
-            calendar_booking: storedConsultation.calendar_booking ? "Present" : "Null",
-            booking_confirmation: storedConsultation.booking_confirmation
-              ? "Present"
-              : "Null",
-            final_question: storedConsultation.final_question,
-            additional_help: storedConsultation.additional_help,
-            emoji_survey: storedConsultation.emoji_survey,
-            survey_response: storedConsultation.survey_response,
-          });
-        } catch (verifyError) {
-          console.log("⚠️ Could not verify stored consultation:", verifyError);
-        }
-
-        if (typeof (globalThis as any).broadcastToClients === "function") {
+        // Broadcast to WebSocket clients if we have both patient and assessment
+        if (typeof (globalThis as any).broadcastToClients === "function" && patientRecord && assessmentRecord) {
+          console.log(`📡 Broadcasting new assessment to WebSocket clients`);
           (globalThis as any).broadcastToClients({
             type: "new_assessment",
             data: {
-              patientId: patient.id,
-              patientName: patient.name,
-              assessmentId: assessment.id,
-              riskLevel: assessment.riskLevel,
+              patientId: patientRecord.id,
+              patientName: patientRecord.name,
+              assessmentId: assessmentRecord.id,
+              riskLevel: assessmentRecord.riskLevel,
               timestamp: new Date().toISOString(),
             },
           });
-          console.log("📢 WebSocket broadcast sent to clients");
+        }
+
+        // Respond once with 201
+        if (consultationRecord) {
+          const responseData = {
+            ok: true,
+            id: consultationRecord.id.toString(),
+            clinic,
+            image_url: imageUrl,
+          };
+          console.log(`✅ WEBHOOK PROCESSING COMPLETE - Responding with success:`, responseData);
+          res.status(201).json(responseData);
         } else {
-          console.log("⚠️ WebSocket broadcast function not available");
+          throw new Error("Failed to create consultation record");
         }
-
-        // Debug: Check what's actually in the database now
-        try {
-          const allAssessments = await storage.getAssessments({});
-          const allPatients = await storage.getPatients({});
-          console.log("📊 DATABASE STATE AFTER WEBHOOK:");
-          console.log("   Total assessments:", allAssessments.length);
-          console.log("   Total patients:", allPatients.length);
-          console.log(
-            "   Latest assessment:",
-            allAssessments[0]?.id,
-            allAssessments[0]?.primaryConcern
-          );
-        } catch (dbError) {
-          console.log("❌ Error checking database state:", dbError);
-        }
-
-        res.status(200).json({
-          ok: true,
-          id: consultationRecord.id.toString(),
+      } catch (error: any) { // Type the error as any to access properties
+        console.error("❌ WEBHOOK ERROR:", error);
+        console.error("Stack trace:", error.stack);
+        res.status(500).json({
+          success: false,
+          message: "Internal error",
+          error: process.env.NODE_ENV === 'development' ? error.message : undefined
         });
-      } catch (error) {
-        console.error("❌ Error processing consultation:", error);
-        res.status(500).json({ success: false, message: "Internal error" });
       }
     }
   );
@@ -974,6 +821,36 @@ app.get('/api/consultations/:id', async (req: Request, res: Response) => {
   } catch (error) {
     console.error(`Failed to fetch consultation ${id}:`, error);
     res.status(500).json({ message: 'Failed to fetch consultation details' });
+  }
+});
+
+app.get('/api/consultations.csv', async (req: Request, res: Response) => {
+  try {
+    // Parse query parameters
+    const limit = req.query.limit ? parseInt(req.query.limit as string) : undefined;
+    const offset = req.query.offset ? parseInt(req.query.offset as string) : undefined;
+    const clinic_group = req.query.clinic_group as string | undefined;
+    const startDate = req.query.startDate ? new Date(req.query.startDate as string) : undefined;
+    const endDate = req.query.endDate ? new Date(req.query.endDate as string) : undefined;
+    const q = req.query.q as string | undefined;
+
+    const options: any = {};
+    if (limit !== undefined) options.limit = limit;
+    if (offset !== undefined) options.offset = offset;
+    if (clinic_group) options.clinic_group = clinic_group;
+    if (startDate) options.startDate = startDate;
+    if (endDate) options.endDate = endDate;
+    if (q) options.q = q;
+
+    const consultations = await storage.getConsultations(options);
+    const csvContent = await exportConsultationsToCSV(consultations);
+
+    res.setHeader('Content-Type', 'text/csv');
+    res.setHeader('Content-Disposition', 'attachment; filename="consultations.csv"');
+    res.send(csvContent);
+  } catch (error) {
+    console.error('Error exporting consultations to CSV:', error);
+    res.status(500).json({ message: 'Failed to export consultations' });
   }
 });
 
@@ -1062,10 +939,10 @@ app.get('/api/export/analytics', async (req: Request, res: Response) => {
       consultations,
       exportedAt: new Date().toISOString(),
       imageUrls: consultations
-        .filter(c => c.image_path)
+        .filter(c => c.image_url)
         .map(c => ({
           consultationId: c.id,
-          imageUrl: c.image_path,
+          imageUrl: c.image_url,
           hasImage: c.has_image
         }))
     };
@@ -1074,7 +951,9 @@ app.get('/api/export/analytics', async (req: Request, res: Response) => {
       // Use the CSV export service
       const csvContent = await exportConsultationsToCSV(consultations);
 
-
+      res.setHeader('Content-Type', 'text/csv');
+      res.setHeader('Content-Disposition', 'attachment; filename="analytics-consultations.csv"');
+      res.send(csvContent);
     } else {
       res.setHeader('Content-Type', 'application/json');
       res.setHeader('Content-Disposition', 'attachment; filename="analytics-export.json"');
@@ -1107,6 +986,293 @@ app.get('/api/export/all', async (_req: Request, res: Response) => {
     res.status(500).json({ message: 'Failed to export data' });
   }
 });
+
+// Treatment Plans routes
+app.get('/api/treatment-plans', async (req: Request, res: Response) => {
+  try {
+    const patientId = req.query.patientId ? parseInt(req.query.patientId as string) : undefined;
+
+    const plans = await db.select().from(treatmentPlans)
+      .where(patientId ? eq(treatmentPlans.patientId, patientId) : undefined);
+    res.json(plans);
+  } catch (error) {
+    console.error('Error fetching treatment plans:', error);
+    res.status(500).json({ message: 'Failed to fetch treatment plans' });
+  }
+});
+
+app.get('/api/treatment-plans/:id', async (req: Request, res: Response) => {
+  const id = parseInt(req.params.id);
+  if (isNaN(id)) {
+    return res.status(400).json({ message: 'Invalid treatment plan ID' });
+  }
+
+  try {
+    const plan = await db.select().from(treatmentPlans).where(eq(treatmentPlans.id, id)).limit(1);
+    if (!plan.length) {
+      return res.status(404).json({ message: 'Treatment plan not found' });
+    }
+    res.json(plan[0]);
+  } catch (error) {
+    console.error(`Failed to fetch treatment plan ${id}:`, error);
+    res.status(500).json({ message: 'Failed to fetch treatment plan' });
+  }
+});
+
+app.post('/api/treatment-plans', async (req: Request, res: Response) => {
+  try {
+    const validatedData = insertTreatmentPlanSchema.parse(req.body);
+    const newPlan = await db.insert(treatmentPlans).values({
+      ...validatedData,
+      treatments: validatedData.treatments as any
+    }).returning();
+    res.status(201).json(newPlan[0]);
+  } catch (error) {
+    console.error('Error creating treatment plan:', error);
+    res.status(500).json({ message: 'Failed to create treatment plan' });
+  }
+});
+
+app.put('/api/treatment-plans/:id', async (req: Request, res: Response) => {
+  const id = parseInt(req.params.id);
+  if (isNaN(id)) {
+    return res.status(400).json({ message: 'Invalid treatment plan ID' });
+  }
+
+  try {
+    const updateData = { ...req.body, updatedAt: new Date() };
+    const updatedPlan = await db.update(treatmentPlans)
+      .set(updateData)
+      .where(eq(treatmentPlans.id, id))
+      .returning();
+    if (!updatedPlan.length) {
+      return res.status(404).json({ message: 'Treatment plan not found' });
+    }
+    res.json(updatedPlan[0]);
+  } catch (error) {
+    console.error(`Failed to update treatment plan ${id}:`, error);
+    res.status(500).json({ message: 'Failed to update treatment plan' });
+  }
+});
+
+app.delete('/api/treatment-plans/:id', async (req: Request, res: Response) => {
+  const id = parseInt(req.params.id);
+  if (isNaN(id)) {
+    return res.status(400).json({ message: 'Invalid treatment plan ID' });
+  }
+
+  try {
+    await db.delete(treatmentPlans).where(eq(treatmentPlans.id, id));
+    res.status(204).send();
+  } catch (error) {
+    console.error(`Failed to delete treatment plan ${id}:`, error);
+    res.status(500).json({ message: 'Failed to delete treatment plan' });
+  }
+});
+
+// Communications API endpoint
+app.post('/api/communications', async (req: Request, res: Response) => {
+  try {
+    const { patientId, sentBy, type, subject, message, clinicGroup } = req.body;
+
+    // Validate required fields
+    if (!patientId || !type || !message) {
+      console.log('Missing required fields');
+      return res.status(400).json({
+        error: 'Missing required fields: patientId, type, message'
+      });
+    }
+
+    // Get patient details from database
+    console.log('Looking up patient:', patientId);
+    const patientRecord = await db.select().from(patients).where(eq(patients.id, patientId)).limit(1);
+
+    if (!patientRecord.length) {
+      return res.status(404).json({ error: 'Patient not found' });
+    }
+
+    const patient = patientRecord[0];
+    console.log('Found patient:', patient);
+
+    // Determine clinic group - use provided clinicGroup or fallback to patient's clinic_group
+    const clinic = clinicGroup || patient.clinic_group || 'footcare';
+    console.log('Using clinic:', clinic);
+
+    // Get clinic email settings
+    const emailSettings = await db.select().from(clinicEmailSettings).where(eq(clinicEmailSettings.clinicGroup, clinic)).limit(1);
+    const clinicSettings = emailSettings.length > 0 ? emailSettings[0] : null;
+
+    let result;
+
+    switch (type) {
+      case 'email':
+        if (!patient.email) {
+          return res.status(400).json({ error: 'Patient has no email address' });
+        }
+        result = await sendEmail(patient.email, subject, message, clinicSettings);
+        break;
+
+      case 'sms':
+        if (!patient.phone) {
+          return res.status(400).json({ error: 'Patient has no phone number' });
+        }
+        result = await sendSMS(patient.phone, message);
+        break;
+
+      case 'message':
+      case 'portal':
+        // For now, portal messages are logged but not actually sent
+        // In a real implementation, this might integrate with a patient portal system
+        console.log(`Portal message to ${patient.name}: ${message}`);
+        result = { success: true, method: 'portal', message: 'Portal message logged' };
+        break;
+
+      default:
+        return res.status(400).json({ error: 'Invalid message type. Supported: email, sms, message, portal' });
+    }
+
+    if (!result.success) {
+      return res.status(500).json({ error: 'Failed to send message', details: result.error });
+    }
+
+    // Log the communication (optional - could be stored in database)
+    console.log(`📧 Communication sent: ${type} to ${patient.name} (${patient.email || patient.phone})`);
+
+    res.json({
+      success: true,
+      message: 'Message sent successfully',
+      type,
+      recipient: patient.name,
+      method: result.method || type
+    });
+
+  } catch (error) {
+    console.error('Error sending communication:', error);
+    res.status(500).json({ error: 'Internal server error' });
+  }
+});
+
+// Communications Hub email sending route
+app.post('/api/communications/send', async (req: Request, res: Response) => {
+  const { to, subject, text, html, templateId, variables, from, fromName, replyTo } = req.body;
+
+  const emailResult = await mailSendEmail({ to, subject, text, html, templateId, variables, from, fromName, replyTo });
+
+  return emailResult.ok
+    ? res.status(200).json({ ok: true, provider: 'mailersend', id: emailResult.id })
+    : res.status(502).json({ ok: false, provider: 'mailersend', error: emailResult.error, status: emailResult.status });
+});
+
+// Self-test route for communications
+app.post('/api/communications/self-test', async (req: Request, res: Response) => {
+  const { to, templateId, variables, subject, text } = req.body;
+
+  const result = await mailSendEmail({ to, subject, text, templateId, variables });
+
+  return result.ok
+    ? res.status(200).json(result)
+    : res.status(502).json(result);
+});
+
+// Email sending function
+async function sendEmail(to: string, subject: string, html: string, clinicSettings?: any) {
+  try {
+    // Use clinic-specific settings if available, otherwise fall back to environment variables
+    const emailService = clinicSettings?.emailService || process.env.EMAIL_SERVICE || 'sendgrid';
+    const fromEmail = clinicSettings?.emailFrom || process.env.EMAIL_FROM || 'noreply@eteahealthcare.com';
+    const fromName = clinicSettings?.emailFromName || process.env.EMAIL_FROM_NAME || 'ETEA Healthcare';
+
+    if (emailService === 'sendgrid') {
+      // MailerSend implementation
+      const apiKey = clinicSettings?.mailerSendApiKey || process.env.MAILER_SEND_API_KEY;
+      if (!apiKey) {
+        throw new Error('MAILER_SEND_API_KEY not configured for this clinic');
+      }
+
+      const mailerSendData = {
+        from: {
+          email: fromEmail,
+          name: fromName
+        },
+        to: [{ email: to }],
+        subject,
+        html
+      };
+
+      const response = await axios.post('https://api.mailersend.com/v1/email', mailerSendData, {
+        headers: {
+          'Authorization': `Bearer ${apiKey}`,
+          'Content-Type': 'application/json'
+        }
+      });
+
+      if (response.status !== 202) {
+        throw new Error('Failed to send email via MailerSend');
+      }
+
+      return { success: true, method: 'mailersend' };
+
+    } else if (emailService === 'smtp') {
+      // Nodemailer implementation (for SMTP)
+      const transporter = nodemailer.createTransport({
+        host: clinicSettings?.smtpHost || process.env.SMTP_HOST,
+        port: clinicSettings?.smtpPort || parseInt(process.env.SMTP_PORT || '587'),
+        secure: clinicSettings?.smtpSecure || process.env.SMTP_SECURE === 'true',
+        auth: {
+          user: clinicSettings?.smtpUser || process.env.SMTP_USER,
+          pass: clinicSettings?.smtpPass || process.env.SMTP_PASS
+        }
+      });
+
+      await transporter.sendMail({
+        from: `"${fromName}" <${fromEmail}>`,
+        to,
+        subject,
+        html
+      });
+
+      return { success: true, method: 'smtp' };
+    } else {
+      throw new Error(`Unsupported email service: ${emailService}`);
+    }
+
+  } catch (error) {
+    console.error('Email sending error:', error);
+    return { success: false, error: error instanceof Error ? error.message : String(error) };
+  }
+}
+
+// SMS sending function (placeholder for future implementation)
+async function sendSMS(to: string, message: string) {
+  try {
+    const smsService = process.env.SMS_SERVICE;
+
+    if (!smsService) {
+      // Mock SMS sending for development
+      console.log(`📱 Mock SMS to ${to}: ${message}`);
+      return { success: true, method: 'mock' };
+    }
+
+    if (smsService === 'twilio') {
+      // Twilio implementation would go here
+      // const twilio = require('twilio');
+      // const client = twilio(process.env.TWILIO_ACCOUNT_SID, process.env.TWILIO_AUTH_TOKEN);
+      // await client.messages.create({
+      //   body: message,
+      //   from: process.env.TWILIO_PHONE_NUMBER,
+      //   to
+      // });
+      console.log(`📱 Twilio SMS to ${to}: ${message} (not implemented)`);
+      return { success: false, error: 'Twilio integration not implemented yet' };
+    }
+
+    return { success: false, error: `Unsupported SMS service: ${smsService}` };
+
+  } catch (error) {
+    console.error('SMS sending error:', error);
+    return { success: false, error: error instanceof Error ? error.message : String(error) };
+  }
+}
 
 // --- WebSocket server for real-time updates (restored) ---
 const wss = new WebSocketServer({ server: httpServer, path: '/ws' });

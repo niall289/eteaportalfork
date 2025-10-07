@@ -33,6 +33,9 @@
 import { db } from "./db"; // db can be null if DATABASE_URL is not set
 import { eq, and, desc, sql, count, like, or, between, asc, inArray } from "drizzle-orm";
 
+// Mock mode flag - only enable mock mode if MOCK_DB='1'
+const isMockMode = process.env.MOCK_DB === '1';
+
 // Define ChatbotSettings structure
 export interface ChatbotSettingsData {
   id?: number;
@@ -186,7 +189,8 @@ export class DatabaseStorage implements IStorage {
 
   // Patient operations
   async getPatients(options?: { limit?: number; offset?: number; search?: string }): Promise<Patient[]> {
-    if (!db) { this.logMockWarning('getPatients', options); return []; }
+    if (isMockMode) { this.logMockWarning('getPatients', options); return []; }
+    if (!db) throw new Error(DB_UNAVAILABLE_WARNING + " (getPatients)");
 
     let queryBuilder = db.select().from(patients).$dynamic();
 
@@ -207,7 +211,8 @@ export class DatabaseStorage implements IStorage {
   }
 
   async getPatientsCount(search?: string): Promise<number> {
-    if (!db) { this.logMockWarning('getPatientsCount', { search }); return 0; }
+    if (isMockMode) { this.logMockWarning('getPatientsCount', { search }); return 0; }
+    if (!db) throw new Error(DB_UNAVAILABLE_WARNING + " (getPatientsCount)");
 
     let queryBuilder = db.select({ count: count() }).from(patients).$dynamic();
 
@@ -220,16 +225,18 @@ export class DatabaseStorage implements IStorage {
   }
 
   async getPatientById(id: number): Promise<Patient | undefined> {
-    if (!db) { this.logMockWarning('getPatientById', { id }); return undefined; } // Mock for safety
+    if (isMockMode) { this.logMockWarning('getPatientById', { id }); return undefined; } // Mock for safety
+    if (!db) throw new Error(DB_UNAVAILABLE_WARNING + " (getPatientById)");
     const [patient] = await db.select().from(patients).where(eq(patients.id, id));
     return patient;
   }
 
   async getPatientByEmail(email: string): Promise<Patient | undefined> {
-     if (!db) { this.logMockWarning('getPatientByEmail', { email }); return undefined; } // Mock for safety
-    const [patient] = await db.select().from(patients).where(eq(patients.email, email));
-    return patient;
-  }
+     if (isMockMode) { this.logMockWarning('getPatientByEmail', { email }); return undefined; } // Mock for safety
+     if (!db) throw new Error(DB_UNAVAILABLE_WARNING + " (getPatientByEmail)");
+     const [patient] = await db.select().from(patients).where(eq(patients.email, email));
+     return patient;
+   }
 
   async createPatient(patientData: InsertPatient): Promise<Patient> {
     if (!db) { 
@@ -710,88 +717,97 @@ export class DatabaseStorage implements IStorage {
   }
 
   async getConsultations(options?: { limit?: number; offset?: number; clinic_group?: string; startDate?: Date; endDate?: Date; q?: string }): Promise<Consultation[]> {
+    console.log('🔍 getConsultations called with options:', options);
     if (!db) { this.logMockWarning('getConsultations', options); return []; } // Mock for safety
 
-    // First get consultations with filters
-    let consultationsQuery = db.select().from(consultations).$dynamic();
+    try {
+      // First get consultations with filters
+      let consultationsQuery = db.select().from(consultations).$dynamic();
 
-    const queryConditions: any[] = [];
-    if (options?.clinic_group) {
-      queryConditions.push(eq(consultations.preferred_clinic, options.clinic_group));
-    }
-    if (options?.startDate && options?.endDate) {
-      queryConditions.push(between(consultations.createdAt, options.startDate, options.endDate));
-    }
-    if (options?.q) {
-      const searchTerm = `%${options.q}%`;
-      queryConditions.push(or(
-        like(consultations.name, searchTerm),
-        like(consultations.email, searchTerm),
-        like(consultations.phone, searchTerm),
-        like(consultations.issue_category, searchTerm),
-        like(consultations.symptom_description, searchTerm)
-      ));
-    }
+      const queryConditions: any[] = [];
+      if (options?.clinic_group) {
+        queryConditions.push(eq(consultations.preferred_clinic, options.clinic_group));
+      }
+      if (options?.startDate && options?.endDate) {
+        queryConditions.push(between(consultations.createdAt, options.startDate, options.endDate));
+      }
+      if (options?.q) {
+        const searchTerm = `%${options.q}%`;
+        queryConditions.push(or(
+          like(consultations.name, searchTerm),
+          like(consultations.email, searchTerm),
+          like(consultations.phone, searchTerm),
+          like(consultations.issue_category, searchTerm),
+          like(consultations.symptom_description, searchTerm)
+        ));
+      }
 
-    if (queryConditions.length > 0) {
-      consultationsQuery = consultationsQuery.where(and(...queryConditions));
-    }
+      if (queryConditions.length > 0) {
+        consultationsQuery = consultationsQuery.where(and(...queryConditions));
+      }
 
-    consultationsQuery = consultationsQuery.orderBy(desc(consultations.createdAt));
+      consultationsQuery = consultationsQuery.orderBy(desc(consultations.createdAt));
 
-    if (options?.limit !== undefined) {
-      consultationsQuery = consultationsQuery.limit(options.limit);
-    }
-    if (options?.offset !== undefined) {
-      consultationsQuery = consultationsQuery.offset(options.offset);
-    }
+      if (options?.limit !== undefined) {
+        consultationsQuery = consultationsQuery.limit(options.limit);
+      }
+      if (options?.offset !== undefined) {
+        consultationsQuery = consultationsQuery.offset(options.offset);
+      }
 
-    const consultationResults = await consultationsQuery;
+      const consultationResults = await consultationsQuery;
+      console.log('✅ getConsultations query executed, results count:', consultationResults.length);
 
-    // Get first image and thumbnail for each consultation
-    const consultationIds = consultationResults.map(c => c.id);
-    const imagesMap = new Map<number, string>();
-    const thumbnailsMap = new Map<number, string>();
+      // Get first image and thumbnail for each consultation
+      const consultationIds = consultationResults.map(c => c.id);
+      const imagesMap = new Map<number, string>();
+      const thumbnailsMap = new Map<number, string>();
 
-    if (consultationIds.length > 0) {
-      const imagesResult = await db
-        .select({
-          consultationId: images.consultationId,
-          url: images.url,
-          thumbnailUrl: images.thumbnailUrl
-        })
-        .from(images)
-        .where(inArray(images.consultationId, consultationIds))
-        .orderBy(asc(images.createdAt));
+      if (consultationIds.length > 0) {
+        const imagesResult = await db
+          .select({
+            consultationId: images.consultationId,
+            url: images.url,
+            thumbnailUrl: images.thumbnailUrl
+          })
+          .from(images)
+          .where(inArray(images.consultationId, consultationIds))
+          .orderBy(asc(images.createdAt));
 
-      // Group by consultationId and take first image
-      const groupedImages = new Map<number, { url: string; thumbnailUrl: string | null }[]>();
-      imagesResult.forEach(img => {
-        if (!groupedImages.has(img.consultationId)) {
-          groupedImages.set(img.consultationId, []);
-        }
-        groupedImages.get(img.consultationId)!.push({
-          url: img.url,
-          thumbnailUrl: img.thumbnailUrl
-        });
-      });
-
-      // Take first image for each consultation
-      groupedImages.forEach((images, consultationId) => {
-        if (images.length > 0) {
-          imagesMap.set(consultationId, images[0].url);
-          if (images[0].thumbnailUrl) {
-            thumbnailsMap.set(consultationId, images[0].thumbnailUrl);
+        // Group by consultationId and take first image
+        const groupedImages = new Map<number, { url: string; thumbnailUrl: string | null }[]>();
+        imagesResult.forEach(img => {
+          if (!groupedImages.has(img.consultationId)) {
+            groupedImages.set(img.consultationId, []);
           }
-        }
-      });
-    }
+          groupedImages.get(img.consultationId)!.push({
+            url: img.url,
+            thumbnailUrl: img.thumbnailUrl
+          });
+        });
 
-    return consultationResults.map(consultation => ({
-      ...consultation,
-      firstImageUrl: imagesMap.get(consultation.id) || null,
-      firstThumbnailUrl: thumbnailsMap.get(consultation.id) || null
-    }));
+        // Take first image for each consultation
+        groupedImages.forEach((images, consultationId) => {
+          if (images.length > 0) {
+            imagesMap.set(consultationId, images[0].url);
+            if (images[0].thumbnailUrl) {
+              thumbnailsMap.set(consultationId, images[0].thumbnailUrl);
+            }
+          }
+        });
+      }
+
+      const finalResults = consultationResults.map(consultation => ({
+        ...consultation,
+        firstImageUrl: imagesMap.get(consultation.id) || null,
+        firstThumbnailUrl: thumbnailsMap.get(consultation.id) || null
+      }));
+      console.log('✅ getConsultations completed successfully, returning', finalResults.length, 'consultations');
+      return finalResults;
+    } catch (error) {
+      console.error('❌ Error in getConsultations:', error);
+      throw error;
+    }
   }
 
   async getConsultationById(id: number): Promise<Consultation> {

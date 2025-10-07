@@ -1,0 +1,25 @@
+
+> rest-express@1.0.0 dev
+> cross-env NODE_ENV=development tsx server/index.ts
+
+[dotenv@17.2.2] injecting env (6) from .env -- tip: ⚙️  write to custom object with { processEnv: myObject }
+[dotenv@17.2.2] injecting env (4) from server\.env -- tip: 🔐 encrypt with Dotenvx: https://dotenvx.com
+Runtime env check:
+NODE_ENV: development
+PORT: 5000
+DATABASE_URL present: true
+AUTH_MODE present: true
+AUTH_TOKEN present: true
+FOOTCARE_WEBHOOK_SECRET present: true
+CORS_ORIGIN present: false
+UPLOADS_ROOT present: false
+[auth] simple-auth mounted. mode=simple tokenLen=12
+[db:init] {
+  nodeEnv: 'development',
+  urlHost: 'ep-curly-mountain-a91glxrg-pooler.gwc.azure.neon.tech'
+}
+11:39:40 PM [express] serving on port 5000
+[db] Connected to Postgres OK
+9:51:25 AM [express] POST /api/webhook-proxy 200 in 160ms
+9:52:37 AM [express] GET /api/consultations 401 in 8ms :: {"success":false,"message":"Authentication…
+9:53:23 AM [express] POST /api/webhook-proxy 200 in 24ms

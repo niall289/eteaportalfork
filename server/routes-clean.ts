@@ -1,12 +1,15 @@
 import type { Express, Request, Response } from "express";
 import { createServer, type Server } from "http";
 import WebSocket, { WebSocketServer } from 'ws';
+import multer from 'multer';
 import { storage } from "./storage";
 import { setupAuth, isAuthenticated, skipAuthForWebhook } from "./simpleAuth";
 
 export async function registerRoutes(app: Express): Promise<Server> {
   // Auth middleware
   setupAuth(app);
+
+  const upload = multer({ dest: './uploads' });
 
   // Auth routes
   app.get('/api/auth/user', (req: Request, res: Response) => {
@@ -39,9 +42,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Consultations endpoint - matches your chatbot's URL (no auth required for webhooks)
-  app.post('/api/webhook/consultation', skipAuthForWebhook, async (req: Request, res: Response) => {
+  app.post('/api/webhook/consultation', upload.fields([{ name: 'image', maxCount: 1 }]), skipAuthForWebhook, async (req: Request, res: Response) => {
     try {
-      console.log('✅ Received consultation from chatbot:', JSON.stringify(req.body, null, 2));
+      console.log('✅ Received consultation from chatbot:', JSON.stringify(req.body, null, 2), 'files:', req.files);
       
       // Map clinic location to correct clinic group name
       const mapClinicLocation = (location: string) => {
@@ -57,23 +60,23 @@ export async function registerRoutes(app: Express): Promise<Server> {
         }
       };
       
-      // Direct field mapping for your chatbot's exact data structure
+      // Direct field mapping for multipart form data
       const mappedData = {
-        name: req.body.patient_name || 'Test Patient',
-        email: req.body.email || 'test@footcare.com', 
+        name: req.body.name || 'Test Patient',
+        email: req.body.email || 'test@footcare.com',
         phone: req.body.phone || '000-000-0000',
-        preferred_clinic: mapClinicLocation(req.body.clinic_location),
-        issue_category: req.body.issue_type,
-        issue_specifics: req.body.pain_presence || req.body.nail_issue_details || req.body.skin_issue_general,
-        pain_duration: req.body.pain_duration,
-        pain_severity: req.body.pain_severity,
+        preferred_clinic: mapClinicLocation(req.body.preferred_clinic),
+        issue_category: req.body.issue_category,
+        issue_specifics: req.body.symptom_description || '',
+        pain_duration: '',
+        pain_severity: '',
         additional_info: req.body.symptom_description,
-        previous_treatment: req.body.treatment_history,
-        has_image: req.body.image_file_url ? 'Yes' : 'No',
-        image_path: req.body.image_file_url,
-        image_analysis: req.body.image_analysis_text,
+        previous_treatment: '',
+        has_image: (req.files as any)?.image ? 'Yes' : 'No',
+        image_path: (req.files as any)?.image ? `/uploads/${(req.files as any).image[0].filename}` : null,
+        image_analysis: '',
         symptom_description: req.body.symptom_description,
-        symptom_analysis: req.body.image_analysis_text,
+        symptom_analysis: '',
         conversation_log: req.body
       };
       
@@ -84,10 +87,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
       
       // Convert consultation to patient record for the main portal
       const patientData = {
-        name: req.body.patient_name || req.body.name || 'Unknown Patient',
+        name: req.body.name || 'Unknown Patient',
         email: req.body.email || null,
         phone: req.body.phone || null,
-        clinic_group: mapClinicLocation(req.body.clinic_location),
+        clinic_group: mapClinicLocation(req.body.preferred_clinic),
       };
 
       // Check if patient already exists

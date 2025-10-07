@@ -151,6 +151,7 @@ export const consultations = pgTable("consultations", {
   has_image: text("has_image"),
   image_path: text("image_path"),
   image_analysis: text("image_analysis"),
+  image_url: text("image_url"),
   calendar_booking: text("calendar_booking"),
   booking_confirmation: text("booking_confirmation"),
   final_question: text("final_question"),
@@ -160,6 +161,10 @@ export const consultations = pgTable("consultations", {
   conversation_log: jsonb("conversation_log"),
   completed_steps: jsonb("completed_steps"),
   raw_json: jsonb("raw_json"),
+  symptom_analysis: text("symptom_analysis"),
+  pain_duration: text("pain_duration"),
+  pain_severity: text("pain_severity"),
+  additional_info: text("additional_info"),
   createdAt: timestamp("created_at").defaultNow(),
 });
 
@@ -179,6 +184,45 @@ export const images = pgTable("images", {
 
 // Chatbot tone enum
 export const chatbotToneEnum = pgEnum('chatbot_tone', ['Friendly', 'Professional', 'Clinical', 'Casual']);
+
+// Treatment plans
+export const treatmentPlans = pgTable("treatment_plans", {
+  id: serial("id").primaryKey(),
+  patientId: integer("patient_id").notNull().references(() => patients.id),
+  title: varchar("title", { length: 255 }).notNull(),
+  description: text("description"),
+  treatments: jsonb("treatments").$type<{
+    name: string;
+    description: string;
+    duration?: string;
+    frequency?: string;
+    notes?: string;
+  }[]>(),
+  status: varchar("status", { length: 50 }).default("draft"),
+  createdBy: varchar("created_by", { length: 100 }).notNull(),
+  createdAt: timestamp("created_at").defaultNow(),
+  updatedAt: timestamp("updated_at").defaultNow(),
+});
+
+// Clinic email settings
+export const clinicEmailSettings = pgTable("clinic_email_settings", {
+  id: serial("id").primaryKey(),
+  clinicGroup: text("clinic_group").notNull().unique(),
+  emailFrom: varchar("email_from", { length: 255 }).notNull(),
+  emailFromName: varchar("email_from_name", { length: 255 }).notNull(),
+  smtpHost: varchar("smtp_host", { length: 255 }),
+  smtpPort: integer("smtp_port").default(587),
+  smtpSecure: boolean("smtp_secure").default(false),
+  smtpUser: varchar("smtp_user", { length: 255 }),
+  smtpPass: text("smtp_pass"), // Encrypted in production
+  mailerSendApiKey: text("mailer_send_api_key"), // Encrypted in production
+  emailService: varchar("email_service", { length: 50 }).default("sendgrid"), // 'sendgrid' or 'smtp'
+  isActive: boolean("is_active").default(true),
+  createdAt: timestamp("created_at").defaultNow(),
+  updatedAt: timestamp("updated_at").defaultNow(),
+}, (table) => ({
+  clinicGroupIdx: index("clinic_email_settings_clinic_group_idx").on(table.clinicGroup),
+}));
 
 // Chatbot settings
 export const chatbotSettings = pgTable("chatbot_settings", {
@@ -219,6 +263,24 @@ export const insertClinicSchema = createInsertSchema(clinics).pick({
   latitude: true, longitude: true, phone: true, email: true,
   clinicMessage: true, isActive: true
 });
+export const insertTreatmentPlanSchema = createInsertSchema(treatmentPlans).pick({
+  patientId: true, title: true, description: true, treatments: true, status: true, createdBy: true
+});
+
+export const insertClinicEmailSettingsSchema = createInsertSchema(clinicEmailSettings).pick({
+  clinicGroup: true,
+  emailFrom: true,
+  emailFromName: true,
+  smtpHost: true,
+  smtpPort: true,
+  smtpSecure: true,
+  smtpUser: true,
+  smtpPass: true,
+  mailerSendApiKey: true,
+  emailService: true,
+  isActive: true,
+});
+
 export const insertChatbotSettingsSchema = createInsertSchema(chatbotSettings, {
   welcomeMessage: z.string().min(10).optional(),
   botDisplayName: z.string().min(3).optional(),
@@ -251,6 +313,8 @@ export type InsertResponse = z.infer<typeof insertResponseSchema>;
 export type InsertQuestion = z.infer<typeof insertQuestionSchema>;
 export type InsertCondition = z.infer<typeof insertConditionSchema>;
 export type InsertClinic = z.infer<typeof insertClinicSchema>;
+export type InsertTreatmentPlan = z.infer<typeof insertTreatmentPlanSchema>;
+export type InsertClinicEmailSettings = z.infer<typeof insertClinicEmailSettingsSchema>;
 export type InsertChatbotSettings = z.infer<typeof insertChatbotSettingsSchema>;
 export type InsertConsultation = z.infer<typeof insertConsultationSchema>;
 export type InsertImage = z.infer<typeof insertImageSchema>;
@@ -262,6 +326,8 @@ export type Response = typeof responses.$inferSelect;
 export type Question = typeof questions.$inferSelect;
 export type Condition = typeof conditions.$inferSelect;
 export type Clinic = typeof clinics.$inferSelect;
+export type TreatmentPlan = typeof treatmentPlans.$inferSelect;
+export type ClinicEmailSettings = typeof clinicEmailSettings.$inferSelect;
 export type ChatbotSettings = typeof chatbotSettings.$inferSelect;
 export type Consultation = typeof consultations.$inferSelect & {
   firstImageUrl?: string | null;

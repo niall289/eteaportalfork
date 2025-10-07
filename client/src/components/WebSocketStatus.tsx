@@ -9,11 +9,11 @@ interface WebSocketStatusProps {
 }
 
 export default function WebSocketStatus({ className }: WebSocketStatusProps) {
-  const { connected, lastEvent } = useWebSocket();
+  const { isConnected, lastMessage } = useWebSocket();
 
   return (
     <div className={cn("flex items-center gap-2", className)}>
-      {connected ? (
+      {isConnected ? (
         <Badge variant="outline" className="gap-1 py-1 text-xs bg-green-50 text-green-700 border-green-200 dark:bg-green-900/20 dark:text-green-400 dark:border-green-800">
           <Wifi className="h-3 w-3" />
           <span>Live updates</span>

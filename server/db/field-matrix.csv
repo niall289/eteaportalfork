@@ -1,0 +1,24 @@
+field,type,required?,clinics,source,notes
+name,text,yes,footcare|nailsurgery|lasercare,FootcareClinic-Final/client/src/hooks/use-chat.ts:116,Patient name from submission payload
+email,text,yes,footcare|nailsurgery|lasercare,FootcareClinic-Final/client/src/hooks/use-chat.ts:117,Patient email from submission payload
+phone,text,yes,footcare|nailsurgery|lasercare,FootcareClinic-Final/client/src/hooks/use-chat.ts:118,Patient phone from submission payload
+preferred_clinic,text,no,footcare|nailsurgery|lasercare,FootcareClinic-Final/client/src/hooks/use-chat.ts:119,Preferred clinic from submission payload
+issue_category,text,no,footcare|nailsurgery|lasercare,FootcareClinic-Final/client/src/hooks/use-chat.ts:120,Issue category from submission payload
+issue_specifics,text,no,footcare|nailsurgery|lasercare,FootcareClinic-Final/client/src/hooks/use-chat.ts:121,Issue specifics from submission payload
+symptom_description,text,no,footcare|nailsurgery|lasercare,FootcareClinic-Final/client/src/hooks/use-chat.ts:122,Symptom description from submission payload
+previous_treatment,text,no,footcare|nailsurgery|lasercare,FootcareClinic-Final/client/src/hooks/use-chat.ts:123,Previous treatment from submission payload
+has_image,text,no,footcare|nailsurgery|lasercare,FootcareClinic-Final/client/src/hooks/use-chat.ts:124,Has image flag from submission payload
+image_path,text,no,footcare|nailsurgery|lasercare,FootcareClinic-Final/client/src/hooks/use-chat.ts:125,Image path from submission payload
+image_analysis,text,no,footcare|nailsurgery|lasercare,FootcareClinic-Final/client/src/hooks/use-chat.ts:126,Image analysis from submission payload
+calendar_booking,text,no,footcare|nailsurgery|lasercare,FootcareClinic-Final/client/src/hooks/use-chat.ts:127,Calendar booking from submission payload
+booking_confirmation,text,no,footcare|nailsurgery|lasercare,FootcareClinic-Final/client/src/hooks/use-chat.ts:128,Booking confirmation from submission payload
+final_question,text,no,footcare|nailsurgery|lasercare,FootcareClinic-Final/client/src/hooks/use-chat.ts:129,Final question from submission payload
+additional_help,text,no,footcare|nailsurgery|lasercare,FootcareClinic-Final/client/src/hooks/use-chat.ts:130,Additional help from submission payload
+emoji_survey,text,no,footcare|nailsurgery|lasercare,FootcareClinic-Final/client/src/hooks/use-chat.ts:131,Emoji survey from submission payload
+survey_response,text,no,footcare|nailsurgery|lasercare,FootcareClinic-Final/client/src/hooks/use-chat.ts:132,Survey response from submission payload
+conversation_log,jsonb,no,footcare|nailsurgery|lasercare,FootcareClinic-Final/client/src/hooks/use-chat.ts:133,Conversation log from submission payload
+completed_steps,jsonb,no,footcare|nailsurgery|lasercare,FootcareClinic-Final/client/src/hooks/use-chat.ts:134,Completed steps from submission payload
+consultationId,number,no,footcare|nailsurgery|lasercare,FootcareClinic-Final/client/src/hooks/use-chat.ts:135,Consultation ID from submission payload
+createdAt,timestamp,no,footcare|nailsurgery|lasercare,FootcareClinic-Final/client/src/hooks/use-chat.ts:136,Creation timestamp from submission payload
+clinic_domain,text,no,nailsurgery,Replit Rebuilds/Nail Surgery Chatbot/Nail-Surgery-Chatbot/shared/schema.ts:144,Clinic domain
+clinic_source,text,no,nailsurgery,Replit Rebuilds/Nail Surgery Chatbot/Nail-Surgery-Chatbot/shared/schema.ts:145,Clinic source
