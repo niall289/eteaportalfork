@@ -416,6 +416,102 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Specific nail surgery webhook endpoint
+  app.post(
+    "/api/webhooks/nailsurgery",
+    skipAuthForWebhook,
+    upload.any(),
+    async (req: Request, res: Response) => {
+      try {
+        console.log('\n🔔 NAIL SURGERY WEBHOOK PROCESSING START -', new Date().toISOString());
+        console.log('🔍 Request headers:', JSON.stringify(req.headers, null, 2));
+        console.log('📥 Request body:', JSON.stringify(req.body, null, 2));
+        console.log('📥 Files:', req.files);
+
+        // Read webhook secret header case-insensitively
+        const webhookSecret = req.get('x-webhook-secret') || req.get('X-Webhook-Secret');
+        console.log('🔑 Webhook secret received:', webhookSecret ? '***' : 'missing');
+
+        // Compare against process.env.NAIL_WEBHOOK_SECRET
+        const expectedSecret = process.env.NAIL_WEBHOOK_SECRET;
+        if (!expectedSecret) {
+          console.error('❌ NAIL_WEBHOOK_SECRET not configured in environment');
+          return res.status(401).json({ error: 'Unauthorized' });
+        }
+
+        if (!webhookSecret || webhookSecret !== expectedSecret) {
+          console.warn('❌ Unauthorized webhook attempt - secret mismatch');
+          return res.status(401).json({ error: 'Unauthorized' });
+        }
+        console.log('✅ Webhook secret validated');
+
+        // Parse JSON payload from req.body.data if present (FormData 'data'), fallback to req.body
+        let formData: any;
+        if (req.body.data) {
+          try {
+            formData = typeof req.body.data === 'string' ? JSON.parse(req.body.data) : req.body.data;
+            console.log('📋 Parsed data from req.body.data field');
+          } catch (parseError) {
+            console.error('❌ Failed to parse req.body.data:', parseError);
+            return res.status(400).json({ error: 'Invalid JSON in data field' });
+          }
+        } else {
+          formData = req.body;
+          console.log('📋 Using req.body directly');
+        }
+
+        // Normalize fields for Nail Surgery submissions
+        formData.source = 'nail_surgery_clinic';
+        formData.clinic_group = 'The Nail Surgery Clinic';
+        formData.preferred_clinic = null;
+
+        console.log('📋 Normalized formData:', JSON.stringify(formData, null, 2));
+
+        // Extract patient information
+        const patientName = formData.name || formData.patient_name || 'Unknown Patient';
+        const patientEmail = formData.email || formData.patient_email || 'no-email@provided.com';
+        const patientPhone = formData.phone || formData.patient_phone || 'no-phone-provided';
+
+        // Persist using Supabase client
+        // Insert into 'consultations' table with these columns:
+        // form_data (JSON), source, clinic_group, patient_name, patient_email, patient_phone, status, created_at
+        const consultationData = {
+          form_data: formData,
+          source: 'nail_surgery_clinic',
+          clinic_group: 'The Nail Surgery Clinic',
+          patient_name: patientName,
+          patient_email: patientEmail,
+          patient_phone: patientPhone,
+          status: 'new',
+          created_at: new Date().toISOString()
+        };
+
+        console.log('💾 Inserting consultation into Supabase...');
+        const { data, error } = await supabaseAdmin
+          .from('consultations')
+          .insert(consultationData)
+          .select('id')
+          .single();
+
+        if (error) {
+          console.error('❌ Supabase insert error:', error);
+          return res.status(500).json({ error: 'Database insert failed', details: error.message });
+        }
+
+        console.log('✅ Consultation inserted successfully with ID:', data?.id);
+
+        // On success, return { success: true, id: data?.id } (always that shape on success)
+        return res.status(201).json({ success: true, id: data?.id });
+
+      } catch (error: any) {
+        console.error('❌ NAIL SURGERY WEBHOOK ERROR:', error);
+        console.error('Stack trace:', error.stack);
+        return res.status(500).json({ error: 'Internal server error', details: error.message });
+      }
+    }
+  );
+
+  // Generic webhook endpoint for footcare, lasercare (keep existing)
   app.post(
     "/api/webhooks/:clinic",
     skipAuthForWebhook,
