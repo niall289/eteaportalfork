@@ -12,6 +12,7 @@ console.log('DATABASE_URL present:', !!process.env.DATABASE_URL);
 console.log('AUTH_MODE present:', !!process.env.AUTH_MODE);
 console.log('AUTH_TOKEN present:', !!process.env.AUTH_TOKEN);
 console.log('FOOTCARE_WEBHOOK_SECRET present:', !!process.env.FOOTCARE_WEBHOOK_SECRET);
+console.log('NAIL_WEBHOOK_SECRET present:', !!process.env.NAIL_WEBHOOK_SECRET);
 console.log('CORS_ORIGIN present:', !!process.env.CORS_ORIGIN);
 console.log('UPLOADS_ROOT present:', !!process.env.UPLOADS_ROOT);
 
@@ -69,6 +70,156 @@ app.use(cookieSession({
   path: "/",
 }) as any);
 
+// Register webhook routes BEFORE auth middleware to bypass authentication
+import multer from 'multer';
+
+// Multer setup for webhook file uploads (memory storage)
+const webhookUpload = multer({
+  storage: multer.memoryStorage(),
+  limits: { fileSize: 5 * 1024 * 1024 }, // 5MB limit
+  fileFilter: (req, file, cb) => {
+    if (file.mimetype.startsWith('image/')) {
+      cb(null, true);
+    } else {
+      cb(new Error('Only image files are allowed'));
+    }
+  }
+});
+
+// Dedicated Nail Surgery Webhook Route (BEFORE auth middleware)
+app.post('/api/webhooks/nailsurgery', webhookUpload.any(), async (req: Request, res: Response) => {
+  try {
+    console.log(`\n🔔 NAIL SURGERY WEBHOOK - ${new Date().toISOString()}`);
+    
+    // Validate X-Webhook-Secret header (case-insensitive)
+    const receivedSecret = req.get('X-Webhook-Secret') || req.get('x-webhook-secret');
+    const expectedSecret = process.env.NAIL_WEBHOOK_SECRET;
+    
+    // Development logging (masked secrets)
+    if (process.env.NODE_ENV !== 'production') {
+      console.log('🔑 Portal secret preview:', (expectedSecret || '').slice(0, 3) + '…');
+      console.log('🔑 Received header preview:', (receivedSecret || '').slice(0, 3) + '…');
+    }
+    
+    if (!receivedSecret || receivedSecret !== expectedSecret) {
+      console.warn(`❌ Unauthorized: received=${receivedSecret ? receivedSecret.slice(0, 3) + '...' : 'missing'}`);
+      return res.status(401).json({ error: "Unauthorized" });
+    }
+    
+    // Parse data from req.body.data (JSON string) or fallback to req.body
+    let rawData;
+    if (req.body.data) {
+      try {
+        rawData = JSON.parse(req.body.data);
+        console.log("✅ Parsed JSON from data field");
+      } catch (e) {
+        rawData = req.body;
+        console.warn("⚠️ Using req.body fallback");
+      }
+    } else {
+      rawData = req.body;
+    }
+    
+    // Truncate payload for dev logging
+    if (process.env.NODE_ENV !== 'production') {
+      const truncated = JSON.stringify(rawData).slice(0, 500);
+      console.log("📊 Payload preview:", truncated + (JSON.stringify(rawData).length > 500 ? '...' : ''));
+    }
+    
+    // Validate at least one of name, email, or phone is present
+    const name = rawData.name || rawData.patient_name || rawData.userName;
+    const email = rawData.email || rawData.patient_email || rawData.userEmail;
+    const phone = rawData.phone || rawData.patient_phone || rawData.userPhone;
+    
+    if (!name && !email && !phone) {
+      return res.status(400).json({ error: "At least one of name, email, or phone is required" });
+    }
+    
+    // Normalize data for Nail Surgery Clinic (matching schema structure)
+    const formData = {
+      name: name || "Unknown Patient",
+      email: email || "no-email@provided.com", 
+      phone: phone || "no-phone-provided",
+      preferred_clinic: rawData.preferred_clinic ?? null, // Preserve provided value or default to null
+      issue_category: rawData.issue_category || rawData.issueCategory || "General consultation",
+      issue_specifics: rawData.issue_specifics || rawData.issueSpecifics || null,
+      symptom_description: rawData.symptom_description || rawData.symptomDescription || null,
+      previous_treatment: rawData.previous_treatment || rawData.previousTreatment || null,
+      has_image: !!(req.files as Express.Multer.File[])?.length ? "true" : "false",
+      image_path: null,
+      image_analysis: rawData.image_analysis || rawData.imageAnalysis || null,
+      image_url: null,
+      calendar_booking: rawData.calendar_booking || rawData.calendarBooking || null,
+      booking_confirmation: rawData.booking_confirmation || rawData.bookingConfirmation || null,
+      final_question: rawData.final_question || rawData.finalQuestion || null,
+      additional_help: rawData.additional_help || rawData.additionalHelp || null,
+      emoji_survey: rawData.emoji_survey || rawData.emojiSurvey || null,
+      survey_response: rawData.survey_response || rawData.surveyResponse || null,
+      conversation_log: rawData.conversation_log || rawData.conversationLog || [],
+      completed_steps: rawData.completed_steps || rawData.completedSteps || [],
+      raw_json: rawData, // Store original data
+      symptom_analysis: rawData.symptom_analysis || rawData.symptomAnalysis || null,
+      pain_duration: rawData.pain_duration || rawData.painDuration || null,
+      pain_severity: rawData.pain_severity || rawData.painSeverity || null,
+      additional_info: rawData.additional_info || rawData.additionalInfo || null,
+      clinic_domain: rawData.clinic_domain || null, // Pass through if provided
+      clinic_source: rawData.clinic_source || null  // Pass through if provided
+    };
+    
+    // Apply default values only if not already provided
+    formData.source = (rawData as any).source ?? 'nail_surgery_clinic';
+    formData.clinic_group = (rawData as any).clinic_group ?? 'The Nail Surgery Clinic';
+    
+    // Persist using storage.createConsultation if available
+    let consultationRecord;
+    try {
+      // Import storage dynamically to avoid early DB connection
+      const { storage } = await import('./storage');
+      consultationRecord = await storage.createConsultation(formData);
+      console.log("✅ Created consultation via storage:", consultationRecord.id);
+    } catch (storageError) {
+      console.warn("⚠️ Storage failed, trying direct supabase:", storageError);
+      try {
+        // Fallback to direct supabase insertion
+        const { supabaseAdmin } = await import('./supabase');
+        const result = await supabaseAdmin.from('consultations').insert(formData).select('id').single();
+        if (result.error) throw result.error;
+        consultationRecord = result.data;
+        console.log("✅ Created consultation via supabase:", consultationRecord.id);
+      } catch (supabaseError) {
+        console.error("❌ Both storage and supabase failed:", supabaseError);
+        throw new Error("Failed to persist consultation data");
+      }
+    }
+    
+    // Return required response format
+    res.status(200).json({ 
+      success: true, 
+      id: consultationRecord.id.toString() 
+    });
+    
+  } catch (error: any) {
+    console.error("❌ Nail Surgery webhook error:", error.message);
+    res.status(500).json({ error: "Internal server error" });
+  }
+});
+
+// Debug endpoint for development (webhook testing)
+if (process.env.NODE_ENV !== 'production') {
+  app.get('/api/debug/webhook-test', (req: Request, res: Response) => {
+    const secretConfigured = !!process.env.NAIL_WEBHOOK_SECRET;
+    const secretPreview = process.env.NAIL_WEBHOOK_SECRET ? 
+      process.env.NAIL_WEBHOOK_SECRET.slice(0, 3) + '…' : 'none';
+    
+    res.json({
+      secretConfigured,
+      secretPreview,
+      dbConnectivity: true, // Assume OK if server is running
+      route: "/api/webhooks/nailsurgery"
+    });
+  });
+}
+
 // register simple auth when requested (AUTH_MODE=simple)
 registerSimpleAuth(app);
 
@@ -125,6 +276,7 @@ app.use('/uploads', express.static(UPLOADS_ROOT));
         AUTH_MODE: !!process.env.AUTH_MODE,
         AUTH_TOKEN: !!process.env.AUTH_TOKEN,
         FOOTCARE_WEBHOOK_SECRET: !!process.env.FOOTCARE_WEBHOOK_SECRET,
+        NAIL_WEBHOOK_SECRET: !!process.env.NAIL_WEBHOOK_SECRET,
         CORS_ORIGIN: !!process.env.CORS_ORIGIN,
         UPLOADS_ROOT: !!process.env.UPLOADS_ROOT,
       }

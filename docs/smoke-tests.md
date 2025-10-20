@@ -28,7 +28,7 @@ npm run start
 ### 2. Health Check
 ```bash
 # Preferred simple health check
-curl http://localhost:3001/api/healthz
+curl http://localhost:5002/api/healthz
 ```
 
 **Expected Response**:
@@ -40,7 +40,7 @@ curl http://localhost:3001/api/healthz
 
 **Alternative**: For detailed health information, you can also use:
 ```bash
-curl http://localhost:3001/api/health
+curl http://localhost:5002/api/health
 ```
 
 **Expected Response**:
@@ -56,7 +56,7 @@ curl http://localhost:3001/api/health
 
 ### 3. Database Connectivity
 ```bash
-curl http://localhost:3001/api/db-ping
+curl http://localhost:5002/api/db-ping
 ```
 
 **Expected Response**:
@@ -73,7 +73,7 @@ curl http://localhost:3001/api/db-ping
 
 #### Login (if using simple auth)
 ```bash
-curl -X POST http://localhost:3001/api/auth/login \
+curl -X POST http://localhost:5002/api/auth/login \
   -H "Content-Type: application/json" \
   -d '{"username": "admin", "password": "password"}'
 ```
@@ -82,14 +82,14 @@ curl -X POST http://localhost:3001/api/auth/login \
 
 #### Get Dashboard Stats
 ```bash
-curl http://localhost:3001/api/dashboard/stats
+curl http://localhost:5002/api/dashboard/stats
 ```
 
 **Expected Response**: JSON with completedAssessments, weeklyAssessments, flaggedResponses, totalPatients
 
 #### Get Dashboard Trends
 ```bash
-curl http://localhost:3001/api/dashboard/trends?days=7
+curl http://localhost:5002/api/dashboard/trends?days=7
 ```
 
 **Expected Response**: Array of date/count objects
@@ -98,14 +98,14 @@ curl http://localhost:3001/api/dashboard/trends?days=7
 
 #### Get All Consultations
 ```bash
-curl http://localhost:3001/api/consultations
+curl http://localhost:5002/api/consultations
 ```
 
 **Expected Response**: Array of consultation objects
 
 #### Test FootCare Webhook
 ```bash
-curl -X POST http://localhost:3001/api/webhooks/footcare \
+curl -X POST http://localhost:5002/api/webhooks/footcare \
   -H "Content-Type: application/json" \
   -H "X-Footcare-Secret: your-webhook-secret" \
   -d '{
@@ -144,14 +144,14 @@ curl -X POST http://localhost:3001/api/webhooks/footcare \
 
 #### Get Chatbot Settings
 ```bash
-curl http://localhost:3001/api/chatbot-settings
+curl http://localhost:5002/api/chatbot-settings
 ```
 
 **Expected Response**: JSON with welcomeMessage, botDisplayName, ctaButtonLabel, chatbotTone
 
 #### Update Chatbot Settings
 ```bash
-curl -X PATCH http://localhost:3001/api/chatbot-settings \
+curl -X PATCH http://localhost:5002/api/chatbot-settings \
   -H "Content-Type: application/json" \
   -d '{
     "welcomeMessage": "Welcome to FootCare Clinic! How can we help?",
@@ -175,7 +175,7 @@ curl -X PATCH http://localhost:3001/api/chatbot-settings \
 #### Test Image Serving
 ```bash
 # After uploading an image via webhook, test serving
-curl http://localhost:3001/uploads/test-image.png
+curl http://localhost:5002/uploads/test-image.png
 ```
 
 **Expected Result**: Image file served correctly
@@ -184,14 +184,14 @@ curl http://localhost:3001/uploads/test-image.png
 
 #### CSV Export
 ```bash
-curl "http://localhost:3001/api/export/analytics?format=csv"
+curl "http://localhost:5002/api/export/analytics?format=csv"
 ```
 
 **Expected Result**: CSV file downloaded with consultation data
 
 #### JSON Export
 ```bash
-curl "http://localhost:3001/api/export/analytics?format=json"
+curl "http://localhost:5002/api/export/analytics?format=json"
 ```
 
 **Expected Result**: JSON file with consultation and image data
@@ -199,7 +199,7 @@ curl "http://localhost:3001/api/export/analytics?format=json"
 ## Frontend Tests
 
 ### 1. Application Load
-- Open browser to `http://localhost:3001`
+- Open browser to `http://localhost:5002`
 - Verify React app loads without console errors
 - Check that all navigation links work
 
@@ -266,7 +266,7 @@ SELECT COUNT(*) as total_patients FROM patients;
 ### Response Time Tests
 ```bash
 # Test API response times
-curl -w "@curl-format.txt" -o /dev/null -s http://localhost:3001/api/health
+curl -w "@curl-format.txt" -o /dev/null -s http://localhost:5002/api/health
 
 # curl-format.txt:
 #      time_namelookup:  %{time_namelookup}\n
@@ -293,7 +293,7 @@ pm2 monit
 
 ### Invalid Webhook Secret
 ```bash
-curl -X POST http://localhost:3001/api/webhooks/footcare \
+curl -X POST http://localhost:5002/api/webhooks/footcare \
   -H "Content-Type: application/json" \
   -H "X-Footcare-Secret: invalid-secret" \
   -d '{}'
@@ -303,7 +303,7 @@ curl -X POST http://localhost:3001/api/webhooks/footcare \
 
 ### Invalid Chatbot Settings
 ```bash
-curl -X PATCH http://localhost:3001/api/chatbot-settings \
+curl -X PATCH http://localhost:5002/api/chatbot-settings \
   -H "Content-Type: application/json" \
   -d '{"chatbotTone": "InvalidTone"}'
 ```

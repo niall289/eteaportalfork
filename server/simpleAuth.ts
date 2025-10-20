@@ -106,6 +106,8 @@ export function skipAuthForWebhook(req: Request, res: Response, next: NextFuncti
     req.path === '/api/webhook/chatbot' ||
     req.path === '/api/webhook/consultation' ||
     req.path === '/api/webhooks/footcare' ||
+    req.path === '/api/webhooks/nailsurgery' ||
+    req.path === '/api/webhooks/lasercare' ||
     req.path === '/api/clinics' ||
     req.path === '/api/clinics/assessment-counts'
   ) {

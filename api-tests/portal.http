@@ -1,7 +1,7 @@
 # ETEA Healthcare Portal - API Tests
 # Use with VS Code REST Client extension or similar HTTP client
 
-@baseUrl = http://localhost:3001
+@baseUrl = http://localhost:5002
 @webhookSecret = your-webhook-secret-here
 
 ### Health Check
@@ -175,7 +175,7 @@ GET {{baseUrl}}/api/dashboard/stats
 ### Test WebSocket Connection (requires WebSocket client)
 # WS wss://your-domain.com/ws
 # Or for local development:
-# WS ws://localhost:3001/ws
+# WS ws://localhost:5002/ws
 
 ### Test File Upload Size Limit
 POST {{baseUrl}}/api/webhooks/footcare

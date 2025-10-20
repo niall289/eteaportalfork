@@ -165,6 +165,8 @@ export const consultations = pgTable("consultations", {
   pain_duration: text("pain_duration"),
   pain_severity: text("pain_severity"),
   additional_info: text("additional_info"),
+  clinic_domain: text("clinic_domain"),
+  clinic_source: text("clinic_source"),
   createdAt: timestamp("created_at").defaultNow(),
 });
 
