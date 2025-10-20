@@ -419,64 +419,79 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.post(
     "/api/webhooks/:clinic",
     skipAuthForWebhook,
-    upload.single('image'),
+    upload.any(), // Use upload.any() to handle multipart/form-data with JSON in data field
     async (req: Request, res: Response) => {
       try {
         const { clinic } = req.params;
         console.log(`\n🔔 WEBHOOK PROCESSING START for ${clinic.toUpperCase()} - ${new Date().toISOString()}`);
         console.log("🔍 Request headers:", JSON.stringify(req.headers, null, 2));
 
-        // Validate clinic slug
-        const validClinics = ['footcare', 'nailsurgery', 'lasercare'];
+        // Validate clinic slug (nailsurgery has dedicated route in index.ts)
+        const validClinics = ['footcare', 'lasercare'];
         if (!validClinics.includes(clinic)) {
-          console.error(`❌ Invalid clinic: ${clinic}`);
-          return res.status(400).json({ error: "Invalid clinic" });
+          console.error(`❌ Invalid clinic: ${clinic} (nailsurgery has dedicated route)`);
+          return res.status(400).json({ error: "Invalid clinic or unsupported via generic route" });
         }
 
-        // Auth via per-clinic secret
-        // Validate clinic-specific secret
-        const secretHeader = `X-${clinic.charAt(0).toUpperCase() + clinic.slice(1)}-Secret`;
-        const secret = req.get(secretHeader);
-        console.log(`🔑 Checking auth header: ${secretHeader}`);
-        
-        // Define the clinic secrets based on requirements
-        const CLINIC_SECRETS: Record<string, string> = {
-          'footcare': 'footcare_secret_2025',
-          'nailsurgery': 'nailsurgery_secret_2025',
-          'lasercare': 'lasercare_secret_2025'
-        };
-        
-        // Get the expected secret for this clinic
+        // Get the expected secret for this clinic from environment
         const envSecretKey = `${clinic.toUpperCase()}_WEBHOOK_SECRET`;
-        const expectedSecret = CLINIC_SECRETS[clinic] || process.env[envSecretKey];
-        console.log(`🔐 Using secret from: ${CLINIC_SECRETS[clinic] ? 'hardcoded values' : `env var ${envSecretKey}`}`);
+        const expectedSecret = process.env[envSecretKey];
+        
+        // Check for generic X-Webhook-Secret header (case-insensitive)
+        const genericSecret = req.get('X-Webhook-Secret') || req.get('x-webhook-secret');
+        
+        // Also check for clinic-specific header format for backward compatibility
+        const specificSecretHeader = `X-${clinic.charAt(0).toUpperCase() + clinic.slice(1)}-Secret`;
+        const specificSecret = req.get(specificSecretHeader);
+        
+        const receivedSecret = genericSecret || specificSecret;
+        
+        console.log(`🔑 Checking for X-Webhook-Secret or ${specificSecretHeader}`);
+        
+        // Development logging (masked secrets)
+        if (process.env.NODE_ENV !== 'production') {
+          console.log('🔑 Portal secret preview:', (expectedSecret || '').slice(0, 3) + '…');
+          console.log('� Received header preview:', (receivedSecret || '').slice(0, 3) + '…');
+        }
 
-        if (!secret || secret !== expectedSecret) {
+        if (!receivedSecret || receivedSecret !== expectedSecret) {
           console.warn(
             `❌ Unauthorized webhook attempt for ${clinic} with secret: ${
-              secret ? `${secret.substring(0, 5)}...` : "missing"
-            }, expected: ${expectedSecret ? `${expectedSecret.substring(0, 5)}...` : "undefined"}`
+              receivedSecret ? `${receivedSecret.substring(0, 3)}...` : "missing"
+            }, expected: ${expectedSecret ? `${expectedSecret.substring(0, 3)}...` : "undefined"}`
           );
           return res.status(401).json({ error: "Unauthorized" });
         }
         console.log(`✅ Authentication successful for ${clinic}`);
 
         console.log("📥 Form fields:", JSON.stringify(req.body, null, 2));
-        console.log("📥 File:", req.file ? `${req.file.originalname} (${req.file.size} bytes)` : "No file");
+        console.log("📥 Files:", (req.files as Express.Multer.File[])?.length || 0, "files uploaded");
 
-        const result = ConsultationSchema.safeParse(req.body);
+        // Parse data from either req.body.data (JSON string) or req.body directly
+        let rawData;
+        if (req.body.data) {
+          try {
+            rawData = JSON.parse(req.body.data);
+            console.log("✅ Parsed JSON from data field");
+          } catch (e) {
+            console.warn("⚠️ Failed to parse data field as JSON, using req.body directly");
+            rawData = req.body;
+          }
+        } else {
+          rawData = req.body;
+        }
+
+        console.log("📊 Parsed data:", JSON.stringify(rawData, null, 2));
+
+        const result = ConsultationSchema.safeParse(rawData);
         if (!result.success) {
           console.warn(
             "⚠️ Schema validation failed, but continuing:",
             result.error.errors
           );
-          return res
-            .status(400)
-            .json({ ok: false, errors: result.error.errors });
+          // Continue processing instead of returning error for flexibility
         }
-        console.log("✅ Schema validation passed");
-
-        const rawData = req.body;
+        console.log("✅ Schema validation completed");
 
         // Extract email and phone
         const email =
@@ -490,6 +505,17 @@ export async function registerRoutes(app: Express): Promise<Server> {
           rawData.userPhone ||
           null;
 
+        // Data normalization for specific clinics
+        if (clinic === 'nailsurgery') {
+          rawData.source = 'nail_surgery_clinic';
+          rawData.clinic_group = 'The Nail Surgery Clinic';
+          rawData.preferred_clinic = null; // Force to null as specified
+          console.log("🔧 Applied nailsurgery data normalization");
+        }
+
+        // Get the first uploaded file if any
+        const uploadedFile = (req.files as Express.Multer.File[])?.[0] || null;
+
         // Insert base row with has_image as boolean
         const consultationData: any = {
           name:
@@ -499,7 +525,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
             "Unknown Patient",
           email: email || "no-email@provided.com",
           phone: phone || "no-phone-provided",
-          preferred_clinic: clinic,
+          preferred_clinic: rawData.preferred_clinic || clinic,
           clinic: clinic, // Also set the required 'clinic' field that's needed for database constraint
           issue_category:
             rawData.issueCategory ||
@@ -533,7 +559,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
             rawData.aiAnalysis ||
             rawData.ai_analysis ||
             null,
-          has_image: !!req.file, // Boolean
+          has_image: !!uploadedFile, // Boolean based on actual file upload
           calendar_booking:
             rawData.calendar_booking ||
             rawData.calendarBooking ||
@@ -584,7 +610,12 @@ export async function registerRoutes(app: Express): Promise<Server> {
             [],
         };
 
-        // Ensure string fields for JSON storage
+        // Apply clinic-specific data normalization after building base data
+        if (clinic === 'nailsurgery') {
+          consultationData.source = 'nail_surgery_clinic';
+          consultationData.clinic_group = 'The Nail Surgery Clinic';
+          consultationData.preferred_clinic = null; // Force to null as specified
+        }        // Ensure string fields for JSON storage
         if (
           consultationData.image_analysis &&
           typeof consultationData.image_analysis !== "string"
@@ -633,12 +664,12 @@ export async function registerRoutes(app: Express): Promise<Server> {
           console.log(`  - Created: ${consultationRecord.createdAt}`);
 
           // Upload to Supabase if file present
-          if (req.file) {
+          if (uploadedFile) {
             console.log("📤 Uploading image to Supabase storage...");
-            console.log(`📋 Image details: ${req.file.originalname}, ${req.file.mimetype}, ${req.file.buffer.length} bytes`);
+            console.log(`📋 Image details: ${uploadedFile.originalname}, ${uploadedFile.mimetype}, ${uploadedFile.buffer.length} bytes`);
             console.log(`📋 Using consultation ID: ${consultationRecord.id} and clinic: ${clinic}`);
             try {
-              imageUrl = await uploadConsultationImage(consultationRecord.id, req.file, clinic);
+              imageUrl = await uploadConsultationImage(consultationRecord.id, uploadedFile, clinic);
               console.log("📤 Image upload result:", imageUrl ? `Success: ${imageUrl}` : "Failed");
             } catch (imageError: any) {
               console.error("❌ Image upload error:", imageError);
@@ -730,16 +761,14 @@ export async function registerRoutes(app: Express): Promise<Server> {
           });
         }
 
-        // Respond once with 201
+        // Respond with the expected format
         if (consultationRecord) {
           const responseData = {
-            ok: true,
+            success: true,
             id: consultationRecord.id.toString(),
-            clinic,
-            image_url: imageUrl,
           };
           console.log(`✅ WEBHOOK PROCESSING COMPLETE - Responding with success:`, responseData);
-          res.status(201).json(responseData);
+          res.status(200).json(responseData); // Use 200 as specified in requirements
         } else {
           throw new Error("Failed to create consultation record");
         }
