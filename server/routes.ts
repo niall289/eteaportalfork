@@ -19,6 +19,7 @@ import { storage } from "./storage";
 import { isAuthenticated, skipAuthForWebhook } from "./simpleAuth";
 import cors from "cors";
 import { exportConsultationsToCSV } from "./services/csvExport";
+import { getClinicScope, buildClinicScopeConditions } from "./clinicScope";
 import { sendEmail as mailSendEmail } from "./services/mail";
 
 // Upload image to Supabase Storage and create database records
@@ -395,20 +396,30 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.get("/api/dashboard/stats", async (_req: Request, res: Response) => {
+  app.get("/api/dashboard/stats", async (req: Request, res: Response) => {
     try {
-      const stats = await Promise.all([
-        storage.getCompletedAssessmentsCount(),
-        storage.getWeeklyAssessmentsCount(),
-        storage.getFlaggedResponsesCount(),
-        storage.getPatientsCount(),
-      ]);
+      const { getClinicScope } = await import('./clinicScope');
+      const clinicGroup = getClinicScope(req);
+
+      // Get stats from consultations instead of assessments
+      const consultations = await storage.getConsultations({ clinic_group: clinicGroup });
+      const patients = await storage.getPatientsFromConsultations({ clinic_group: clinicGroup });
+      
+      // Calculate stats from consultations
+      const totalPatients = patients.length;
+      const completedAssessments = consultations.length; // All consultations are considered completed
+      
+      const oneWeekAgo = new Date();
+      oneWeekAgo.setDate(oneWeekAgo.getDate() - 7);
+      const weeklyAssessments = consultations.filter(c => c.createdAt && new Date(c.createdAt) >= oneWeekAgo).length;
+      
+      const flaggedResponses = 0; // No flagging mechanism in consultations yet
 
       res.json({
-        completedAssessments: stats[0],
-        weeklyAssessments: stats[1],
-        flaggedResponses: stats[2],
-        totalPatients: stats[3],
+        completedAssessments,
+        weeklyAssessments,
+        flaggedResponses,
+        totalPatients,
       });
     } catch (error) {
       console.error("Error fetching dashboard stats:", error);
@@ -817,7 +828,7 @@ app.get('/api/consultations', async (req: Request, res: Response) => {
     // Parse query parameters
     const limit = req.query.limit ? parseInt(req.query.limit as string) : undefined;
     const offset = req.query.offset ? parseInt(req.query.offset as string) : undefined;
-    const clinic_group = req.query.clinic_group as string | undefined;
+    const clinic_group = req.query.clinic_group as string | undefined || getClinicScope(req);
     const startDate = req.query.startDate ? new Date(req.query.startDate as string) : undefined;
     const endDate = req.query.endDate ? new Date(req.query.endDate as string) : undefined;
     const q = req.query.q as string | undefined;
@@ -825,7 +836,7 @@ app.get('/api/consultations', async (req: Request, res: Response) => {
     const options: any = {};
     if (limit !== undefined) options.limit = limit;
     if (offset !== undefined) options.offset = offset;
-    if (clinic_group) options.clinic_group = clinic_group;
+    options.clinic_group = clinic_group; // Always apply clinic scoping
     if (startDate) options.startDate = startDate;
     if (endDate) options.endDate = endDate;
     if (q) options.q = q;
@@ -883,16 +894,44 @@ app.get('/api/consultations.csv', async (req: Request, res: Response) => {
   }
 });
 
-app.get('/api/patients', skipAuthForWebhook, async (_req: Request, res: Response) => {
+app.get('/api/patients', skipAuthForWebhook, async (req: Request, res: Response) => {
   try {
-    const assessments = await storage.getAssessments({});
+    const { getClinicScope } = await import('./clinicScope');
+    const clinicGroup = getClinicScope(req);
+    
+    const limit = req.query.limit ? parseInt(req.query.limit as string) : 50;
+    const offset = req.query.offset ? parseInt(req.query.offset as string) : 0;
+    const search = req.query.search as string | undefined;
+
+    const patients = await storage.getPatientsFromConsultations({
+      limit,
+      offset,
+      clinic_group: clinicGroup,
+      search
+    });
+
+    // Transform to match expected format
+    const assessments = patients.map(patient => ({
+      id: patient.id,
+      patient: {
+        id: patient.id,
+        name: patient.name,
+        email: patient.email,
+        phone: patient.phone,
+        clinic_group: patient.clinic_group
+      },
+      completedAt: patient.lastConsultationDate,
+      status: 'completed',
+      consultationCount: patient.consultationCount
+    }));
+
     res.json({
       assessments,
       pagination: {
-        total: assessments.length,
-        page: 1,
-        limit: 50,
-        totalPages: Math.ceil(assessments.length / 50),
+        total: patients.length,
+        page: Math.floor(offset / limit) + 1,
+        limit,
+        totalPages: Math.ceil(patients.length / limit),
       },
     });
   } catch (error) {
@@ -913,8 +952,9 @@ app.get('/api/assessments', async (_req: Request, res: Response) => {
 
 app.get('/api/dashboard/trends', async (req: Request, res: Response) => {
   try {
+    const clinicGroup = getClinicScope(req);
     const days = parseInt(req.query.days as string) || 7;
-    const assessments = await storage.getAssessments({});
+    const consultations = await storage.getConsultations({ clinic_group: clinicGroup });
 
     const trends: Array<{ date: string; assessments: number; completed: number; flagged: number }> = [];
     for (let i = days - 1; i >= 0; i--) {
@@ -922,16 +962,16 @@ app.get('/api/dashboard/trends', async (req: Request, res: Response) => {
       date.setDate(date.getDate() - i);
       const dateStr = date.toISOString().split('T')[0];
 
-      const dayAssessments = assessments.filter((a: any) => {
-        const d = new Date(a.completedAt || a.createdAt).toISOString().split('T')[0];
+      const dayConsultations = consultations.filter((c: any) => {
+        const d = new Date(c.createdAt).toISOString().split('T')[0];
         return d === dateStr;
       });
 
       trends.push({
         date: dateStr,
-        assessments: dayAssessments.length,
-        completed: dayAssessments.filter((a: any) => a.status === 'completed').length,
-        flagged: dayAssessments.filter((a: any) => a.status === 'flagged').length,
+        assessments: dayConsultations.length,
+        completed: dayConsultations.length, // All consultations considered completed
+        flagged: 0, // No flagging mechanism yet
       });
     }
 
@@ -944,10 +984,25 @@ app.get('/api/dashboard/trends', async (req: Request, res: Response) => {
 
 app.get('/api/dashboard/conditions', async (req: Request, res: Response) => {
   try {
+    const clinicGroup = getClinicScope(req);
     const limit = parseInt(req.query.limit as string) || 10;
-    const conditions = await storage.getConditions();
-    const limited = conditions.slice(0, limit);
-    res.json(limited);
+    const consultations = await storage.getConsultations({ clinic_group: clinicGroup, limit: 100 });
+    
+    // Extract condition frequencies from consultations
+    const conditionCounts: Record<string, number> = {};
+    consultations.forEach(c => {
+      if (c.issue_category) {
+        const condition = c.issue_category.toLowerCase();
+        conditionCounts[condition] = (conditionCounts[condition] || 0) + 1;
+      }
+    });
+    
+    const conditions = Object.entries(conditionCounts)
+      .map(([condition, count]) => ({ condition, count }))
+      .sort((a, b) => b.count - a.count)
+      .slice(0, limit);
+      
+    res.json(conditions);
   } catch (error) {
     console.error('Error fetching conditions:', error);
     res.status(500).json({ message: 'Failed to fetch conditions' });
@@ -1302,6 +1357,42 @@ async function sendSMS(to: string, message: string) {
     return { success: false, error: error instanceof Error ? error.message : String(error) };
   }
 }
+
+// Debug endpoint for clinic scoping
+app.get('/api/debug/clinic-scope', async (req: Request, res: Response) => {
+  try {
+    const clinicGroup = getClinicScope(req);
+    const conditions = buildClinicScopeConditions(clinicGroup);
+    
+    // Get some sample data for this clinic
+    const consultations = await storage.getConsultations({ clinic_group: clinicGroup, limit: 5 });
+    const patients = await storage.getPatientsFromConsultations({ clinic_group: clinicGroup });
+    
+    res.json({
+      clinicGroup,
+      conditions,
+      sampleData: {
+        consultationCount: consultations.length,
+        patientCount: patients.length,
+        recentConsultations: consultations.map(c => ({
+          id: c.id,
+          name: c.name,
+          issue_category: c.issue_category,
+          clinic_group: c.clinic_group,
+          createdAt: c.createdAt
+        }))
+      },
+      requestInfo: {
+        host: req.get('host'),
+        queryParams: req.query,
+        sessionData: (req.session as any)?.clinic_group || 'none'
+      }
+    });
+  } catch (error) {
+    console.error('Error in debug endpoint:', error);
+    res.status(500).json({ error: 'Debug endpoint failed', message: (error as Error).message });
+  }
+});
 
 // --- WebSocket server for real-time updates (restored) ---
 const wss = new WebSocketServer({ server: httpServer, path: '/ws' });

@@ -90,6 +90,7 @@ export interface IStorage {
   createConsultation(consultationData: InsertConsultation): Promise<Consultation>;
   getConsultations(options?: { limit?: number; offset?: number; clinic_group?: string; startDate?: Date; endDate?: Date; q?: string }): Promise<Consultation[]>;
   getConsultationById(id: number): Promise<Consultation>;
+  getPatientsFromConsultations(options?: { limit?: number; offset?: number; clinic_group?: string; search?: string }): Promise<{ id: string; name: string; email: string; phone: string; lastConsultationDate: Date; consultationCount: number; clinic_group: string }[]>;
 }
 
 
@@ -726,7 +727,7 @@ export class DatabaseStorage implements IStorage {
 
       const queryConditions: any[] = [];
       if (options?.clinic_group) {
-        queryConditions.push(eq(consultations.preferred_clinic, options.clinic_group));
+        queryConditions.push(eq(consultations.clinic_group, options.clinic_group));
       }
       if (options?.startDate && options?.endDate) {
         queryConditions.push(between(consultations.createdAt, options.startDate, options.endDate));
@@ -822,6 +823,75 @@ export class DatabaseStorage implements IStorage {
       return consultation[0];
     } catch (error) {
       console.error(`Error fetching consultation ${id}:`, error);
+      throw error;
+    }
+  }
+
+  async getPatientsFromConsultations(options?: { limit?: number; offset?: number; clinic_group?: string; search?: string }): Promise<{ id: string; name: string; email: string; phone: string; lastConsultationDate: Date; consultationCount: number; clinic_group: string }[]> {
+    if (!db) { 
+      this.logMockWarning('getPatientsFromConsultations', options); 
+      return []; 
+    }
+
+    try {
+      let query = db
+        .select({
+          email: consultations.email,
+          phone: consultations.phone,
+          name: sql<string>`MAX(${consultations.name})`,
+          clinic_group: sql<string>`MAX(${consultations.clinic_group})`,
+          lastConsultationDate: sql<Date>`MAX(${consultations.createdAt})`,
+          consultationCount: count(),
+        })
+        .from(consultations)
+        .$dynamic();
+
+      const conditions: any[] = [];
+      
+      if (options?.clinic_group) {
+        conditions.push(eq(consultations.clinic_group, options.clinic_group));
+      }
+      
+      if (options?.search) {
+        const searchTerm = `%${options.search}%`;
+        conditions.push(
+          or(
+            like(consultations.name, searchTerm),
+            like(consultations.email, searchTerm),
+            like(consultations.phone, searchTerm)
+          )
+        );
+      }
+
+      if (conditions.length > 0) {
+        query = query.where(and(...conditions));
+      }
+
+      query = query
+        .groupBy(consultations.email, consultations.phone)
+        .orderBy(desc(sql`MAX(${consultations.createdAt})`));
+
+      if (options?.limit) {
+        query = query.limit(options.limit);
+      }
+      
+      if (options?.offset) {
+        query = query.offset(options.offset);
+      }
+
+      const results = await query;
+
+      return results.map((row, index) => ({
+        id: row.email || row.phone || `patient-${index}`,
+        name: row.name,
+        email: row.email,
+        phone: row.phone,
+        lastConsultationDate: row.lastConsultationDate,
+        consultationCount: row.consultationCount,
+        clinic_group: row.clinic_group || 'Unknown'
+      }));
+    } catch (error) {
+      console.error('❌ Error getting patients from consultations:', error);
       throw error;
     }
   }

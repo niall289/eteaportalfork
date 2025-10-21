@@ -92,19 +92,9 @@ app.post('/api/webhooks/nailsurgery', webhookUpload.any(), async (req: Request, 
     console.log(`\n🔔 NAIL SURGERY WEBHOOK - ${new Date().toISOString()}`);
     
     // Validate X-Webhook-Secret header (case-insensitive)
-    const receivedSecret = req.get('X-Webhook-Secret') || req.get('x-webhook-secret');
-    const expectedSecret = process.env.NAIL_WEBHOOK_SECRET;
-    
-    // Development logging (masked secrets)
-    if (process.env.NODE_ENV !== 'production') {
-      console.log('🔑 Portal secret preview:', (expectedSecret || '').slice(0, 3) + '…');
-      console.log('🔑 Received header preview:', (receivedSecret || '').slice(0, 3) + '…');
-    }
-    
-    if (!receivedSecret || receivedSecret !== expectedSecret) {
-      console.warn(`❌ Unauthorized: received=${receivedSecret ? receivedSecret.slice(0, 3) + '...' : 'missing'}`);
-      return res.status(401).json({ error: "Unauthorized" });
-    }
+    const headerSecret = (req.get('x-webhook-secret') ?? req.get('X-Webhook-Secret') ?? '').trim();
+    const expectedSecret = (process.env.NAIL_WEBHOOK_SECRET ?? '').trim();
+    if (!headerSecret || headerSecret !== expectedSecret) return res.status(401).json({ error:'Unauthorized' });
     
     // Parse data from req.body.data (JSON string) or fallback to req.body
     let rawData;
@@ -135,20 +125,55 @@ app.post('/api/webhooks/nailsurgery', webhookUpload.any(), async (req: Request, 
       return res.status(400).json({ error: "At least one of name, email, or phone is required" });
     }
     
+    // Handle image uploads to Supabase
+    let imageUrls: string[] = [];
+    if (req.files && (req.files as Express.Multer.File[]).length > 0) {
+      try {
+        const { supabaseAdmin } = await import('./supabase');
+        
+        for (const file of req.files as Express.Multer.File[]) {
+          const fileName = `nail-surgery/${Date.now()}-${file.originalname}`;
+          const { data: uploadData, error: uploadError } = await supabaseAdmin.storage
+            .from('triageimages')
+            .upload(fileName, file.buffer, {
+              contentType: file.mimetype,
+              upsert: false
+            });
+
+          if (uploadError) {
+            console.error('❌ Supabase upload error:', uploadError);
+            continue;
+          }
+
+          const { data: urlData } = supabaseAdmin.storage
+            .from('triageimages')
+            .getPublicUrl(fileName);
+          
+          if (urlData?.publicUrl) {
+            imageUrls.push(urlData.publicUrl);
+            console.log('✅ Uploaded image:', urlData.publicUrl);
+          }
+        }
+      } catch (uploadError) {
+        console.error('❌ Image upload failed:', uploadError);
+      }
+    }
+
     // Normalize data for Nail Surgery Clinic (matching schema structure)
-    const formData = {
+    const formData: any = {
       name: name || "Unknown Patient",
       email: email || "no-email@provided.com", 
       phone: phone || "no-phone-provided",
-      preferred_clinic: rawData.preferred_clinic ?? null, // Preserve provided value or default to null
+      preferred_clinic: rawData.preferred_clinic ?? null,
       issue_category: rawData.issue_category || rawData.issueCategory || "General consultation",
       issue_specifics: rawData.issue_specifics || rawData.issueSpecifics || null,
       symptom_description: rawData.symptom_description || rawData.symptomDescription || null,
       previous_treatment: rawData.previous_treatment || rawData.previousTreatment || null,
-      has_image: !!(req.files as Express.Multer.File[])?.length ? "true" : "false",
+      has_image: imageUrls.length > 0 ? "true" : "false",
       image_path: null,
       image_analysis: rawData.image_analysis || rawData.imageAnalysis || null,
-      image_url: null,
+      image_url: imageUrls[0] || null, // First image for backward compatibility
+      image_urls: imageUrls, // Array of all image URLs
       calendar_booking: rawData.calendar_booking || rawData.calendarBooking || null,
       booking_confirmation: rawData.booking_confirmation || rawData.bookingConfirmation || null,
       final_question: rawData.final_question || rawData.finalQuestion || null,
@@ -157,18 +182,18 @@ app.post('/api/webhooks/nailsurgery', webhookUpload.any(), async (req: Request, 
       survey_response: rawData.survey_response || rawData.surveyResponse || null,
       conversation_log: rawData.conversation_log || rawData.conversationLog || [],
       completed_steps: rawData.completed_steps || rawData.completedSteps || [],
-      raw_json: rawData, // Store original data
+      raw_json: rawData,
       symptom_analysis: rawData.symptom_analysis || rawData.symptomAnalysis || null,
       pain_duration: rawData.pain_duration || rawData.painDuration || null,
       pain_severity: rawData.pain_severity || rawData.painSeverity || null,
       additional_info: rawData.additional_info || rawData.additionalInfo || null,
-      clinic_domain: rawData.clinic_domain || null, // Pass through if provided
-      clinic_source: rawData.clinic_source || null  // Pass through if provided
+      clinic_domain: rawData.clinic_domain || 'nailsurgeryclinic.engageiobots.com',
+      clinic_source: rawData.clinic_source || null,
+      clinic: "nailsurgery", // Required for database constraint
+      source: rawData.source ?? 'nail_surgery_clinic',
+      clinic_group: rawData.clinic_group ?? 'The Nail Surgery Clinic',
+      status: 'new' // Set default status
     };
-    
-    // Apply default values only if not already provided
-    formData.source = (rawData as any).source ?? 'nail_surgery_clinic';
-    formData.clinic_group = (rawData as any).clinic_group ?? 'The Nail Surgery Clinic';
     
     // Persist using storage.createConsultation if available
     let consultationRecord;
