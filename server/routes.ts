@@ -626,6 +626,14 @@ export async function registerRoutes(app: Express): Promise<Server> {
           consultationData.source = 'nail_surgery_clinic';
           consultationData.clinic_group = 'The Nail Surgery Clinic';
           consultationData.preferred_clinic = null; // Force to null as specified
+        } else if (clinic === 'footcare') {
+          consultationData.source = 'footcare_clinic';
+          consultationData.clinic_group = 'FootCare Clinic';
+          consultationData.preferred_clinic = null;
+        } else if (clinic === 'lasercare') {
+          consultationData.source = 'lasercare_clinic';
+          consultationData.clinic_group = 'Lasercare Clinic';
+          consultationData.preferred_clinic = null;
         }        // Ensure string fields for JSON storage
         if (
           consultationData.image_analysis &&
