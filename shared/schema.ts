@@ -167,6 +167,11 @@ export const consultations = pgTable("consultations", {
   additional_info: text("additional_info"),
   clinic_domain: text("clinic_domain"),
   clinic_source: text("clinic_source"),
+  source: text("source"),
+  clinic_group: text("clinic_group"),
+  clinic: text("clinic"),
+  status: text("status").default("new"),
+  image_urls: jsonb("image_urls"),
   createdAt: timestamp("created_at").defaultNow(),
 });
 
