@@ -1167,15 +1167,21 @@ app.post('/api/communications', async (req: Request, res: Response) => {
   try {
     const { patientId, sentBy, type, subject, message, clinicGroup } = req.body;
 
+    // Validation issues array for error reporting
+    const validationIssues: Array<{ field: string; message: string }> = [];
+
     // Validate required fields
-    if (!patientId || !type || !message) {
+    if (!patientId) validationIssues.push({ field: "patientId", message: "patientId is required" });
+    if (!type) validationIssues.push({ field: "type", message: "type is required" });
+    if (!message) validationIssues.push({ field: "message", message: "message is required" });
+
+    if (validationIssues.length > 0) {
       console.log('Missing required fields');
-      return res.status(400).json({
-        error: 'Missing required fields: patientId, type, message'
+      return res.status(422).json({
+        error: "Validation Error",
+        issues: validationIssues
       });
     }
-
-    // Get patient details from database
     console.log('Looking up patient:', patientId);
     const patientRecord = await db.select().from(patients).where(eq(patients.id, patientId)).limit(1);
 
