@@ -285,6 +285,13 @@ export async function registerRoutes(app: Express): Promise<Server> {
               validationIssues.push({
                 field: "tone",
                 message: `Must be one of: ${validTones.join(', ')}`
+                // Always set clinic_group for robust filtering
+                clinic_group:
+                  rawData.clinic_group ||
+                  (clinic === 'nailsurgery' ? 'The Nail Surgery Clinic'
+                   : clinic === 'footcare' ? 'FootCare Clinic'
+                   : clinic === 'lasercare' ? 'Lasercare Clinic'
+                   : 'FootCare Clinic'),
               });
             }
           }
@@ -619,6 +626,13 @@ export async function registerRoutes(app: Express): Promise<Server> {
             rawData.completedSteps ||
             rawData.stepsCompleted ||
             [],
+          // Always set clinic_group for robust filtering
+          clinic_group:
+            rawData.clinic_group ||
+            (clinic === 'nailsurgery' ? 'The Nail Surgery Clinic'
+             : clinic === 'footcare' ? 'FootCare Clinic'
+             : clinic === 'lasercare' ? 'Lasercare Clinic'
+             : 'FootCare Clinic'),
         };
 
         // Apply clinic-specific data normalization after building base data
