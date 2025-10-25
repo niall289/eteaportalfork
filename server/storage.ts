@@ -90,6 +90,7 @@ export interface IStorage {
   createConsultation(consultationData: InsertConsultation): Promise<Consultation>;
   getConsultations(options?: { limit?: number; offset?: number; clinic_group?: string; startDate?: Date; endDate?: Date; q?: string }): Promise<Consultation[]>;
   getConsultationById(id: number): Promise<Consultation>;
+  getUniqueClinicGroups(): Promise<string[]>;
   getPatientsFromConsultations(options?: { limit?: number; offset?: number; clinic_group?: string; search?: string }): Promise<{ id: string; name: string; email: string; phone: string; lastConsultationDate: Date; consultationCount: number; clinic_group: string }[]>;
 }
 
@@ -827,6 +828,32 @@ export class DatabaseStorage implements IStorage {
     }
   }
 
+  async getUniqueClinicGroups(): Promise<string[]> {
+    if (!db) {
+      this.logMockWarning('getUniqueClinicGroups');
+      return ['FootCare Clinic', 'The Nail Surgery Clinic', 'Lasercare Clinic'];
+    }
+
+    try {
+      console.log('🔍 Fetching unique clinic groups from consultations...');
+      const result = await db
+        .selectDistinct({ clinic_group: consultations.clinic_group })
+        .from(consultations)
+        .where(consultations.clinic_group)
+        .orderBy(asc(consultations.clinic_group));
+
+      const groups = result
+        .map(row => row.clinic_group)
+        .filter((group): group is string => group !== null);
+
+      console.log('✅ Found unique clinic groups:', groups);
+      return groups;
+    } catch (error) {
+      console.error('❌ Error fetching unique clinic groups:', error);
+      // Return default groups if query fails
+      return ['FootCare Clinic', 'The Nail Surgery Clinic', 'Lasercare Clinic'];
+    }
+  }
   async getPatientsFromConsultations(options?: { limit?: number; offset?: number; clinic_group?: string; search?: string }): Promise<{ id: string; name: string; email: string; phone: string; lastConsultationDate: Date; consultationCount: number; clinic_group: string }[]> {
     if (!db) { 
       this.logMockWarning('getPatientsFromConsultations', options); 

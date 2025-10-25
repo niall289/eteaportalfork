@@ -831,6 +831,19 @@ app.get('/api/assessments/:id', async (req: Request, res: Response) => {
   }
 });
 
+// Get all available clinic groups from consultations
+app.get('/api/clinic-groups', async (req: Request, res: Response) => {
+  try {
+    console.log('📋 Fetching available clinic groups...');
+    const clinicGroups = await storage.getUniqueClinicGroups();
+    console.log('✅ Found clinic groups:', clinicGroups);
+    res.json({ clinicGroups });
+  } catch (error) {
+    console.error('Error fetching clinic groups:', error);
+    res.status(500).json({ message: 'Failed to fetch clinic groups' });
+  }
+});
+
 app.get('/api/consultations', async (req: Request, res: Response) => {
   try {
     // Parse query parameters
@@ -841,6 +854,8 @@ app.get('/api/consultations', async (req: Request, res: Response) => {
     const endDate = req.query.endDate ? new Date(req.query.endDate as string) : undefined;
     const q = req.query.q as string | undefined;
 
+    console.log('📥 /api/consultations request:', { clinic_group, limit, offset, q });
+
     const options: any = {};
     if (limit !== undefined) options.limit = limit;
     if (offset !== undefined) options.offset = offset;
@@ -850,6 +865,7 @@ app.get('/api/consultations', async (req: Request, res: Response) => {
     if (q) options.q = q;
 
     const consultations = await storage.getConsultations(options);
+    console.log('📤 Returning', consultations.length, 'consultations for clinic_group:', clinic_group);
     res.json(consultations);
   } catch (error) {
     console.error('Error fetching consultations:', error);

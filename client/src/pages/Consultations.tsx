@@ -30,6 +30,7 @@ interface Consultation {
   email: string | null;
   phone: string | null;
   preferredClinic: string | null;
+  clinic_group: string; // <-- Added for backend compatibility
   issueCategory: string | null;
   issueSpecifics: string | null;
   painDuration: string | null;
@@ -51,9 +52,44 @@ interface Consultation {
 export default function Consultations() {
    const [searchTerm, setSearchTerm] = useState("");
    const [debouncedSearchTerm, setDebouncedSearchTerm] = useState("");
-   const [selectedClinic, setSelectedClinic] = useState("all");
+  const [selectedClinic, setSelectedClinic] = useState<string | null>(null);
+  const [isLoadingClinicGroups, setIsLoadingClinicGroups] = useState(true);
+  const [availableClinicGroups, setAvailableClinicGroups] = useState<string[]>([]);
+  // Note: preferredClinic is only relevant for FootCare Clinic (location selection)
+  // For filtering by clinic, use consultation.clinic_group for all chatbot profiles
    const [selectedCategory, setSelectedCategory] = useState("all");
    const [selectedConsultation, setSelectedConsultation] = useState<any>(null);
+
+   // Fetch available clinic groups on mount
+   useEffect(() => {
+     const fetchClinicGroups = async () => {
+       try {
+         console.log('📋 Fetching available clinic groups...');
+         const res = await fetch('/api/clinic-groups');
+         if (!res.ok) throw new Error('Failed to fetch clinic groups');
+         const data = await res.json();
+         console.log('✅ Available clinic groups:', data.clinicGroups);
+         setAvailableClinicGroups(data.clinicGroups || []);
+         
+         // Auto-select the first clinic group if not already selected
+         if (data.clinicGroups && data.clinicGroups.length > 0 && !selectedClinic) {
+           console.log('🎯 Auto-selecting first clinic group:', data.clinicGroups[0]);
+           setSelectedClinic(data.clinicGroups[0]);
+         }
+       } catch (error) {
+         console.error('❌ Error fetching clinic groups:', error);
+         // Fallback to default clinic groups
+         setAvailableClinicGroups(['FootCare Clinic', 'The Nail Surgery Clinic', 'Lasercare Clinic']);
+         if (!selectedClinic) {
+           setSelectedClinic('FootCare Clinic');
+         }
+       } finally {
+         setIsLoadingClinicGroups(false);
+       }
+     };
+
+     fetchClinicGroups();
+   }, []);
 
    // Debounce search term
    useEffect(() => {
@@ -63,17 +99,28 @@ export default function Consultations() {
      return () => clearTimeout(timer);
    }, [searchTerm]);
 
+  // Use selectedClinic as the clinic_group filter for API
   const {
     data: consultations = [],
     isLoading,
   } = useQuery<Consultation[]>({
-    queryKey: ["/api/consultations"],
+    queryKey: ["/api/consultations", selectedClinic],
     queryFn: async () => {
-      const res = await fetch("/api/consultations");
+      let url = "/api/consultations";
+      if (selectedClinic && selectedClinic !== "all") {
+        console.log('🔗 Fetching consultations for clinic_group:', selectedClinic);
+        url += `?clinic_group=${encodeURIComponent(selectedClinic)}`;
+      } else {
+        console.log('🔗 Fetching all consultations (no clinic filter)');
+      }
+      console.log('📤 API URL:', url);
+      const res = await fetch(url);
       if (!res.ok) throw new Error("Failed to fetch consultations");
-      return res.json();
+      const data = await res.json();
+      console.log('📥 Received', data.length, 'consultations from API');
+      return data;
     },
-    enabled: true,
+    enabled: selectedClinic !== null && !isLoadingClinicGroups,
   });
 
   const filteredConsultations = useMemo(() => {
@@ -84,10 +131,22 @@ export default function Consultations() {
         consultation.email?.toLowerCase().includes(debouncedSearchTerm.toLowerCase()) ||
         consultation.issueCategory?.toLowerCase().includes(debouncedSearchTerm.toLowerCase());
 
+      // Use clinic_group for filtering by clinic (works for all chatbot profiles)
+      // selectedClinic is already applied via API query, so we match by clinic_group
       const matchesClinic =
-        selectedClinic === "all" || consultation.preferredClinic === selectedClinic;
+        !selectedClinic || selectedClinic === "all" || consultation.clinic_group === selectedClinic;
+
       const matchesCategory =
         selectedCategory === "all" || consultation.issueCategory === selectedCategory;
+
+      console.log('🔍 Filtering consultation:', { 
+        name: consultation.name, 
+        matchesSearch, 
+        matchesClinic, 
+        matchesCategory,
+        consultation_clinic_group: consultation.clinic_group,
+        selected_clinic: selectedClinic
+      });
 
       return matchesSearch && matchesClinic && matchesCategory;
     });
@@ -151,14 +210,13 @@ export default function Consultations() {
           />
         </div>
 
-        <Select value={selectedClinic} onValueChange={setSelectedClinic}>
+        <Select value={selectedClinic || "all"} onValueChange={setSelectedClinic}>
           <SelectTrigger className="w-48">
             <SelectValue placeholder="All Clinics" />
           </SelectTrigger>
           <SelectContent>
-            <SelectItem value="all">All Clinics</SelectItem>
-            {uniqueClinics.map((clinic) => (
-              <SelectItem key={clinic} value={clinic?.toString() || "unknown"}>
+            {availableClinicGroups.map((clinic) => (
+              <SelectItem key={clinic} value={clinic}>
                 {clinic || "Unknown Clinic"}
               </SelectItem>
             ))}
