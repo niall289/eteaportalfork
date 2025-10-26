@@ -71,18 +71,14 @@ export default function Consultations() {
          console.log('✅ Available clinic groups:', data.clinicGroups);
          setAvailableClinicGroups(data.clinicGroups || []);
          
-         // Auto-select the first clinic group if not already selected
-         if (data.clinicGroups && data.clinicGroups.length > 0 && !selectedClinic) {
-           console.log('🎯 Auto-selecting first clinic group:', data.clinicGroups[0]);
-           setSelectedClinic(data.clinicGroups[0]);
-         }
+         // Don't auto-select any clinic - show all consultations by default
+         console.log('🎯 Loading all consultations (no clinic pre-selected)');
+         setSelectedClinic(null); // null = show all consultations
        } catch (error) {
          console.error('❌ Error fetching clinic groups:', error);
          // Fallback to default clinic groups
          setAvailableClinicGroups(['FootCare Clinic', 'The Nail Surgery Clinic', 'Lasercare Clinic']);
-         if (!selectedClinic) {
-           setSelectedClinic('FootCare Clinic');
-         }
+         setSelectedClinic(null); // null = show all consultations
        } finally {
          setIsLoadingClinicGroups(false);
        }
@@ -120,7 +116,7 @@ export default function Consultations() {
       console.log('📥 Received', data.length, 'consultations from API');
       return data;
     },
-    enabled: selectedClinic !== null && !isLoadingClinicGroups,
+    enabled: !isLoadingClinicGroups,
   });
 
   const filteredConsultations = useMemo(() => {

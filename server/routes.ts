@@ -834,6 +834,11 @@ app.get('/api/assessments/:id', async (req: Request, res: Response) => {
 // Get all available clinic groups from consultations
 app.get('/api/clinic-groups', async (req: Request, res: Response) => {
   try {
+    // Disable caching for API endpoints - always return fresh data
+    res.setHeader('Cache-Control', 'no-store, no-cache, must-revalidate, proxy-revalidate, max-age=0');
+    res.setHeader('Pragma', 'no-cache');
+    res.setHeader('Expires', '0');
+
     console.log('📋 Fetching available clinic groups...');
     const clinicGroups = await storage.getUniqueClinicGroups();
     console.log('✅ Found clinic groups:', clinicGroups);
@@ -846,10 +851,15 @@ app.get('/api/clinic-groups', async (req: Request, res: Response) => {
 
 app.get('/api/consultations', async (req: Request, res: Response) => {
   try {
+    // Disable caching for API endpoints - always return fresh data
+    res.setHeader('Cache-Control', 'no-store, no-cache, must-revalidate, proxy-revalidate, max-age=0');
+    res.setHeader('Pragma', 'no-cache');
+    res.setHeader('Expires', '0');
+
     // Parse query parameters
     const limit = req.query.limit ? parseInt(req.query.limit as string) : undefined;
     const offset = req.query.offset ? parseInt(req.query.offset as string) : undefined;
-    const clinic_group = req.query.clinic_group as string | undefined || getClinicScope(req);
+    const clinic_group = req.query.clinic_group as string | undefined; // Only use explicit query param, don't default to getClinicScope
     const startDate = req.query.startDate ? new Date(req.query.startDate as string) : undefined;
     const endDate = req.query.endDate ? new Date(req.query.endDate as string) : undefined;
     const q = req.query.q as string | undefined;
@@ -859,13 +869,13 @@ app.get('/api/consultations', async (req: Request, res: Response) => {
     const options: any = {};
     if (limit !== undefined) options.limit = limit;
     if (offset !== undefined) options.offset = offset;
-    options.clinic_group = clinic_group; // Always apply clinic scoping
+    if (clinic_group) options.clinic_group = clinic_group; // Only apply filter if explicitly provided
     if (startDate) options.startDate = startDate;
     if (endDate) options.endDate = endDate;
     if (q) options.q = q;
 
     const consultations = await storage.getConsultations(options);
-    console.log('📤 Returning', consultations.length, 'consultations for clinic_group:', clinic_group);
+    console.log('📤 Returning', consultations.length, 'consultations' + (clinic_group ? ` for clinic_group: ${clinic_group}` : ' (all clinics)'));
     res.json(consultations);
   } catch (error) {
     console.error('Error fetching consultations:', error);
