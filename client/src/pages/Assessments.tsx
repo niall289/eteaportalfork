@@ -342,8 +342,7 @@ export default function Assessments() {
         } : null
       });
       return data;
-    },
-    enabled: true,
+    }
   });
 
   // Filter assessments by selected clinic group
