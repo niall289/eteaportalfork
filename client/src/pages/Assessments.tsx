@@ -313,7 +313,8 @@ export default function Assessments() {
   });
 
   const { data: consultations, isLoading: loadingConsultations } = useQuery<Consultation[]>({
-    queryKey: [`/api/consultations?clinic_group=${encodeURIComponent(selectedClinicGroup || '')}`],
+    queryKey: ['/api/consultations', selectedClinicGroup],
+    queryFn: () => apiRequest(`/api/consultations?clinic_group=${encodeURIComponent(selectedClinicGroup || '')}`),
     enabled: !!selectedClinicGroup
   });
 
