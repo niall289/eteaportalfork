@@ -718,8 +718,13 @@ export class DatabaseStorage implements IStorage {
   }
 
   async getConsultations(options?: { limit?: number; offset?: number; clinic_group?: string; startDate?: Date; endDate?: Date; q?: string }): Promise<Consultation[]> {
-    console.log('🔍 getConsultations called with options:', options);
-    if (!db) { this.logMockWarning('getConsultations', options); return []; } // Mock for safety
+    console.log('🔍 getConsultations called with options:', {
+      ...options,
+      clinic_group: options?.clinic_group || 'undefined',
+      requestTime: new Date().toISOString()
+    });
+    
+    if (!db) { this.logMockWarning('getConsultations', options); return []; }
 
     try {
       // First get consultations with filters
@@ -727,8 +732,12 @@ export class DatabaseStorage implements IStorage {
 
       const queryConditions: any[] = [];
       if (options?.clinic_group) {
+        console.log('🔍 Adding clinic_group filter:', options.clinic_group);
         queryConditions.push(eq(consultations.preferred_clinic, options.clinic_group));
+      } else {
+        console.log('⚠️ No clinic_group filter provided');
       }
+      
       if (options?.startDate && options?.endDate) {
         queryConditions.push(between(consultations.createdAt, options.startDate, options.endDate));
       }

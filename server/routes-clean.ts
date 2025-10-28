@@ -186,14 +186,29 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.get('/api/consultations', isAuthenticated, async (req: Request, res: Response) => {
     try {
       const { clinic_group } = req.query;
-      console.log('🔍 GET /api/consultations:', { clinic_group });
+      console.log('🔍 GET /api/consultations:', { 
+        query: req.query,
+        clinic_group,
+        url: req.url,
+        originalUrl: req.originalUrl
+      });
+      
+      if (!clinic_group) {
+        console.warn('⚠️ No clinic_group provided in request');
+      }
+
       const consultations = await storage.getConsultations({ 
         clinic_group: clinic_group as string
       });
-      console.log('✅ Found consultations:', consultations.length);
+      console.log('✅ Found consultations:', {
+        count: consultations.length,
+        firstClinic: consultations[0]?.preferred_clinic || null,
+        clinicGroup: clinic_group
+      });
       res.json(consultations);
     } catch (error) {
       console.error('❌ Error fetching consultations:', error);
+      console.error('Stack trace:', error instanceof Error ? error.stack : 'No stack trace');
       res.status(500).json({ message: 'Failed to fetch consultations' });
     }
   });
