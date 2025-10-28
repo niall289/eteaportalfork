@@ -314,8 +314,15 @@ export default function Assessments() {
 
   const { data: consultations, isLoading: loadingConsultations } = useQuery<Consultation[]>({
     queryKey: ["/api/consultations", selectedClinicGroup],
+    enabled: !!selectedClinicGroup,
     queryFn: async () => {
-      const url = `/api/consultations?clinic_group=${encodeURIComponent(selectedClinicGroup)}`;
+      // Make sure we have a clinic group selected
+      if (!selectedClinicGroup) {
+        console.warn('No clinic group selected');
+        return [];
+      }
+      const params = new URLSearchParams({ clinic_group: selectedClinicGroup });
+      const url = `/api/consultations?${params}`;
       console.log('🔍 Fetching consultations:', { url, selectedClinicGroup });
       const res = await fetch(url);
       if (!res.ok) {
