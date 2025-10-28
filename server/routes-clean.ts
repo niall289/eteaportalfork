@@ -185,10 +185,15 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Get consultations
   app.get('/api/consultations', isAuthenticated, async (req: Request, res: Response) => {
     try {
-      const consultations = await storage.getConsultations();
+      const { clinic_group } = req.query;
+      console.log('🔍 GET /api/consultations:', { clinic_group });
+      const consultations = await storage.getConsultations({ 
+        clinic_group: clinic_group as string
+      });
+      console.log('✅ Found consultations:', consultations.length);
       res.json(consultations);
     } catch (error) {
-      console.error('Error fetching consultations:', error);
+      console.error('❌ Error fetching consultations:', error);
       res.status(500).json({ message: 'Failed to fetch consultations' });
     }
   });
