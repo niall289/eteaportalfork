@@ -66,6 +66,7 @@ export default function Consultations() {
   const {
     data: consultations = [],
     isLoading,
+    error
   } = useQuery<Consultation[]>({
     queryKey: ["/api/consultations", selectedClinic],
     queryFn: async () => {
@@ -73,11 +74,31 @@ export default function Consultations() {
       const url = selectedClinic && selectedClinic !== "all"
         ? `/api/consultations?clinic_group=${encodeURIComponent(selectedClinic)}`
         : "/api/consultations";
-      console.log('Fetching consultations:', { url, selectedClinic });
+      console.log('🔍 Fetching consultations:', { url, selectedClinic });
       const res = await fetch(url);
-      if (!res.ok) throw new Error("Failed to fetch consultations");
+      if (!res.ok) {
+        const errorText = await res.text();
+        console.error('❌ API Error:', { status: res.status, statusText: res.statusText, body: errorText });
+        throw new Error(`Failed to fetch consultations: ${res.status} ${res.statusText}`);
+      }
       const data = await res.json();
-      console.log('Received consultations:', { count: data.length, clinics: [...new Set(data.map((c: Consultation) => c.clinic_group))] });
+      const uniqueClinics = Array.from(new Set(data.map((c: Consultation) => c.clinic_group || 'Unknown')));
+      console.log('📊 Received consultations:', { 
+        count: data.length, 
+        clinics: uniqueClinics,
+        firstItem: data.length > 0 ? {
+          id: data[0].id,
+          name: data[0].name,
+          clinic_group: data[0].clinic_group,
+          source: data[0].source
+        } : null,
+        lastItem: data.length > 0 ? {
+          id: data[data.length - 1].id,
+          name: data[data.length - 1].name,
+          clinic_group: data[data.length - 1].clinic_group,
+          source: data[data.length - 1].source
+        } : null
+      });
       return data;
     },
     enabled: true,
@@ -188,7 +209,22 @@ export default function Consultations() {
 
       {/* Consultations */}
       <div className="space-y-4">
-        {isLoading ? (
+        {error ? (
+          <Card>
+            <CardContent className="text-center py-12">
+              <AlertCircle className="mx-auto h-12 w-12 text-red-500 mb-4" />
+              <h3 className="text-lg font-medium text-red-600 mb-2">
+                Error loading consultations
+              </h3>
+              <p className="text-gray-600 dark:text-gray-400">
+                {error instanceof Error ? error.message : 'An unknown error occurred'}
+              </p>
+              <pre className="mt-4 text-sm bg-gray-100 p-4 rounded overflow-auto max-h-40">
+                {JSON.stringify(error, null, 2)}
+              </pre>
+            </CardContent>
+          </Card>
+        ) : isLoading ? (
           Array.from({ length: 3 }).map((_, i) => (
             <Card key={i}>
               <CardHeader>
