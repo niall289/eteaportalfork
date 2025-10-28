@@ -313,7 +313,30 @@ export default function Assessments() {
   });
 
   const { data: consultations, isLoading: loadingConsultations } = useQuery<Consultation[]>({
-    queryKey: ["/api/consultations"],
+    queryKey: ["/api/consultations", selectedClinicGroup],
+    queryFn: async () => {
+      const url = `/api/consultations?clinic_group=${encodeURIComponent(selectedClinicGroup)}`;
+      console.log('🔍 Fetching consultations:', { url, selectedClinicGroup });
+      const res = await fetch(url);
+      if (!res.ok) {
+        const errorText = await res.text();
+        console.error('❌ API Error:', { status: res.status, statusText: res.statusText, body: errorText });
+        throw new Error(`Failed to fetch consultations: ${res.status} ${res.statusText}`);
+      }
+      const data = await res.json();
+      console.log('📊 Received consultations:', {
+        count: data.length,
+        clinics: Array.from(new Set(data.map((c: Consultation) => c.preferred_clinic || 'Unknown'))),
+        firstItem: data.length > 0 ? {
+          id: data[0].id,
+          name: data[0].name,
+          preferred_clinic: data[0].preferred_clinic,
+          clinic_group: data[0].clinic_group
+        } : null
+      });
+      return data;
+    },
+    enabled: true,
   });
 
   // Filter assessments by selected clinic group
@@ -341,22 +364,8 @@ export default function Assessments() {
     return patientClinicGroup === selectedClinicGroup;
   }) || [];
 
-  // Filter consultations by selected clinic group
-  const filteredConsultations = consultations?.filter(consultation => {
-    const preferredClinic = consultation.preferred_clinic;
-    let consultationClinicGroup = "FootCare Clinic"; // default
-    
-    if (preferredClinic) {
-      const location = preferredClinic.toLowerCase();
-      if (location.includes("nail") || location.includes("surgery")) {
-        consultationClinicGroup = "The Nail Surgery Clinic";
-      } else if (location.includes("laser") || location.includes("care")) {
-        consultationClinicGroup = "The Laser Care Clinic";
-      }
-    }
-    
-    return consultationClinicGroup === selectedClinicGroup;
-  }) || [];
+  // Use consultations directly since filtering is done on the server
+  const filteredConsultations = consultations || [];
 
   // Apply search and filters to assessments
   const displayAssessments = useMemo(() => {
