@@ -727,7 +727,7 @@ export class DatabaseStorage implements IStorage {
 
       const queryConditions: any[] = [];
       if (options?.clinic_group) {
-        queryConditions.push(eq(consultations.clinic_group, options.clinic_group));
+        queryConditions.push(eq(consultations.preferred_clinic, options.clinic_group));
       }
       if (options?.startDate && options?.endDate) {
         queryConditions.push(between(consultations.createdAt, options.startDate, options.endDate));
