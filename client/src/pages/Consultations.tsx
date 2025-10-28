@@ -69,12 +69,16 @@ export default function Consultations() {
   } = useQuery<Consultation[]>({
     queryKey: ["/api/consultations", selectedClinic],
     queryFn: async () => {
-      const url = selectedClinic === "all" 
-        ? "/api/consultations" 
-        : `/api/consultations?clinic_group=${encodeURIComponent(selectedClinic)}`;
+      // Only add clinic_group parameter if a specific clinic is selected
+      const url = selectedClinic && selectedClinic !== "all"
+        ? `/api/consultations?clinic_group=${encodeURIComponent(selectedClinic)}`
+        : "/api/consultations";
+      console.log('Fetching consultations:', { url, selectedClinic });
       const res = await fetch(url);
       if (!res.ok) throw new Error("Failed to fetch consultations");
-      return res.json();
+      const data = await res.json();
+      console.log('Received consultations:', { count: data.length, clinics: [...new Set(data.map((c: Consultation) => c.clinic_group))] });
+      return data;
     },
     enabled: true,
   });
@@ -87,14 +91,13 @@ export default function Consultations() {
         consultation.email?.toLowerCase().includes(debouncedSearchTerm.toLowerCase()) ||
         consultation.issue_category?.toLowerCase().includes(debouncedSearchTerm.toLowerCase());
 
-      const matchesClinic =
-        selectedClinic === "all" || consultation.clinic_group === selectedClinic;
       const matchesCategory =
         selectedCategory === "all" || consultation.issue_category === selectedCategory;
 
-      return matchesSearch && matchesClinic && matchesCategory;
+      // We no longer need to filter by clinic here since the API handles that
+      return matchesSearch && matchesCategory;
     });
-  }, [consultations, debouncedSearchTerm, selectedClinic, selectedCategory]);
+  }, [consultations, debouncedSearchTerm, selectedCategory]);
 
   const uniqueClinics = Array.from(
     new Set(consultations.map((c) => c.clinic_group).filter(Boolean))
