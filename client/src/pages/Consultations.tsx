@@ -29,23 +29,23 @@ interface Consultation {
   name: string;
   email: string | null;
   phone: string | null;
-  preferredClinic: string | null;
-  issueCategory: string | null;
-  issueSpecifics: string | null;
-  painDuration: string | null;
-  painSeverity: string | null;
-  additionalInfo: string | null;
-  previousTreatment: string | null;
-  hasImage: boolean | null;
-  imagePath: string | null;
+  clinic_group: string | null;
+  issue_category: string | null;
+  issue_specifics: string | null;
+  pain_duration: string | null;
+  pain_severity: string | null;
+  additional_info: string | null;
+  previous_treatment: string | null;
+  has_image: boolean | null;
+  image_path: string | null;
   images: string[];
   firstImageUrl?: string | null;
   firstThumbnailUrl?: string | null;
-  imageAnalysis: string | null;
-  symptomDescription: string | null;
-  symptomAnalysis: string | null;
-  conversationLog: string | null;
-  createdAt: string;
+  image_analysis: string | null;
+  symptom_description: string | null;
+  symptom_analysis: string | null;
+  conversation_log: string | null;
+  created_at: string;
 }
 
 export default function Consultations() {
@@ -67,9 +67,12 @@ export default function Consultations() {
     data: consultations = [],
     isLoading,
   } = useQuery<Consultation[]>({
-    queryKey: ["/api/consultations"],
+    queryKey: ["/api/consultations", selectedClinic],
     queryFn: async () => {
-      const res = await fetch("/api/consultations");
+      const url = selectedClinic === "all" 
+        ? "/api/consultations" 
+        : `/api/consultations?clinic_group=${encodeURIComponent(selectedClinic)}`;
+      const res = await fetch(url);
       if (!res.ok) throw new Error("Failed to fetch consultations");
       return res.json();
     },
@@ -82,22 +85,22 @@ export default function Consultations() {
         debouncedSearchTerm === "" ||
         consultation.name.toLowerCase().includes(debouncedSearchTerm.toLowerCase()) ||
         consultation.email?.toLowerCase().includes(debouncedSearchTerm.toLowerCase()) ||
-        consultation.issueCategory?.toLowerCase().includes(debouncedSearchTerm.toLowerCase());
+        consultation.issue_category?.toLowerCase().includes(debouncedSearchTerm.toLowerCase());
 
       const matchesClinic =
-        selectedClinic === "all" || consultation.preferredClinic === selectedClinic;
+        selectedClinic === "all" || consultation.clinic_group === selectedClinic;
       const matchesCategory =
-        selectedCategory === "all" || consultation.issueCategory === selectedCategory;
+        selectedCategory === "all" || consultation.issue_category === selectedCategory;
 
       return matchesSearch && matchesClinic && matchesCategory;
     });
   }, [consultations, debouncedSearchTerm, selectedClinic, selectedCategory]);
 
   const uniqueClinics = Array.from(
-    new Set(consultations.map((c) => c.preferredClinic).filter(Boolean))
+    new Set(consultations.map((c) => c.clinic_group).filter(Boolean))
   );
   const uniqueCategories = Array.from(
-    new Set(consultations.map((c) => c.issueCategory).filter(Boolean))
+    new Set(consultations.map((c) => c.issue_category).filter(Boolean))
   );
 
   const formatDate = (dateString: string) => {
@@ -221,18 +224,18 @@ export default function Consultations() {
                     <div className="flex items-center space-x-4 text-sm text-gray-600 dark:text-gray-400 mt-1">
                       <div className="flex items-center">
                         <Calendar className="h-4 w-4 mr-1" />
-                        {formatDate(consultation.createdAt)}
+                        {formatDate(consultation.created_at)}
                       </div>
-                      {consultation.preferredClinic && (
+                      {consultation.clinic_group && (
                         <div className="flex items-center">
                           <MapPin className="h-4 w-4 mr-1" />
-                          {consultation.preferredClinic}
+                          {consultation.clinic_group}
                         </div>
                       )}
                     </div>
                   </div>
                   <div className="flex items-center space-x-2">
-                    {consultation.painSeverity && getPriorityBadge(consultation.painSeverity)}
+                    {consultation.pain_severity && getPriorityBadge(consultation.pain_severity)}
                     {(consultation.firstThumbnailUrl || consultation.firstImageUrl) && (
                       <div className="w-12 h-12 rounded-lg overflow-hidden border-2 border-gray-200 dark:border-gray-700">
                         <a
@@ -288,17 +291,17 @@ export default function Consultations() {
                       Issue Details
                     </h4>
                     <div className="space-y-1 text-sm text-gray-600 dark:text-gray-400">
-                      {consultation.issueCategory && (
-                        <div><strong>Category:</strong> {consultation.issueCategory}</div>
+                      {consultation.issue_category && (
+                        <div><strong>Category:</strong> {consultation.issue_category}</div>
                       )}
-                      {consultation.issueSpecifics && (
-                        <div><strong>Details:</strong> {consultation.issueSpecifics}</div>
+                      {consultation.issue_specifics && (
+                        <div><strong>Details:</strong> {consultation.issue_specifics}</div>
                       )}
-                      {consultation.painDuration && (
-                        <div><strong>Duration:</strong> {consultation.painDuration}</div>
+                      {consultation.pain_duration && (
+                        <div><strong>Duration:</strong> {consultation.pain_duration}</div>
                       )}
-                      {consultation.painSeverity && (
-                        <div><strong>Severity:</strong> {consultation.painSeverity}</div>
+                      {consultation.pain_severity && (
+                        <div><strong>Severity:</strong> {consultation.pain_severity}</div>
                       )}
                     </div>
                   </div>
@@ -342,13 +345,13 @@ export default function Consultations() {
                   </div>
                 </div>
 
-                {consultation.additionalInfo && (
+                {consultation.additional_info && (
                   <div className="mt-4">
                     <h4 className="font-medium text-gray-900 dark:text-white mb-2">
                       Additional Information
                     </h4>
                     <p className="text-sm text-gray-600 dark:text-gray-400">
-                      {consultation.additionalInfo}
+                      {consultation.additional_info}
                     </p>
                   </div>
                 )}
@@ -364,10 +367,10 @@ export default function Consultations() {
                         patientId: consultation.id,
                         status: 'completed' as const,
                         riskLevel: 'medium' as const,
-                        primaryConcern: consultation.issueCategory || consultation.issueSpecifics || 'General consultation',
-                        completedAt: consultation.createdAt,
-                        clinicLocation: consultation.preferredClinic,
-                        createdAt: consultation.createdAt,
+                        primaryConcern: consultation.issue_category || consultation.issue_specifics || 'General consultation',
+                        completedAt: consultation.created_at,
+                        clinicLocation: consultation.clinic_group,
+                        createdAt: consultation.created_at,
                         patient: {
                           id: consultation.id,
                           name: consultation.name,
