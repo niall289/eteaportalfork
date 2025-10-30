@@ -718,21 +718,38 @@ export class DatabaseStorage implements IStorage {
   }
 
   async getConsultations(options?: { limit?: number; offset?: number; clinic_group?: string; startDate?: Date; endDate?: Date; q?: string }): Promise<Consultation[]> {
-    console.log('🔍 getConsultations called with options:', {
+    console.log('\n� ========== CONSULTATION QUERY START ==========');
+    console.log('📥 Input options:', {
       ...options,
       clinic_group: options?.clinic_group || 'undefined',
       requestTime: new Date().toISOString()
     });
     
-    if (!db) { this.logMockWarning('getConsultations', options); return []; }
+    if (!db) { 
+      console.log('❌ No database connection');
+      this.logMockWarning('getConsultations', options); 
+      return []; 
+    }
 
     try {
-      // First get consultations with filters
-      let consultationsQuery = db.select().from(consultations).$dynamic();
+      // First get all consultations to see what we're working with
+      console.log('🔍 Fetching all consultations first...');
+      const allConsultations = await db.select().from(consultations);
+      console.log('📊 Total consultations in database:', allConsultations.length);
+      console.log('🔍 Sample of preferred_clinic values:', 
+        allConsultations.slice(0, 5).map(c => ({
+          id: c.id,
+          name: c.name,
+          preferred_clinic: c.preferred_clinic
+        }))
+      );
 
+      // Build query with filters
+      let consultationsQuery = db.select().from(consultations).$dynamic();
       const queryConditions: any[] = [];
+
       if (options?.clinic_group) {
-        console.log('🔍 Adding clinic_group filter:', options.clinic_group);
+        console.log('🎯 Filtering for clinic group:', options.clinic_group);
         
         // Map clinic locations to their groups
         let locationFilters: string[] = [];
@@ -744,17 +761,20 @@ export class DatabaseStorage implements IStorage {
           locationFilters = ['Laser Care Clinic', 'Laser Care'];
         }
         
-        console.log('📍 Matching locations:', locationFilters);
+        console.log('📍 Will match these locations:', locationFilters);
         
         // Create an OR condition for all possible location names
-        const locationConditions = locationFilters.map(location => 
-          or(
-            eq(consultations.preferred_clinic, location),
-            like(consultations.preferred_clinic, `%${location}%`)
-          )
-        );
-        
-        queryConditions.push(or(...locationConditions));
+        if (locationFilters.length > 0) {
+          const locationConditions = locationFilters.map(location => 
+            or(
+              eq(consultations.preferred_clinic, location),
+              like(consultations.preferred_clinic, `%${location}%`)
+            )
+          );
+          queryConditions.push(or(...locationConditions));
+        } else {
+          console.log('⚠️ No location filters for clinic group:', options.clinic_group);
+        }
       } else {
         console.log('⚠️ No clinic_group filter provided');
       }
@@ -774,7 +794,10 @@ export class DatabaseStorage implements IStorage {
       }
 
       if (queryConditions.length > 0) {
+        console.log('🔍 Applying query conditions');
         consultationsQuery = consultationsQuery.where(and(...queryConditions));
+      } else {
+        console.log('⚠️ No query conditions to apply');
       }
 
       consultationsQuery = consultationsQuery.orderBy(desc(consultations.createdAt));
@@ -786,8 +809,17 @@ export class DatabaseStorage implements IStorage {
         consultationsQuery = consultationsQuery.offset(options.offset);
       }
 
+      console.log('🚀 Executing filtered query...');
       const consultationResults = await consultationsQuery;
-      console.log('✅ getConsultations query executed, results count:', consultationResults.length);
+      console.log('✅ Query results:', {
+        count: consultationResults.length,
+        sample: consultationResults.slice(0, 2).map(c => ({
+          id: c.id,
+          name: c.name,
+          preferred_clinic: c.preferred_clinic,
+          created: c.createdAt
+        }))
+      });
 
       // Get first image and thumbnail for each consultation
       const consultationIds = consultationResults.map(c => c.id);
