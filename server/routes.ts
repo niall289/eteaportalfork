@@ -437,6 +437,38 @@ export async function registerRoutes(app: Express): Promise<Server> {
         console.log(`\n🔔 WEBHOOK PROCESSING START for ${clinic.toUpperCase()} - ${new Date().toISOString()}`);
         console.log("🔍 Request headers:", JSON.stringify(req.headers, null, 2));
 
+        // Determine clinic group based on source and other indicators
+        const determineClinicGroup = (data: any, clinicParam: string) => {
+          // If it's from the nail surgery webhook endpoint
+          if (clinicParam === 'nailsurgery' || 
+              data.source === 'nailsurgery' || 
+              data.chatbotSource === 'nailsurgery' || 
+              data.issue_category?.toLowerCase().includes('nail') ||
+              data.issue_category?.toLowerCase().includes('surgery')) {
+            return { 
+              clinic_group: 'The Nail Surgery Clinic',
+              preferred_clinic: 'nailsurgery'
+            };
+          }
+          
+          // If it's from the laser clinic webhook endpoint
+          if (clinicParam === 'lasercare' || 
+              data.source === 'lasercare' || 
+              data.chatbotSource === 'lasercare' || 
+              data.issue_category?.toLowerCase().includes('laser')) {
+            return {
+              clinic_group: 'The Laser Care Clinic',
+              preferred_clinic: 'lasercare'
+            };
+          }
+          
+          // If it's FootCare, keep the selected location
+          return {
+            clinic_group: 'FootCare Clinic',
+            preferred_clinic: data.preferred_clinic || 'Not Sure'
+          };
+        };
+
         // Validate clinic slug (nailsurgery has dedicated route in index.ts)
         const validClinics = ['footcare', 'lasercare'];
         if (!validClinics.includes(clinic)) {
@@ -538,6 +570,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
           phone: phone || "no-phone-provided",
           preferred_clinic: rawData.preferred_clinic || clinic,
           clinic: clinic, // Also set the required 'clinic' field that's needed for database constraint
+          clinic_group: clinic === 'nailsurgery' ? 'nailsurgery' : 
+            clinic === 'lasercare' ? 'lasercare' : 
+            rawData.clinic_group || clinic,  // Only allow clinic_group from rawData for footcare
           issue_category:
             rawData.issueCategory ||
             rawData.issue_category ||
@@ -624,17 +659,14 @@ export async function registerRoutes(app: Express): Promise<Server> {
         // Apply clinic-specific data normalization after building base data
         if (clinic === 'nailsurgery') {
           consultationData.source = 'nail_surgery_clinic';
-          consultationData.clinic_group = 'The Nail Surgery Clinic';
           consultationData.preferred_clinic = null; // Force to null as specified
         } else if (clinic === 'footcare') {
           consultationData.source = 'footcare_clinic';
-          consultationData.clinic_group = 'FootCare Clinic';
-          consultationData.preferred_clinic = null;
         } else if (clinic === 'lasercare') {
           consultationData.source = 'lasercare_clinic';
-          consultationData.clinic_group = 'Lasercare Clinic';
           consultationData.preferred_clinic = null;
-        }        // Ensure string fields for JSON storage
+        }
+        // Ensure string fields for JSON storage
         if (
           consultationData.image_analysis &&
           typeof consultationData.image_analysis !== "string"
