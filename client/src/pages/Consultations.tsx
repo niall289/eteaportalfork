@@ -71,9 +71,19 @@ export default function Consultations() {
     queryKey: ["/api/consultations", selectedClinic],
     queryFn: async () => {
       // Only add clinic_group parameter if a specific clinic is selected
-      const url = selectedClinic && selectedClinic !== "all"
-        ? `/api/consultations?clinic_group=${encodeURIComponent(selectedClinic)}`
-        : "/api/consultations";
+      let url = '/api/consultations';
+      const queryParams = new URLSearchParams();
+      
+      // Only add clinic filter if a specific clinic is selected
+      if (selectedClinic && selectedClinic !== "all") {
+        queryParams.set('clinic_group', selectedClinic);
+      }
+      
+      // Add any other query parameters here
+      if (queryParams.toString()) {
+        url += `?${queryParams.toString()}`;
+      }
+      
       console.log('🔍 Fetching consultations:', { url, selectedClinic });
       const res = await fetch(url);
       if (!res.ok) {
