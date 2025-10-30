@@ -551,7 +551,6 @@ export async function registerRoutes(app: Express): Promise<Server> {
         // Data normalization for specific clinics
         if (clinic === 'nailsurgery') {
           rawData.source = 'nail_surgery_clinic';
-          rawData.clinic_group = 'The Nail Surgery Clinic';
           rawData.preferred_clinic = null; // Force to null as specified
           console.log("🔧 Applied nailsurgery data normalization");
         }
@@ -570,9 +569,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
           phone: phone || "no-phone-provided",
           preferred_clinic: rawData.preferred_clinic || clinic,
           clinic: clinic, // Also set the required 'clinic' field that's needed for database constraint
-          clinic_group: clinic === 'nailsurgery' ? 'nailsurgery' : 
-            clinic === 'lasercare' ? 'lasercare' : 
-            rawData.clinic_group || clinic,  // Only allow clinic_group from rawData for footcare
+          clinic_group: clinic === 'nailsurgery' ? 'The Nail Surgery Clinic' : 
+            clinic === 'lasercare' ? 'The Laser Care Clinic' : 
+            rawData.clinic_group || 'FootCare Clinic',  // Only allow clinic_group from rawData for footcare
           issue_category:
             rawData.issueCategory ||
             rawData.issue_category ||
