@@ -736,8 +736,18 @@ export class DatabaseStorage implements IStorage {
       console.log('🔍 Fetching all consultations first...');
       const allConsultations = await db.select().from(consultations);
       console.log('📊 Total consultations in database:', allConsultations.length);
-      console.log('🔍 Sample of preferred_clinic values:', 
-        allConsultations.slice(0, 5).map(c => ({
+      
+      // Log all unique preferred_clinic values
+      const uniqueClinics = [...new Set(allConsultations.map(c => c.preferred_clinic))];
+      console.log('🏥 All unique preferred_clinic values in database:', uniqueClinics);
+      
+      // Specifically look for nail surgery related values
+      const nailSurgeryConsultations = allConsultations.filter(c => 
+        c.preferred_clinic?.toLowerCase().includes('nail') || 
+        c.preferred_clinic?.toLowerCase().includes('surgery')
+      );
+      console.log('💉 Found', nailSurgeryConsultations.length, 'potential nail surgery consultations:',
+        nailSurgeryConsultations.map(c => ({
           id: c.id,
           name: c.name,
           preferred_clinic: c.preferred_clinic
@@ -751,14 +761,17 @@ export class DatabaseStorage implements IStorage {
       if (options?.clinic_group) {
         console.log('🎯 Filtering for clinic group:', options.clinic_group);
         
-        // Map clinic locations to their groups
+        // Map clinic groups and their corresponding locations
         let locationFilters: string[] = [];
         if (options.clinic_group === 'FootCare Clinic') {
-          locationFilters = ['Baldoyle', 'Palmerstown', 'Donnycarney'];
+          locationFilters = ['Donnycarney', 'Palmerstown', 'Baldoyle', 'Not Sure'];
         } else if (options.clinic_group === 'The Nail Surgery Clinic') {
-          locationFilters = ['Nail Surgery Clinic', 'Nail Surgery'];
+          locationFilters = ['nailsurgery'];
+          console.log('🔍 Nail Surgery Debug:');
+          console.log('  - Looking for preferred_clinic values:', locationFilters);
+          console.log('  - Will match any consultation where preferred_clinic equals:', locationFilters[0]);
         } else if (options.clinic_group === 'The Laser Care Clinic') {
-          locationFilters = ['Laser Care Clinic', 'Laser Care'];
+          locationFilters = ['lasercare'];
         }
         
         console.log('📍 Will match these locations:', locationFilters);

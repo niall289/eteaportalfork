@@ -836,7 +836,7 @@ app.get('/api/consultations', async (req: Request, res: Response) => {
     // Parse query parameters
     const limit = req.query.limit ? parseInt(req.query.limit as string) : undefined;
     const offset = req.query.offset ? parseInt(req.query.offset as string) : undefined;
-    const clinic_group = req.query.clinic_group as string | undefined || getClinicScope(req);
+    const clinic_group = req.query.clinic_group as string | undefined;
     const startDate = req.query.startDate ? new Date(req.query.startDate as string) : undefined;
     const endDate = req.query.endDate ? new Date(req.query.endDate as string) : undefined;
     const q = req.query.q as string | undefined;
@@ -844,7 +844,7 @@ app.get('/api/consultations', async (req: Request, res: Response) => {
     const options: any = {};
     if (limit !== undefined) options.limit = limit;
     if (offset !== undefined) options.offset = offset;
-    options.clinic_group = clinic_group; // Always apply clinic scoping
+    if (clinic_group) options.clinic_group = clinic_group; // Only apply filtering if explicitly provided
     if (startDate) options.startDate = startDate;
     if (endDate) options.endDate = endDate;
     if (q) options.q = q;
