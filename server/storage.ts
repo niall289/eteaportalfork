@@ -733,7 +733,28 @@ export class DatabaseStorage implements IStorage {
       const queryConditions: any[] = [];
       if (options?.clinic_group) {
         console.log('🔍 Adding clinic_group filter:', options.clinic_group);
-        queryConditions.push(eq(consultations.preferred_clinic, options.clinic_group));
+        
+        // Map clinic locations to their groups
+        let locationFilters: string[] = [];
+        if (options.clinic_group === 'FootCare Clinic') {
+          locationFilters = ['Baldoyle', 'Palmerstown', 'Donnycarney'];
+        } else if (options.clinic_group === 'The Nail Surgery Clinic') {
+          locationFilters = ['Nail Surgery Clinic', 'Nail Surgery'];
+        } else if (options.clinic_group === 'The Laser Care Clinic') {
+          locationFilters = ['Laser Care Clinic', 'Laser Care'];
+        }
+        
+        console.log('📍 Matching locations:', locationFilters);
+        
+        // Create an OR condition for all possible location names
+        const locationConditions = locationFilters.map(location => 
+          or(
+            eq(consultations.preferred_clinic, location),
+            like(consultations.preferred_clinic, `%${location}%`)
+          )
+        );
+        
+        queryConditions.push(or(...locationConditions));
       } else {
         console.log('⚠️ No clinic_group filter provided');
       }
