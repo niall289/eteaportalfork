@@ -21,6 +21,7 @@ import cors from "cors";
 import { exportConsultationsToCSV } from "./services/csvExport";
 import { getClinicScope, buildClinicScopeConditions } from "./clinicScope";
 import { sendEmail as mailSendEmail } from "./services/mail";
+import { enforceClinicGroup } from './middleware/enforceClinicGroup';
 
 // Upload image to Supabase Storage and create database records
 // Return type for the Supabase upload function
@@ -427,9 +428,6 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // Import the enforce clinic group middleware
-  import { enforceClinicGroup } from './middleware/enforceClinicGroup';
-
   app.post(
     "/api/webhooks/:clinic",
     skipAuthForWebhook,
@@ -580,7 +578,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
           phone: phone || "no-phone-provided",
           preferred_clinic: clinicSettings.preferred_clinic,
           clinic: clinic, // Also set the required 'clinic' field that's needed for database constraint
-          clinic_group: clinicSettings.clinic_group
+          clinic_group: clinicSettings.clinic_group,
           issue_category:
             rawData.issueCategory ||
             rawData.issue_category ||

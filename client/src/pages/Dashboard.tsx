@@ -20,15 +20,15 @@ export default function Dashboard() {
   const [timeRange, setTimeRange] = useState("7");
   const [conditionsLimit, setConditionsLimit] = useState("5");
 
-  const { data: stats, isLoading: isLoadingStats } = useQuery({
+  const { data: stats, isLoading: isLoadingStats } = useQuery<any>({
     queryKey: ["/api/dashboard/stats"],
   });
 
-  const { data: trends, isLoading: isLoadingTrends } = useQuery({
+  const { data: trends, isLoading: isLoadingTrends } = useQuery<any[]>({
     queryKey: ["/api/dashboard/trends", { days: timeRange }],
   });
 
-  const { data: conditions, isLoading: isLoadingConditions } = useQuery({
+  const { data: conditions, isLoading: isLoadingConditions } = useQuery<any[]>({
     queryKey: ["/api/dashboard/conditions", { limit: conditionsLimit }],
   });
 
@@ -43,14 +43,13 @@ export default function Dashboard() {
     queryKey: ["/api/patients"],
   });
 
+  // Strictly use clinic_group from patient or assessment, fallback only if truly missing
   const filteredAssessments = patientsData?.assessments?.filter(assessment => {
     const patient = assessment.patient;
     if (!patient) return false;
-    
-    // Use clinic_group from patient record, fallback to clinicLocation mapping
-    let patientClinicGroup = patient.clinic_group;
-    
-    if (!patientClinicGroup && assessment.clinicLocation) {
+    let patientClinicGroup = patient.clinic_group || assessment.clinicLocation || "";
+    // If clinic_group is missing, try to infer from clinicLocation
+    if (!patient.clinic_group && assessment.clinicLocation) {
       const location = assessment.clinicLocation.toLowerCase();
       if (location.includes("nail") || location.includes("surgery")) {
         patientClinicGroup = "The Nail Surgery Clinic";
@@ -60,11 +59,18 @@ export default function Dashboard() {
         patientClinicGroup = "FootCare Clinic";
       }
     }
-    
-    // Default to FootCare Clinic if no clinic group is set
+    // Only fallback to FootCare Clinic if both are missing
     patientClinicGroup = patientClinicGroup || "FootCare Clinic";
-    
     return patientClinicGroup === selectedClinicGroup;
+  }) || [];
+  // Fetch consultations for dashboard display
+  const { data: consultationsData } = useQuery<any[]>({
+    queryKey: ["/api/consultations", { clinic_group: selectedClinicGroup }],
+  });
+
+  const filteredConsultations = consultationsData?.filter(consultation => {
+    // Use clinic_group directly from consultation
+    return consultation.clinic_group === selectedClinicGroup;
   }) || [];
 
   const uniquePatients = filteredAssessments.reduce((acc, assessment) => {
@@ -159,7 +165,7 @@ export default function Dashboard() {
           />
           <StatsCard
             title="Completed Assessments"
-            value={stats?.completedAssessments}
+            value={stats && typeof stats.completedAssessments === 'number' ? stats.completedAssessments : 0}
             icon="ri-chat-check-line"
             iconColor="text-green-500"
             iconBgColor="bg-green-50 dark:bg-green-900/20"
@@ -169,7 +175,7 @@ export default function Dashboard() {
           />
           <StatsCard
             title="Assessments This Week"
-            value={stats?.weeklyAssessments}
+            value={stats && typeof stats.weeklyAssessments === 'number' ? stats.weeklyAssessments : 0}
             icon="ri-calendar-check-line"
             iconColor="text-blue-500"
             iconBgColor="bg-blue-50 dark:bg-blue-900/20"
@@ -179,7 +185,7 @@ export default function Dashboard() {
           />
           <StatsCard
             title="Flagged Responses"
-            value={stats?.flaggedResponses}
+            value={stats && typeof stats.flaggedResponses === 'number' ? stats.flaggedResponses : 0}
             icon="ri-flag-2-line"
             iconColor="text-red-500"
             iconBgColor="bg-red-50 dark:bg-red-900/20"
@@ -192,13 +198,13 @@ export default function Dashboard() {
         {/* Charts */}
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
           <ResponseTrendsChart
-            data={trends}
+            data={Array.isArray(trends) ? trends : []}
             isLoading={isLoadingTrends}
             timeRange={timeRange}
             onTimeRangeChange={setTimeRange}
           />
           <CommonConditionsChart
-            data={conditions}
+            data={Array.isArray(conditions) ? conditions : []}
             isLoading={isLoadingConditions}
             limit={conditionsLimit}
             onLimitChange={setConditionsLimit}
@@ -218,6 +224,27 @@ export default function Dashboard() {
           assessments={filteredAssessments.slice(0, 5)}
           isLoading={isLoadingAssessments}
         />
+        {/* Show consultations below assessments */}
+        {filteredConsultations.length > 0 && (
+          <div className="mt-8">
+            <h2 className="text-2xl font-bold mb-4">Consultations</h2>
+            <div className="space-y-4">
+              {filteredConsultations.map((consultation) => (
+                <div key={consultation.id} className="p-4 border rounded-lg bg-white dark:bg-neutral-800">
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <div className="font-semibold text-lg">{consultation.name}</div>
+                      <div className="text-sm text-gray-600 dark:text-gray-400">{consultation.email}</div>
+                      <div className="text-sm text-gray-600 dark:text-gray-400">{consultation.clinic_group}</div>
+                    </div>
+                    <div className="text-sm text-gray-600 dark:text-gray-400">{consultation.created_at}</div>
+                  </div>
+                  <div className="mt-2 text-sm text-gray-700 dark:text-gray-300">{consultation.issue_category}</div>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
       </div>
     </>
   );

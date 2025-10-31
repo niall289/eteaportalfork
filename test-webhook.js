@@ -14,7 +14,7 @@ async function testWebhook() {
   };
 
   try {
-    const response = await fetch('https://eteaportal.engageiobots.com/api/webhooks/nailsurgery', {
+    const response = await fetch('https://eteaportal.engageiobots.com/api/webhook/consultation', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -31,7 +31,3 @@ async function testWebhook() {
 }
 
 testWebhook();
-})
-.then(response => response.json())
-.then(data => console.log('✅ Webhook Response:', data))
-.catch(error => console.error('❌ Error:', error));

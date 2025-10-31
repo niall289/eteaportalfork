@@ -318,15 +318,13 @@ export default function Assessments() {
     enabled: !!selectedClinicGroup
   });
 
-  // Filter assessments by selected clinic group
+  // Strictly use clinic_group from patient or assessment, fallback only if truly missing
   const filteredAssessments = patientsData?.assessments?.filter(assessment => {
     const patient = assessment.patient;
     if (!patient) return false;
-    
-    // Use clinic_group from patient record, fallback to clinicLocation mapping
-    let patientClinicGroup = patient.clinic_group;
-    
-    if (!patientClinicGroup && assessment.clinicLocation) {
+    let patientClinicGroup = patient.clinic_group || assessment.clinicLocation || "";
+    // If clinic_group is missing, try to infer from clinicLocation
+    if (!patient.clinic_group && assessment.clinicLocation) {
       const location = assessment.clinicLocation.toLowerCase();
       if (location.includes("nail") || location.includes("surgery")) {
         patientClinicGroup = "The Nail Surgery Clinic";
@@ -336,15 +334,15 @@ export default function Assessments() {
         patientClinicGroup = "FootCare Clinic";
       }
     }
-    
-    // Default to FootCare Clinic if no clinic group is set
+    // Only fallback to FootCare Clinic if both are missing
     patientClinicGroup = patientClinicGroup || "FootCare Clinic";
-    
     return patientClinicGroup === selectedClinicGroup;
   }) || [];
 
-  // Use consultations directly since filtering is done on the server
-  const filteredConsultations = consultations || [];
+  // Strictly filter consultations by clinic_group
+  const filteredConsultations = (consultations || []).filter(consultation => {
+    return consultation.clinic_group === selectedClinicGroup;
+  });
 
   // Apply search and filters to assessments
   const displayAssessments = useMemo(() => {

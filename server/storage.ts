@@ -872,11 +872,29 @@ export class DatabaseStorage implements IStorage {
         });
       }
 
-      const finalResults = consultationResults.map(consultation => ({
-        ...consultation,
-        firstImageUrl: imagesMap.get(consultation.id) || null,
-        firstThumbnailUrl: thumbnailsMap.get(consultation.id) || null
-      }));
+      const finalResults = consultationResults.map(consultation => {
+        // Ensure clinic_group is present and correct
+        let clinic_group = consultation.clinic_group;
+        if (!clinic_group || clinic_group === '' || clinic_group === undefined) {
+          // Map preferred_clinic to clinic_group if missing
+          const pc = (consultation.preferred_clinic || '').toLowerCase();
+          if (pc.includes('nail')) {
+            clinic_group = 'The Nail Surgery Clinic';
+          } else if (pc.includes('laser')) {
+            clinic_group = 'The Laser Care Clinic';
+          } else if (pc.includes('footcare') || pc.includes('donnycarney') || pc.includes('palmerstown') || pc.includes('baldoyle') || pc.includes('not sure')) {
+            clinic_group = 'FootCare Clinic';
+          } else {
+            clinic_group = 'FootCare Clinic'; // Default fallback
+          }
+        }
+        return {
+          ...consultation,
+          clinic_group,
+          firstImageUrl: imagesMap.get(consultation.id) || null,
+          firstThumbnailUrl: thumbnailsMap.get(consultation.id) || null
+        };
+      });
       console.log('✅ getConsultations completed successfully, returning', finalResults.length, 'consultations');
       return finalResults;
     } catch (error) {
