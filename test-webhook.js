@@ -1,22 +1,36 @@
 
-const testData = {
-  name: "John Doe",
-  email: "john@example.com", 
-  phone: "123-456-7890",
-  preferredClinic: "Main Clinic",
-  issueCategory: "Heel Pain",
-  symptomDescription: "Sharp pain when walking",
-  previousTreatment: "None",
-  hasImage: "No",
-  createdAt: new Date().toISOString()
-};
+const fetch = require('node-fetch');
 
-fetch('https://footcareclinicadmin.engageiobots.com/api/webhook/consultation', {
-  method: 'POST',
-  headers: {
-    'Content-Type': 'application/json'
-  },
-  body: JSON.stringify(testData)
+async function testWebhook() {
+  const testData = {
+    name: "Test Patient",
+    email: "test@example.com",
+    phone: "07123456789",
+    issue_category: "Nail Surgery Consultation",
+    issue_specifics: "Test webhook submission",
+    source: "nailsurgery",
+    chatbotSource: "nailsurgery",
+    preferred_clinic: "nailsurgery"
+  };
+
+  try {
+    const response = await fetch('https://eteaportal.engageiobots.com/api/webhooks/nailsurgery', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'X-Webhook-Secret': 'nailsurgery_secret_2025'
+      },
+      body: JSON.stringify(testData)
+    });
+
+    const data = await response.json();
+    console.log('✅ Webhook Response:', data);
+  } catch (error) {
+    console.error('❌ Error:', error);
+  }
+}
+
+testWebhook();
 })
 .then(response => response.json())
 .then(data => console.log('✅ Webhook Response:', data))

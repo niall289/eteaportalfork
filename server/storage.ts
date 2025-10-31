@@ -761,15 +761,14 @@ export class DatabaseStorage implements IStorage {
       if (options?.clinic_group) {
         console.log('🎯 Filtering for clinic group:', options.clinic_group);
         
-        // Map clinic groups and their corresponding locations
+        // Map clinic groups to their database values
         let locationFilters: string[] = [];
         if (options.clinic_group === 'FootCare Clinic') {
           locationFilters = ['Donnycarney', 'Palmerstown', 'Baldoyle', 'Not Sure'];
         } else if (options.clinic_group === 'The Nail Surgery Clinic') {
           locationFilters = ['nailsurgery'];
           console.log('🔍 Nail Surgery Debug:');
-          console.log('  - Looking for preferred_clinic values:', locationFilters);
-          console.log('  - Will match any consultation where preferred_clinic equals:', locationFilters[0]);
+          console.log('  - Looking for preferred_clinic value:', locationFilters[0]);
         } else if (options.clinic_group === 'The Laser Care Clinic') {
           locationFilters = ['lasercare'];
         }

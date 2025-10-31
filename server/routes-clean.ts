@@ -46,26 +46,44 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       console.log('✅ Received consultation from chatbot:', JSON.stringify(req.body, null, 2), 'files:', req.files);
       
-      // Map clinic location to correct clinic group name
-      const mapClinicLocation = (location: string) => {
-        if (!location) return 'FootCare Clinic'; // default
-        
-        const locationLower = location.toLowerCase();
-        if (locationLower.includes('nail') || locationLower.includes('surgery')) {
-          return 'The Nail Surgery Clinic';
-        } else if (locationLower.includes('laser')) {
-          return 'The Laser Care Clinic';
-        } else {
-          return 'FootCare Clinic';
+      // Determine clinic group based on source (or other indicator)
+      const determineClinicGroup = (data: any) => {
+        // Check if this is from nail surgery chatbot/form
+        if (data.source === 'nailsurgery' || 
+            data.chatbotSource === 'nailsurgery' || 
+            data.issue_category?.toLowerCase().includes('nail') ||
+            data.issue_category?.toLowerCase().includes('surgery')) {
+          return { 
+            clinic_group: 'The Nail Surgery Clinic',
+            preferred_clinic: 'nailsurgery'
+          };
         }
+        
+        // Check if this is from laser clinic chatbot/form
+        if (data.source === 'lasercare' || 
+            data.chatbotSource === 'lasercare' || 
+            data.issue_category?.toLowerCase().includes('laser')) {
+          return {
+            clinic_group: 'The Laser Care Clinic',
+            preferred_clinic: 'lasercare'
+          };
+        }
+        
+        // If it's FootCare, keep the selected location
+        return {
+          clinic_group: 'FootCare Clinic',
+          preferred_clinic: data.preferred_clinic || 'Not Sure'
+        };
       };
       
-      // Direct field mapping for multipart form data
+      // Determine clinic details and map fields
+      const clinicDetails = determineClinicGroup(req.body);
       const mappedData = {
         name: req.body.name || 'Test Patient',
         email: req.body.email || 'test@footcare.com',
         phone: req.body.phone || '000-000-0000',
-        preferred_clinic: mapClinicLocation(req.body.preferred_clinic),
+        clinic_group: clinicDetails.clinic_group,
+        preferred_clinic: clinicDetails.preferred_clinic,
         issue_category: req.body.issue_category,
         issue_specifics: req.body.symptom_description || '',
         pain_duration: '',
@@ -90,7 +108,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         name: req.body.name || 'Unknown Patient',
         email: req.body.email || null,
         phone: req.body.phone || null,
-        clinic_group: mapClinicLocation(req.body.preferred_clinic),
+        clinic_group: clinicDetails.clinic_group,
       };
 
       // Check if patient already exists

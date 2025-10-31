@@ -427,35 +427,43 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Import the enforce clinic group middleware
+  import { enforceClinicGroup } from './middleware/enforceClinicGroup';
+
   app.post(
     "/api/webhooks/:clinic",
     skipAuthForWebhook,
     upload.any(), // Use upload.any() to handle multipart/form-data with JSON in data field
+    enforceClinicGroup, // Add the enforcement middleware
+    (req, res, next) => {
+      // Log the final enriched payload
+      console.log('🔍 FINAL WEBHOOK PAYLOAD:', JSON.stringify(req.body, null, 2));
+      next();
+    },
     async (req: Request, res: Response) => {
       try {
         const { clinic } = req.params;
         console.log(`\n🔔 WEBHOOK PROCESSING START for ${clinic.toUpperCase()} - ${new Date().toISOString()}`);
         console.log("🔍 Request headers:", JSON.stringify(req.headers, null, 2));
 
-        // Determine clinic group based on source and other indicators
+        // Determine clinic group based on webhook endpoint and source
         const determineClinicGroup = (data: any, clinicParam: string) => {
-          // If it's from the nail surgery webhook endpoint
+          // If the webhook endpoint is nailsurgery or source indicates nail surgery
           if (clinicParam === 'nailsurgery' || 
               data.source === 'nailsurgery' || 
-              data.chatbotSource === 'nailsurgery' || 
-              data.issue_category?.toLowerCase().includes('nail') ||
-              data.issue_category?.toLowerCase().includes('surgery')) {
+              data.preferred_clinic === 'nailsurgery' ||
+              data.chatbotSource === 'nailsurgery') {
             return { 
               clinic_group: 'The Nail Surgery Clinic',
               preferred_clinic: 'nailsurgery'
             };
           }
           
-          // If it's from the laser clinic webhook endpoint
+          // If the webhook endpoint is lasercare or source indicates laser care
           if (clinicParam === 'lasercare' || 
               data.source === 'lasercare' || 
-              data.chatbotSource === 'lasercare' || 
-              data.issue_category?.toLowerCase().includes('laser')) {
+              data.preferred_clinic === 'lasercare' ||
+              data.chatbotSource === 'lasercare') {
             return {
               clinic_group: 'The Laser Care Clinic',
               preferred_clinic: 'lasercare'
@@ -558,6 +566,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
         // Get the first uploaded file if any
         const uploadedFile = (req.files as Express.Multer.File[])?.[0] || null;
 
+        // Determine clinic group based on webhook endpoint and data
+        const clinicSettings = determineClinicGroup(rawData, clinic);
+
         // Insert base row with has_image as boolean
         const consultationData: any = {
           name:
@@ -567,11 +578,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
             "Unknown Patient",
           email: email || "no-email@provided.com",
           phone: phone || "no-phone-provided",
-          preferred_clinic: rawData.preferred_clinic || clinic,
+          preferred_clinic: clinicSettings.preferred_clinic,
           clinic: clinic, // Also set the required 'clinic' field that's needed for database constraint
-          clinic_group: clinic === 'nailsurgery' ? 'The Nail Surgery Clinic' : 
-            clinic === 'lasercare' ? 'The Laser Care Clinic' : 
-            rawData.clinic_group || 'FootCare Clinic',  // Only allow clinic_group from rawData for footcare
+          clinic_group: clinicSettings.clinic_group
           issue_category:
             rawData.issueCategory ||
             rawData.issue_category ||
