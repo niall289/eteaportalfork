@@ -709,9 +709,23 @@ export class DatabaseStorage implements IStorage {
 
     // Temporarily exclude raw_json to work around database schema issue
     const { raw_json, ...dataWithoutRawJson } = consultationData;
+    // Ensure clinic_group is set based on preferred_clinic
+    let clinic_group = consultationData.clinic_group;
+    const pc = (consultationData.preferred_clinic || '').toLowerCase();
+    if (!clinic_group || clinic_group === '' || clinic_group === undefined) {
+      if (pc.includes('nail')) {
+        clinic_group = 'The Nail Surgery Clinic';
+      } else if (pc.includes('laser')) {
+        clinic_group = 'The Laser Care Clinic';
+      } else if (pc.includes('footcare') || pc.includes('donnycarney') || pc.includes('palmerstown') || pc.includes('baldoyle') || pc.includes('not sure') || pc.includes('main office')) {
+        clinic_group = 'FootCare Clinic';
+      } else {
+        clinic_group = 'FootCare Clinic'; // Default fallback
+      }
+    }
     const [consultation] = await db
       .insert(consultations)
-      .values(dataWithoutRawJson)
+      .values({ ...dataWithoutRawJson, clinic_group })
       .returning();
     console.log('âœ… Storage: Successfully created consultation ID:', consultation.id);
     return consultation;
