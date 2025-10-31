@@ -125,10 +125,12 @@ export default function Consultations() {
       const matchesCategory =
         selectedCategory === "all" || consultation.issue_category === selectedCategory;
 
-      // We no longer need to filter by clinic here since the API handles that
-      return matchesSearch && matchesCategory;
+      const matchesClinic =
+        selectedClinic === "all" || consultation.clinic_group === selectedClinic;
+
+      return matchesSearch && matchesCategory && matchesClinic;
     });
-  }, [consultations, debouncedSearchTerm, selectedCategory]);
+  }, [consultations, debouncedSearchTerm, selectedCategory, selectedClinic]);
 
   const uniqueClinics = Array.from(
     new Set(consultations.map((c) => c.clinic_group).filter(Boolean))
